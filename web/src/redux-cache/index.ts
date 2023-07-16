@@ -155,9 +155,8 @@ export const useQuery = <
     if (!newState && !normalizedEntities) return
 
     dispatch(setStateAction({
-      entities: {
-        ...normalizedEntities,
-      },
+      // @ts-ignore
+      entities: shallowMerge(cacheStateSelector(store.getState()).entities, normalizedEntities),
       endpoints: {
         [queryKey]: {
           [paramsKey]: {
@@ -210,4 +209,12 @@ export const useQuery = <
   }, [requestKey])
 
   return [queryState, fetch] as const
+}
+
+export const shallowMerge = (a: any, b: any) => {
+  const result = { ...a }
+  for (const key in b) {
+    result[key] = { ...a[key], ...b[key] }
+  }
+  return result
 }
