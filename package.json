@@ -36,5 +36,8 @@
     "react-redux": "^4",
     "redux": "^4",
     "redux-light": "^2"
+  },
+  "dependencies": {
+    "redux-persist": "6.0.0"
   }
 }

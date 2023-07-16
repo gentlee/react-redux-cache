@@ -4,11 +4,12 @@ import './App.css';
 import { cache } from './cache/cache';
 import { Provider, useSelector } from 'react-redux';
 import { useQuery } from './redux-cache';
-import { store } from './redux/store';
+import { persistor, store } from './redux/store';
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import { denormalize } from 'normalizr';
 import { getUsersSchema } from './api/getUsers';
 import { UserScreen } from './components/UserScreen';
+import { PersistGate } from 'redux-persist/integration/react';
 
 const RootScreen = () => {
   const [{ data, loading, error }] = useQuery({
@@ -57,13 +58,15 @@ const RootScreen = () => {
 const App = () => {
   return (
     <Provider store={store}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<RootScreen />} />
-          <Route path="/home" element={<RootScreen />} />
-          <Route path="/user/:id" element={<UserScreen />} />
-        </Routes>
-      </BrowserRouter>
+      <PersistGate loading={null} persistor={persistor}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<RootScreen />} />
+            <Route path="/home" element={<RootScreen />} />
+            <Route path="/user/:id" element={<UserScreen />} />
+          </Routes>
+        </BrowserRouter>
+      </PersistGate>
     </Provider>
   )
 };
