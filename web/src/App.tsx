@@ -16,7 +16,6 @@ const RootScreen = () => {
     query: 'getUsers',
     cacheOptions: 'cache-first',
     // @ts-ignore
-    params: { id: 1 },
     cache,
   })
 

@@ -2,7 +2,7 @@ import { denormalize } from "normalizr"
 import { useMemo } from "react"
 import { useParams } from "react-router-dom"
 import { cache } from "../cache/cache"
-import { useQuery } from "../redux-cache"
+import { useMutation, useQuery } from "../redux-cache"
 import logo from '../logo.svg'
 import { getUserSchema } from "../api/getUser"
 import { useSelector } from "react-redux"
@@ -15,6 +15,14 @@ export const UserScreen = () => {
     cacheOptions: 'cache-first',
     // @ts-ignore
     params: { id },
+    // @ts-ignore
+    cache,
+  })
+
+  const [updateUser, {loading: updatingUser}] = useMutation({
+    // @ts-ignore
+    mutation: 'updateUser',
+    // @ts-ignore
     cache,
   })
 
@@ -37,6 +45,12 @@ export const UserScreen = () => {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
+        <button className="User-screen-update-user-button" onClick={() => {
+          updateUser({
+            id,
+            name: data.name + ' *'
+          })
+        }}>{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
         <p>
           {'User data: ' + JSON.stringify(data)}
         </p>

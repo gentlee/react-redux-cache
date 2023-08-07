@@ -8,7 +8,7 @@ export const getUsersSchema = new schema.Object({
   array: new schema.Array(userSchema)
 })
 
-export const getUsers = async (params: { id: string }) => {
+export const getUsers = async () => {
   await delay(1000)
   
   const data = {
@@ -26,7 +26,6 @@ export const getUsers = async (params: { id: string }) => {
   } = normalize(data, getUsersSchema)
 
   console.log('[getUsers]', {
-    params,
     data,
     normalizedData
   })

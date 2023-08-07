@@ -4,7 +4,7 @@ import { createCacheReducer } from "../redux-cache"
 import { persistReducer, persistStore } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
-const reducer = createCacheReducer(['users', 'banks'], cache.queries)
+const reducer = createCacheReducer(['users', 'banks'], cache.queries, cache.mutations)
 
 const persistedReducer = persistReducer({
   key: 'root',

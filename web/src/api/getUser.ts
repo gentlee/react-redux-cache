@@ -1,5 +1,5 @@
 import { normalize, schema } from "normalizr"
-import { banks, users } from "./mocks"
+import { users } from "./mocks"
 import { User, Bank } from "./types"
 import { userSchema } from "./schemas"
 import { delay } from "./utils"

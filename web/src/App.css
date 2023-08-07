@@ -28,10 +28,16 @@
   color: #61dafb;
 }
 
+.User-screen-update-user-button {
+  padding: 10px;
+  border-radius: 4px;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
