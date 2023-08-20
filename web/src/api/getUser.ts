@@ -1,5 +1,5 @@
 import { normalize, schema } from "normalizr"
-import { users } from "./mocks"
+import { generateMockUser } from "./mocks"
 import { User, Bank } from "./types"
 import { userSchema } from "./schemas"
 import { delay } from "./utils"
@@ -10,19 +10,10 @@ export const getUserSchema = new schema.Object({
 
 export const getUser = async ({ id }: { id: number }) => {
   await delay(1000)
-  
-  const mockUser: User = users[id - 1] ?? {
-    id,
-    name: 'User ' + id,
-    bank: {
-      staticId: String(id),
-      name: 'Bank ' + id
-    }
-  }
 
   const data = {
     result: {
-      ...JSON.parse(JSON.stringify(mockUser)),
+      ...generateMockUser(id),
       newField: 'new field: ' + id
     }
   }

@@ -31,4 +31,13 @@ export const users: User[] = [
   }
 ]
 
-export const usersJSON = JSON.stringify(users)
+export const generateMockUser = (id: number): User => {
+  return {
+    id,
+    name: `User ${id}`,
+    bank: {
+      staticId: String(id),
+      name: `Bank ${id}`
+    }
+  }
+}

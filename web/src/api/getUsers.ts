@@ -1,5 +1,5 @@
 import { normalize, schema } from "normalizr"
-import { usersJSON } from "./mocks"
+import { generateMockUser } from "./mocks"
 import { User, Bank } from "./types"
 import { userSchema } from "./schemas"
 import { delay } from "./utils"
@@ -8,16 +8,25 @@ export const getUsersSchema = new schema.Object({
   array: new schema.Array(userSchema)
 })
 
-export const getUsers = async () => {
+export const getUsers = async ({ page = 1, pageSize = 5 }) => {
+  console.log('[getUsers]', {
+    page,
+    pageSize
+  })
+
   await delay(1000)
   
   const data = {
-    array: JSON.parse(usersJSON)
+    array: Array.from({ length: pageSize }, (_, index) => generateMockUser(index + pageSize * (page - 1))),
+    page,
+    pageSize
   }
 
   const normalizedData: {
     result: {
       array: number[]
+      page: number
+      pageSize: number
     },
     entities: {
       users: Record<number, User>,
@@ -25,8 +34,10 @@ export const getUsers = async () => {
     }
   } = normalize(data, getUsersSchema)
 
-  console.log('[getUsers]', {
+  console.log('[getUsers] response', {
     data,
+    page,
+    pageSize,
     normalizedData
   })
 
