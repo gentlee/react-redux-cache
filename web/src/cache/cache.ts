@@ -7,6 +7,7 @@ import { InMemoryCache } from '../redux-cache'
 export const cache = {
   queries: {
     getUsers: {
+      // @ts-ignore
       query: getUsers,
     },
     getUser: {
