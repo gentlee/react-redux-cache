@@ -1,15 +1,12 @@
 import { createStore, applyMiddleware } from 'redux'
-import { cache } from "../cache/cache"
-import { createCacheReducer } from "../redux-cache"
 import { persistReducer, persistStore } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
-
-const reducer = createCacheReducer(['users', 'banks'], cache.queries, cache.mutations)
+import { cacheReducer } from './reducer'
 
 const persistedReducer = persistReducer({
   key: 'root',
   storage
-}, reducer)
+}, cacheReducer)
 
 export const store = createStore(
   persistedReducer,
@@ -18,4 +15,4 @@ export const store = createStore(
 
 export const persistor = persistStore(store)
 
-export type ReduxState = ReturnType<typeof reducer>
+export type ReduxState = ReturnType<typeof persistedReducer>

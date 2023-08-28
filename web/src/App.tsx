@@ -12,19 +12,38 @@ import { UserScreen } from './components/UserScreen';
 import { PersistGate } from 'redux-persist/integration/react';
 
 const RootScreen = () => {
-  const [{ data, loading, error }] = useQuery({
+  const [{ data, loading, error }, fetch] = useQuery({
     query: 'getUsers',
+    params: {
+      // @ts-ignore
+      page: 1,
+    },
     cacheOptions: 'cache-first',
+    getParamsKey: (params) => params?.page ?? 0,
+    getCacheKey: () => 'all-pages',
+    // @ts-ignore
+    mergeResults: (oldData, newData) => {
+      if (!oldData || newData.page === 1) {
+        return newData
+      }
+      return {
+        ...newData,
+        array: [...oldData.array, ...newData.array]
+      }
+    },
     // @ts-ignore
     cache,
   })
-
+  
   // @ts-ignore
   const entities = useSelector((state) => state.entities)
 
-  const denormalizedData = useMemo(() => denormalize(data, getUsersSchema, entities), [data, entities])
+  const denormalizedData = useMemo(() => {
+    console.log('[RootScreen] denormalize', { data, entities})
+    return denormalize(data, getUsersSchema, entities)
+  }, [data, entities])
   
-  console.log('[App]', { data, status: loading, error })
+  console.log('[RootScreen]', { data, status: loading, error, denormalizedData })
 
   if (loading) {
     return (
@@ -46,9 +65,16 @@ const RootScreen = () => {
         </p>
         <Link className={'App-link'} to={'/home'}>Home</Link>
         {data?.array.map((userId: number) => {
-          console.log('[user link]', userId)
           return <Link key={userId} className={'App-link'} to={'/user/' + userId}>{'User id: ' + userId}</Link>
         })}
+        <button onClick={() => {
+          // @ts-ignore lastPage
+          const lastLoadedPage: number = store.getState().queries.getUsers?.['all-pages'].data?.page ?? 0
+          // @ts-ignore 
+          fetch({ page: lastLoadedPage + 1 })}
+        }>
+          Load next page
+        </button>
       </header>
     </div>
   );
