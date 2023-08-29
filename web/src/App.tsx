@@ -45,7 +45,7 @@ const RootScreen = () => {
 
   console.log('[RootScreen]', {data, status: loading, error, denormalizedData})
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <div className="App">
         <p>Loading</p>
