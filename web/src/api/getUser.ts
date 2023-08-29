@@ -1,27 +1,27 @@
-import { normalize, schema } from "normalizr"
-import { generateMockUser } from "./mocks"
-import { User, Bank } from "./types"
-import { userSchema } from "./schemas"
-import { delay } from "./utils"
+import {normalize, schema} from 'normalizr'
+import {generateMockUser} from './mocks'
+import {User, Bank} from './types'
+import {userSchema} from './schemas'
+import {delay} from './utils'
 
 export const getUserSchema = new schema.Object({
-  result: userSchema
+  result: userSchema,
 })
 
-export const getUser = async ({ id }: { id: number }) => {
+export const getUser = async ({id}: {id: number}) => {
   await delay(1000)
 
   const data = {
     result: {
       ...generateMockUser(id),
-      newField: 'new field: ' + id
-    }
+      newField: 'new field: ' + id,
+    },
   }
 
   const normalizedData: {
-    result: number,
+    result: number
     entities: {
-      users: Record<number, User>,
+      users: Record<number, User>
       banks: Record<string, Bank>
     }
   } = normalize(data, getUserSchema)
@@ -29,7 +29,7 @@ export const getUser = async ({ id }: { id: number }) => {
   console.log('[getUser]', {
     id,
     data,
-    normalizedData
+    normalizedData,
   })
 
   return normalizedData

@@ -1,10 +1,9 @@
-
-import { Dict, InMemoryCache } from './types'
-import { Query } from './useQuery'
-import { isDev } from './utilsAndConstants'
+import {Dict, InMemoryCache} from './types'
+import {Query} from './useQuery'
+import {isDev} from './utilsAndConstants'
 
 // TODO
- 
+
 // ! high
 // move options to cache creation
 // proper types
@@ -42,18 +41,13 @@ export const createCache = <
   QP = unknown,
   Q extends Record<string, Query<QP, D, RS>> = Record<string, Query<QP, D, RS>>,
   M extends Dict = Dict
->(cache: InMemoryCache<RS, D, QP, Q, M>) => {
+>(
+  cache: InMemoryCache<RS, D, QP, Q, M>
+) => {
   if (!cache.options) {
     cache.options = {
-      isDev
+      isDev,
     }
   }
   return cache
 }
-
-
-
-
-
-
-

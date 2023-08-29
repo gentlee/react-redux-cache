@@ -1,14 +1,14 @@
-import { User, Bank } from "./types"
+import {User, Bank} from './types'
 
 export const banks: Bank[] = [
   {
     staticId: '1',
-    name: 'Bank 1'
+    name: 'Bank 1',
   },
   {
     staticId: '2',
-    name: 'Bank 2'
-  }
+    name: 'Bank 2',
+  },
 ]
 
 export const users: User[] = [
@@ -28,7 +28,7 @@ export const users: User[] = [
     id: 3,
     name: 'User 3',
     bank: banks[1],
-  }
+  },
 ]
 
 export const generateMockUser = (id: number): User => {
@@ -37,7 +37,7 @@ export const generateMockUser = (id: number): User => {
     name: `User ${id}`,
     bank: {
       staticId: String(id),
-      name: `Bank ${id}`
-    }
+      name: `Bank ${id}`,
+    },
   }
 }

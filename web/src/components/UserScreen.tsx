@@ -1,20 +1,20 @@
-import { denormalize } from "normalizr"
-import { useMemo } from "react"
-import { useParams } from "react-router-dom"
-import { cache } from "../cache/cache"
-import { useMutation, useQuery } from "../redux-cache"
+import {denormalize} from 'normalizr'
+import {useMemo} from 'react'
+import {useParams} from 'react-router-dom'
+import {cache} from '../cache/cache'
+import {useMutation, useQuery} from '../redux-cache'
 import logo from '../logo.svg'
-import { getUserSchema } from "../api/getUser"
-import { useSelector } from "react-redux"
+import {getUserSchema} from '../api/getUser'
+import {useSelector} from 'react-redux'
 
 export const UserScreen = () => {
-  const { id } = useParams()
+  const {id} = useParams()
 
-  const [{ data, loading, error }] = useQuery({
+  const [{data, loading, error}] = useQuery({
     query: 'getUser',
     cacheOptions: 'cache-first',
     // @ts-ignore
-    params: { id },
+    params: {id},
     // @ts-ignore
     cache,
   })
@@ -29,9 +29,12 @@ export const UserScreen = () => {
   // @ts-ignore
   const entities = useSelector((state) => state.entities)
 
-  const denormalizedData = useMemo(() => denormalize(data, getUserSchema, entities), [data, entities])
-  
-  console.log('[App]', { data, status: loading, error })
+  const denormalizedData = useMemo(
+    () => denormalize(data, getUserSchema, entities),
+    [data, entities]
+  )
+
+  console.log('[App]', {data, status: loading, error})
 
   if (loading) {
     return (
@@ -45,19 +48,18 @@ export const UserScreen = () => {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <button className="User-screen-update-user-button" onClick={() => {
-          updateUser({
-            id,
-            name: data.name + ' *'
-          })
-        }}>{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
-        <p>
-          {'User data: ' + JSON.stringify(data)}
-        </p>
-        <p>
-          {'User denormalized data: ' + JSON.stringify(denormalizedData)}
-        </p>
+        <button
+          className="User-screen-update-user-button"
+          onClick={() => {
+            updateUser({
+              id,
+              name: data.name + ' *',
+            })
+          }}
+        >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
+        <p>{'User data: ' + JSON.stringify(data)}</p>
+        <p>{'User denormalized data: ' + JSON.stringify(denormalizedData)}</p>
       </header>
     </div>
-  );
+  )
 }

@@ -1,9 +1,9 @@
-import { useRef } from 'react'
-import { useDispatch, useSelector, useStore } from 'react-redux'
-import { setStateAction } from 'redux-light'
-import { QueryCacheOptions, QueryState } from './useQuery'
-import { defaultCacheStateSelector, defaultEndpointState, shallowMerge } from './utilsAndConstants'
-import { Response } from './types'
+import {useRef} from 'react'
+import {useDispatch, useSelector, useStore} from 'react-redux'
+import {setStateAction} from 'redux-light'
+import {QueryCacheOptions, QueryState} from './useQuery'
+import {defaultCacheStateSelector, defaultEndpointState, shallowMerge} from './utilsAndConstants'
+import {Response} from './types'
 
 export type Mutation<MutationParams = unknown, Data = unknown> = (
   params: MutationParams
@@ -15,7 +15,7 @@ export type MutationCacheOptions = Pick<QueryCacheOptions, 'cacheEntities'> & {
 
 export const DEFAULT_CACHE_OPTIONS: MutationCacheOptions = {
   cacheMutationState: true,
-  cacheEntities: true
+  cacheEntities: true,
 }
 
 export const useMutation = <
@@ -31,11 +31,11 @@ export const useMutation = <
   mutation: mutationKey,
   cache,
   cacheOptions = DEFAULT_CACHE_OPTIONS,
-  cacheStateSelector = defaultCacheStateSelector
+  cacheStateSelector = defaultCacheStateSelector,
 }: {
   mutation: TMutationKey
   cache: TCache
-  cacheOptions?: MutationCacheOptions,
+  cacheOptions?: MutationCacheOptions
   cacheStateSelector?: (state: TState) => TCacheState
 }) => {
   const dispatch = useDispatch()
@@ -52,7 +52,7 @@ export const useMutation = <
   const mutationStateSelector = (state: ReduxState) => {
     console.log('[mutationStateSelector]', {
       state,
-      cacheState: cacheStateSelector(state)
+      cacheState: cacheStateSelector(state),
     })
     // @ts-ignore
     return cacheStateSelector(state).mutations[mutationKey] as QueryState<TData, TError>
@@ -61,27 +61,34 @@ export const useMutation = <
   const setMutationState = (newState: any, normalizedEntities?: any) => {
     if (!newState && !normalizedEntities) return
 
-    dispatch(setStateAction({
-      // @ts-ignore
-      entities: shallowMerge(cacheStateSelector(store.getState()).entities, normalizedEntities),
-      mutations: {
-        [mutationKey]: {
-          ...mutationStateSelector(store.getState()),
-          ...newState
-        }
-      }
-    }))
+    dispatch(
+      setStateAction({
+        // @ts-ignore
+        entities: shallowMerge(cacheStateSelector(store.getState()).entities, normalizedEntities),
+        mutations: {
+          [mutationKey]: {
+            ...mutationStateSelector(store.getState()),
+            ...newState,
+          },
+        },
+      })
+    )
   }
 
   const mutationState = useSelector(mutationStateSelector) ?? defaultEndpointState
 
   const mutate = async (params: TParams) => {
-    console.log('[mutate]', { mutationState, mutationKey, params, abortController: abortControllerRef.current })
+    console.log('[mutate]', {
+      mutationState,
+      mutationKey,
+      params,
+      abortController: abortControllerRef.current,
+    })
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
     } else {
-      cacheOptions.cacheMutationState && setMutationState({ loading: true })
+      cacheOptions.cacheMutationState && setMutationState({loading: true})
     }
     const abortController = new AbortController()
     abortControllerRef.current = abortController
@@ -99,7 +106,7 @@ export const useMutation = <
     console.log('[mutate] finished', {
       data,
       error,
-      aborted: abortController.signal.aborted
+      aborted: abortController.signal.aborted,
     })
 
     if (abortController.signal.aborted) {
@@ -110,15 +117,17 @@ export const useMutation = <
 
     if (data) {
       setMutationState(
-        cacheOptions.cacheMutationState ? {
-          error: undefined,
-          loading: false,
-          data: data.result
-        } : undefined,
+        cacheOptions.cacheMutationState
+          ? {
+              error: undefined,
+              loading: false,
+              data: data.result,
+            }
+          : undefined,
         cacheOptions.cacheEntities ? data.entities : undefined
       )
     } else if (error && cacheOptions.cacheMutationState) {
-      setMutationState({ error, loading: false })
+      setMutationState({error, loading: false})
     }
   }
 

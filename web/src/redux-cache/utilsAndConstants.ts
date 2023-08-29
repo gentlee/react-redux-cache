@@ -1,6 +1,6 @@
-import { useMemo, useRef } from 'react'
+import {useMemo, useRef} from 'react'
 
-import { useReducer } from 'react'
+import {useReducer} from 'react'
 
 export const isDev = (() => {
   try {
@@ -11,9 +11,9 @@ export const isDev = (() => {
   }
 })()
 
-export const defaultEndpointState = { loading: false } as const
+export const defaultEndpointState = {loading: false} as const
 
-export const defaultGetParamsKey = (params: any) => !params ? '' : JSON.stringify(params)
+export const defaultGetParamsKey = (params: any) => (!params ? '' : JSON.stringify(params))
 
 export const defaultCacheStateSelector = (state: any) => state
 
@@ -27,9 +27,9 @@ export const useForceUpdate = () => {
 }
 
 export const shallowMerge = (a: any, b: any) => {
-  const result = { ...a }
+  const result = {...a}
   for (const key in b) {
-    result[key] = { ...a[key], ...b[key] }
+    result[key] = {...a[key], ...b[key]}
   }
   return result
 }

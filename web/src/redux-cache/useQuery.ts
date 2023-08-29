@@ -1,9 +1,17 @@
-import { useEffect, useMemo, useCallback, useRef } from 'react'
-import { useSelector } from 'react-redux'
-import { setStateAction } from 'redux-light'
-import { InMemoryCache, NormalizedEntities, Response } from './types'
-import { defaultCacheStateSelector, defaultEndpointState, defaultGetParamsKey, isDev, shallowMerge, useAssertValueNotChanged, useForceUpdate } from './utilsAndConstants'
-import { Store } from 'redux'
+import {useEffect, useMemo, useCallback, useRef} from 'react'
+import {useSelector} from 'react-redux'
+import {setStateAction} from 'redux-light'
+import {InMemoryCache, NormalizedEntities, Response} from './types'
+import {
+  defaultCacheStateSelector,
+  defaultEndpointState,
+  defaultGetParamsKey,
+  isDev,
+  shallowMerge,
+  useAssertValueNotChanged,
+  useForceUpdate,
+} from './utilsAndConstants'
+import {Store} from 'redux'
 
 export type QueryState<Data, QueryError> = {
   loading: boolean
@@ -37,7 +45,7 @@ export const CacheAndNetworkOptions = {
 
 const cacheOptionsByPolicy: Record<QueryCachePolicy, QueryCacheOptions> = {
   'cache-first': CacheFirstOptions,
-  'cache-and-network': CacheAndNetworkOptions
+  'cache-and-network': CacheAndNetworkOptions,
 }
 
 export const defaultIdSelector = (entity: any) => entity.id
@@ -72,13 +80,17 @@ export const useQuery = <
   mergeResults,
   getCacheKey = defaultGetParamsKey,
   getParamsKey = defaultGetParamsKey,
-  cacheStateSelector = defaultCacheStateSelector
+  cacheStateSelector = defaultCacheStateSelector,
 }: {
   query: QueryKey
   cacheOptions: QueryCacheOptions | QueryCachePolicy
   cache: Cache
   params?: Params
-  mergeResults?: (oldResult: Data | undefined, newResult: Data, newEntities: NormalizedEntities<Entity, Typename>) => Data
+  mergeResults?: (
+    oldResult: Data | undefined,
+    newResult: Data,
+    newEntities: NormalizedEntities<Entity, Typename>
+  ) => Data
   getCacheKey?: (params?: Params) => string
   getParamsKey?: (params?: Params) => string | number
   cacheStateSelector?: (state: StoreState) => {
@@ -88,30 +100,32 @@ export const useQuery = <
 }) => {
   const forceUpdate = useForceUpdate()
 
-  const cacheOptions = typeof cacheOptionsOrPolicy === 'string'
-    ? cacheOptionsByPolicy[cacheOptionsOrPolicy]
-    : cacheOptionsOrPolicy
-  
+  const cacheOptions =
+    typeof cacheOptionsOrPolicy === 'string'
+      ? cacheOptionsByPolicy[cacheOptionsOrPolicy]
+      : cacheOptionsOrPolicy
+
   const hookParamsKey = useMemo(() => getParamsKey(hookParams), [getParamsKey, hookParams])
-  
+
   // Keeps most of local state.
   // Reference because state is changed not only by changing hook arguments, but also by calling fetch.
   const stateRef = useRef({} as RefState<Params>)
-  
+
   // Check values that should be set once.
-  isDev && (() => {
-    (
-      [
-        ['cache', cache],
-        ['queryKey', queryKey],
-        ['dataSelector', cache.queries[queryKey].dataSelector]
-      ] as [key: string, value: any][]
-    ).forEach(args => useAssertValueNotChanged.apply(undefined, args))
-  })()
-  
+  isDev &&
+    (() => {
+      ;(
+        [
+          ['cache', cache],
+          ['queryKey', queryKey],
+          ['dataSelector', cache.queries[queryKey].dataSelector],
+        ] as [key: string, value: any][]
+      ).forEach((args) => useAssertValueNotChanged(...args))
+    })()
+
   useMemo(() => {
     if (stateRef.current.paramsKey === hookParamsKey) return
-    
+
     const dataSelectorImpl = cache.queries[queryKey].dataSelector
 
     const state = stateRef.current
@@ -121,11 +135,12 @@ export const useQuery = <
     state.requestKey = getRequestKey(queryKey, hookParamsKey)
     state.latestHookRequestKey = state.requestKey
     state.dataSelector = dataSelectorImpl && ((state: any) => dataSelectorImpl(state, hookParams))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hookParamsKey])
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const responseFromSelector = stateRef.current.dataSelector && useSelector(stateRef.current.dataSelector)
+  const responseFromSelector =
+    stateRef.current.dataSelector && useSelector(stateRef.current.dataSelector)
 
   // Used only for running fetch on useEffect
   // const hookRequestKey = getRequestKey(queryKey, hookParamsKey)
@@ -140,7 +155,7 @@ export const useQuery = <
         state,
         queryKey,
         cacheKey: stateRef.current.cacheKey,
-        cacheState: cacheStateSelector(state)
+        cacheState: cacheStateSelector(state),
       })
       return cacheStateSelector(state).queries[queryKey][stateRef.current.cacheKey]
     },
@@ -149,10 +164,12 @@ export const useQuery = <
   )
 
   const queryStateFromSelector = useSelector(queryStateSelector) ?? defaultEndpointState
-  const queryState = responseFromSelector ? {
-    ...queryStateFromSelector,
-    data: responseFromSelector
-  } : queryStateFromSelector
+  const queryState = responseFromSelector
+    ? {
+        ...queryStateFromSelector,
+        data: responseFromSelector,
+      }
+    : queryStateFromSelector
 
   console.log('[useQuery]', {
     state: cache.store.getState(),
@@ -160,19 +177,27 @@ export const useQuery = <
     refState: stateRef.current,
     cacheOptions,
     queryState,
-    queryStateFromSelector
+    queryStateFromSelector,
   })
 
-  const setQueryState = (newState: any, normalizedEntities?: any) => setQueryStateImpl(newState, normalizedEntities, queryKey, stateRef.current.cacheKey, cache.store, cacheStateSelector)
+  const setQueryState = (newState: any, normalizedEntities?: any) =>
+    setQueryStateImpl(
+      newState,
+      normalizedEntities,
+      queryKey,
+      stateRef.current.cacheKey,
+      cache.store,
+      cacheStateSelector
+    )
 
   const fetchImpl = async () => {
-    console.log('[useQuery.fetch]', { queryState, hookParams })
+    console.log('[useQuery.fetch]', {queryState, hookParams})
 
     if (queryState.loading) return
-    
-    const { requestKey } = stateRef.current
-    
-    cacheOptions.cacheQueryState && setQueryState({ loading: true})
+
+    const {requestKey} = stateRef.current
+
+    cacheOptions.cacheQueryState && setQueryState({loading: true})
 
     let data
     const fetchFn = cache.queries[queryKey].query
@@ -180,22 +205,29 @@ export const useQuery = <
       data = await fetchFn(stateRef.current.params)
     } catch (error) {
       if (stateRef.current.requestKey === requestKey && cacheOptions.cacheQueryState) {
-        setQueryState({ error, loading: false })
+        setQueryState({error, loading: false})
       }
     }
 
     if (data && stateRef.current.requestKey === requestKey) {
       setQueryState(
-        cacheOptions.cacheQueryState ? {
-          error: undefined,
-          loading: false,
-          data: responseFromSelector
-            ? undefined
-            : mergeResults
-              // @ts-expect-error
-              ? mergeResults(queryStateSelector(cache.store.getState())?.data, data.result, data.entities)
-              : data.result
-        } : undefined,
+        cacheOptions.cacheQueryState
+          ? {
+              error: undefined,
+              loading: false,
+              data: responseFromSelector
+                ? undefined
+                : mergeResults
+                ? mergeResults(
+                    // @ts-expect-error
+                    queryStateSelector(cache.store.getState())?.data,
+                    // @ts-expect-error
+                    data.result,
+                    data.entities
+                  )
+                : data.result,
+            }
+          : undefined,
         cacheOptions.cacheEntities ? data.entities : undefined
       )
     }
@@ -207,7 +239,7 @@ export const useQuery = <
     }
 
     fetchImpl()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateRef.current.latestHookRequestKey])
 
   const fetch = (params?: Params) => {
@@ -235,30 +267,37 @@ export const useQuery = <
   return [queryState, fetch] as const
 }
 
-const setQueryStateImpl = (newState: any, normalizedEntities: any | undefined, queryKey: string, cacheKey: string, store: Store, cacheStateSelector: any) => {
+const setQueryStateImpl = (
+  newState: any,
+  normalizedEntities: any | undefined,
+  queryKey: string,
+  cacheKey: string,
+  store: Store,
+  cacheStateSelector: any
+) => {
   console.log('[setQueryStateImpl]', {
     newState,
     normalizedEntities,
     queryKey,
     cacheKey,
     store,
-    cacheStateSelector
+    cacheStateSelector,
   })
 
   if (!newState && !normalizedEntities) return
 
   const cacheState = cacheStateSelector(store.getState())
-  store.dispatch(setStateAction({
-    entities: shallowMerge(cacheState.entities, normalizedEntities),
-    queries: {
-      [queryKey]: shallowMerge(cacheState.queries[queryKey], {
-        [cacheKey]: {
-          ...cacheState.queries[queryKey][cacheKey],
-          ...newState
-        }
-      })
-    }
-  }))
+  store.dispatch(
+    setStateAction({
+      entities: shallowMerge(cacheState.entities, normalizedEntities),
+      queries: {
+        [queryKey]: shallowMerge(cacheState.queries[queryKey], {
+          [cacheKey]: {
+            ...cacheState.queries[queryKey][cacheKey],
+            ...newState,
+          },
+        }),
+      },
+    })
+  )
 }
-
-

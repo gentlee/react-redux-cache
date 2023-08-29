@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useCallback } from 'react'
-import { createStore, applyMiddleware } from 'redux'
-import { useSelector } from 'react-redux'
-import { createReducer, setStateAction, StateChange } from 'redux-light'
+import {useEffect, useMemo, useCallback} from 'react'
+import {createStore, applyMiddleware} from 'redux'
+import {useSelector} from 'react-redux'
+import {createReducer, setStateAction, StateChange} from 'redux-light'
 import logger from 'redux-logger'
 
 export type Typename = string
@@ -21,7 +21,7 @@ export type InMemoryCache<
   TQueries extends Record<string, Query> = Record<string, Query>
 > = {
   idSelectors?: Partial<{
-    [K in TEntity['__typename']]: (entity: Extract<TEntity, { __typename: K }>) => string | number
+    [K in TEntity['__typename']]: (entity: Extract<TEntity, {__typename: K}>) => string | number
   }>
   queries: TQueries
 }
@@ -94,18 +94,18 @@ export const useQuery = <
   const queryState = useSelector(queryStateSelector)
 
   const fetch = async () => {
-    console.log('[useQuery.fetch]', { queryState })
-    
+    console.log('[useQuery.fetch]', {queryState})
+
     if (queryState.loading) return
-    
-    setState({ [queryKey]: { loading: true } })
+
+    setState({[queryKey]: {loading: true}})
 
     let data: TData
     try {
       // @ts-ignore
       data = await cache.queries[query](params)
     } catch (error) {
-      setState({ [queryKey]: { error, loading: false } })
+      setState({[queryKey]: {error, loading: false}})
     }
 
     // @ts-ignore
@@ -114,7 +114,7 @@ export const useQuery = <
     setState({
       ...normalizedEntities,
       // @ts-ignore
-      [queryKey]: { error: undefined, loading: false, data: normalizedResponse },
+      [queryKey]: {error: undefined, loading: false, data: normalizedResponse},
     })
   }
 
@@ -126,7 +126,7 @@ export const useQuery = <
     fetch()
   }, [])
 
-  console.log('[useQuery]', { queryKey, queryState, query, params, cachePolicy, cache })
+  console.log('[useQuery]', {queryKey, queryState, query, params, cachePolicy, cache})
 
   return [queryState, fetch] as const
 }
@@ -137,7 +137,7 @@ export const normalizeData = <TEntity = any>(
   normalizedEntities: NormalizedData<TEntity> = {}
 ) => {
   // TODO create compound ids instead of objects like 'typename:id', or transform it while persisting
-  let normalizedResponse: undefined | QueryResponse<{ id: EntityId; __typename: Typename }> =
+  let normalizedResponse: undefined | QueryResponse<{id: EntityId; __typename: Typename}> =
     undefined
 
   if (Array.isArray(data)) {
@@ -156,16 +156,19 @@ export const normalizeData = <TEntity = any>(
       }
     } else {
       normalizedResponse = {}
-      
-      for (let key in data) {
+
+      for (const key in data) {
         // @ts-ignore
         const value = data[key]
 
-        if (!('__typename' in value) || key !== (idSelectors?.[value.__typename] ?? defaultIdSelector)(value)) {
+        if (
+          !('__typename' in value) ||
+          key !== (idSelectors?.[value.__typename] ?? defaultIdSelector)(value)
+        ) {
           console.log('Normalized object is not an entity dictionary', value)
           break
         }
-  
+
         // @ts-ignore
         const normalizedEntity = mergeEntity(normalizedEntities, value, idSelectors)
         if (normalizedEntity) {
@@ -177,7 +180,7 @@ export const normalizeData = <TEntity = any>(
     throw new Error('Expected data to be array or object, received: ' + typeof data)
   }
 
-  console.log('[normalizeData]', { data, normalizedEntities, normalizedResponse });
+  console.log('[normalizeData]', {data, normalizedEntities, normalizedResponse})
 
   return [normalizedResponse, normalizedEntities]
 }
@@ -199,5 +202,5 @@ export const mergeEntity = (entitiesByTypename: any, entity: any, idSelectors: a
     entity,
   }
 
-  return { id, __typename }
+  return {id, __typename}
 }
