@@ -225,7 +225,7 @@ export const useQuery = <
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateRef.current.latestHookRequestKey])
 
-  const fetch = (params?: P) => {
+  const fetch = useCallback((params?: P) => {
     console.log('[fetch]', params)
 
     if (params !== undefined) {
@@ -246,7 +246,7 @@ export const useQuery = <
     }
 
     return fetchImpl()
-  }
+  }, [])
 
   return [queryState, fetch] as const
 }
