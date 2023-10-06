@@ -21,6 +21,7 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // documentation
 
 // ! medium
+// cache policy as function? needsRefetch
 // add verbose debug logs
 // refetch queries on mutation?
 // remove state when it finished without errors
