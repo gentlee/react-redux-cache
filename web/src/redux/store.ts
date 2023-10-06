@@ -1,14 +1,14 @@
 import {createStore, applyMiddleware} from 'redux'
 import {persistReducer, persistStore} from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
-import {cacheReducer} from './reducer'
+import {reducer} from './cache'
 
 const persistedReducer = persistReducer(
   {
     key: 'root',
     storage,
   },
-  cacheReducer
+  reducer
 )
 
 export const store = createStore(

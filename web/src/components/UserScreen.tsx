@@ -1,33 +1,27 @@
 import {denormalize} from 'normalizr'
 import {useMemo} from 'react'
 import {useParams} from 'react-router-dom'
-import {cache} from '../cache/cache'
 import {useMutation, useQuery} from '../redux-cache'
 import logo from '../logo.svg'
 import {getUserSchema} from '../api/getUser'
 import {useSelector} from 'react-redux'
+import {cache} from '../redux/cache'
+import {ReduxState} from '../redux/store'
 
 export const UserScreen = () => {
   const {id} = useParams()
 
-  const [{data, loading, error}] = useQuery({
+  const [{data, loading, error}] = useQuery(cache, {
     query: 'getUser',
     cacheOptions: 'cache-first',
-    // @ts-ignore
     params: {id},
-    // @ts-ignore
-    cache,
   })
 
-  const [updateUser, {loading: updatingUser}] = useMutation({
-    // @ts-ignore
+  const [updateUser, {loading: updatingUser}] = useMutation(cache, {
     mutation: 'updateUser',
-    // @ts-ignore
-    cache,
   })
 
-  // @ts-ignore
-  const entities = useSelector((state) => state.entities)
+  const entities = useSelector((state: ReduxState) => state.entities)
 
   const denormalizedData = useMemo(
     () => denormalize(data, getUserSchema, entities),
@@ -52,7 +46,7 @@ export const UserScreen = () => {
           className="User-screen-update-user-button"
           onClick={() => {
             updateUser({
-              id,
+              id: Number(id),
               name: data.name + ' *',
             })
           }}

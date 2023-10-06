@@ -1,43 +1,42 @@
 import {useRef} from 'react'
 import {useDispatch, useSelector, useStore} from 'react-redux'
 import {setStateAction} from 'redux-light'
-import {QueryCacheOptions, QueryState} from './useQuery'
-import {defaultCacheStateSelector, defaultEndpointState, shallowMerge} from './utilsAndConstants'
-import {Response} from './types'
+import {defaultEndpointState, shallowMerge, useAssertValueNotChanged} from './utilsAndConstants'
+import {
+  Cache,
+  EntitiesMap,
+  ExtractMutationParams,
+  ExtractMutationResult,
+  MutationCacheOptions,
+  MutationResponse,
+  QueryMutationState,
+} from './types'
 
-export type Mutation<MutationParams = unknown, Data = unknown> = (
-  params: MutationParams
-) => Promise<Response<Data>[]>
-
-export type MutationCacheOptions = Pick<QueryCacheOptions, 'cacheEntities'> & {
-  cacheMutationState: boolean
-}
-
-export const DEFAULT_CACHE_OPTIONS: MutationCacheOptions = {
+export const DEFAULT_MUTATION_CACHE_OPTIONS: MutationCacheOptions = {
   cacheMutationState: true,
   cacheEntities: true,
 }
 
 export const useMutation = <
-  TCache,
-  TMutations extends Record<TMutationKey, Mutation>,
-  TMutationKey extends string = string,
-  TData = any,
-  TError = unknown,
-  TState = unknown,
-  TCacheState = unknown,
-  TParams extends Parameters<TMutations[TMutationKey]> = any
->({
-  mutation: mutationKey,
-  cache,
-  cacheOptions = DEFAULT_CACHE_OPTIONS,
-  cacheStateSelector = defaultCacheStateSelector,
-}: {
-  mutation: TMutationKey
-  cache: TCache
-  cacheOptions?: MutationCacheOptions
-  cacheStateSelector?: (state: TState) => TCacheState
-}) => {
+  T,
+  M extends Record<
+    keyof M,
+    (
+      params: Parameters<M[keyof M]>[0],
+      abortSignal: AbortSignal
+    ) => Promise<MutationResponse<T, ExtractMutationResult<M[keyof M]>>>
+  >,
+  P = ExtractMutationParams<M[keyof M]>,
+  D = ExtractMutationResult<M[keyof M]>
+>(
+  cache: Cache<T, any, M>,
+  options: {
+    mutation: keyof M
+    cacheOptions?: MutationCacheOptions
+  }
+) => {
+  const {mutation: mutationKey, cacheOptions = DEFAULT_MUTATION_CACHE_OPTIONS} = options
+
   const dispatch = useDispatch()
   const store = useStore()
 
@@ -46,25 +45,38 @@ export const useMutation = <
     cacheOptions,
   })
 
+  // Check values that should be set once.
+  cache.options.runtimeErrorChecksEnabled &&
+    (() => {
+      ;(
+        [
+          ['cache', cache],
+          ['cacheStateSelector', cache.cacheStateSelector],
+          ['queryKey', mutationKey],
+          ['dataSelector', cache.mutations[mutationKey]],
+        ] as [key: string, value: any][]
+      ).forEach((args) => useAssertValueNotChanged(...args))
+    })()
+
   const abortControllerRef = useRef<AbortController>()
 
-  // @ts-ignore
-  const mutationStateSelector = (state: ReduxState) => {
+  const mutationStateSelector = (state: any) => {
     console.log('[mutationStateSelector]', {
       state,
-      cacheState: cacheStateSelector(state),
+      cacheState: cache.cacheStateSelector(state),
     })
-    // @ts-ignore
-    return cacheStateSelector(state).mutations[mutationKey] as QueryState<TData, TError>
+    return cache.cacheStateSelector(state).mutations[mutationKey] as QueryMutationState<D>
   }
 
-  const setMutationState = (newState: any, normalizedEntities?: any) => {
+  const setMutationState = (newState: any, normalizedEntities?: Partial<EntitiesMap<T>>) => {
     if (!newState && !normalizedEntities) return
 
     dispatch(
       setStateAction({
-        // @ts-ignore
-        entities: shallowMerge(cacheStateSelector(store.getState()).entities, normalizedEntities),
+        entities: shallowMerge(
+          cache.cacheStateSelector(store.getState()).entities,
+          normalizedEntities
+        ),
         mutations: {
           [mutationKey]: {
             ...mutationStateSelector(store.getState()),
@@ -77,7 +89,7 @@ export const useMutation = <
 
   const mutationState = useSelector(mutationStateSelector) ?? defaultEndpointState
 
-  const mutate = async (params: TParams) => {
+  const mutate = async (params: P) => {
     console.log('[mutate]', {
       mutationState,
       mutationKey,
@@ -95,7 +107,6 @@ export const useMutation = <
 
     let data
     let error
-    // @ts-ignore
     const fetchFn = cache.mutations[mutationKey]
     try {
       data = await fetchFn(params, abortController.signal)

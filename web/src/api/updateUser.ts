@@ -5,14 +5,16 @@ import {delay} from './utils'
 export const updateUser = async (user: Partial<User> & Pick<User, 'id'>) => {
   await delay(1000)
 
-  return {
+  const response = {
     entities: {
       users: {
         [user.id]: {
-          ...users.find((x) => x.id === user.id),
+          ...(users.find((x) => x.id === user.id) as User),
           ...user,
         },
       },
     },
   }
+
+  return response
 }

@@ -2,7 +2,9 @@ import {useMemo, useRef} from 'react'
 
 import {useReducer} from 'react'
 
-export const isDev = (() => {
+export const PACKAGE_NAME = 'redux-cache'
+
+export const isDev: boolean = (() => {
   try {
     // @ts-ignore
     return __DEV__

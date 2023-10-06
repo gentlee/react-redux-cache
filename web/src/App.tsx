@@ -1,42 +1,25 @@
 import {useMemo} from 'react'
 import logo from './logo.svg'
 import './App.css'
-import {cache} from './cache/cache'
 import {Provider, useSelector} from 'react-redux'
-import {useQuery} from './redux-cache'
-import {persistor, store} from './redux/store'
+import {ReduxState, persistor, store} from './redux/store'
 import {BrowserRouter, Link, Route, Routes} from 'react-router-dom'
 import {denormalize} from 'normalizr'
 import {getUsersSchema} from './api/getUsers'
 import {UserScreen} from './components/UserScreen'
 import {PersistGate} from 'redux-persist/integration/react'
+import {useQuery} from './redux-cache/useQuery'
+import {cache} from './redux/cache'
 
 const RootScreen = () => {
-  const [{data, loading, error}, fetch] = useQuery({
+  const [{data, loading, error}, fetch] = useQuery(cache, {
     query: 'getUsers',
     params: {
-      // @ts-ignore
       page: 1,
     },
-    cacheOptions: 'cache-first',
-    getParamsKey: (params) => params?.page ?? 0,
-    getCacheKey: () => 'all-pages',
-    // @ts-ignore
-    mergeResults: (oldData, newData) => {
-      if (!oldData || newData.page === 1) {
-        return newData
-      }
-      return {
-        ...newData,
-        array: [...oldData.array, ...newData.array],
-      }
-    },
-    // @ts-ignore
-    cache,
   })
 
-  // @ts-ignore
-  const entities = useSelector((state) => state.entities)
+  const entities = useSelector((state: ReduxState) => state.entities)
 
   const denormalizedData = useMemo(() => {
     console.log('[RootScreen] denormalize', {data, entities})
@@ -72,9 +55,8 @@ const RootScreen = () => {
         <button
           onClick={() => {
             const lastLoadedPage: number =
-              // @ts-ignore lastPage
+              // @ts-ignore page type
               store.getState().queries.getUsers?.['all-pages'].data?.page ?? 0
-            // @ts-ignore
             fetch({page: lastLoadedPage + 1})
           }}
         >
