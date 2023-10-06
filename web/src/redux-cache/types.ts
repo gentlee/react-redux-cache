@@ -1,6 +1,6 @@
 export type Key = string | number | symbol
 
-export type Dict<T = unknown> = Record<Key, T>
+export type Dict<T> = Record<Key, T>
 
 export type Cache<T, Q, M> = {
   typenames: T
