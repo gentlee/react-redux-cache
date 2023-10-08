@@ -5,18 +5,19 @@ import {
   EntitiesMap,
   ExtractQueryParams,
   ExtractQueryResult,
-  MutationResponse,
+  Mutation,
   QueryInfo,
   QueryMutationState,
+  Typenames,
 } from './types'
 
 export const createCacheReducer = <
-  T extends Record<string, any>,
+  T extends Typenames,
   Q extends Record<
     keyof Q,
-    QueryInfo<T, ExtractQueryResult<Q[keyof Q]>, ExtractQueryParams<Q[keyof Q]>>
+    QueryInfo<T, ExtractQueryParams<Q[keyof Q]>, ExtractQueryResult<Q[keyof Q]>>
   >,
-  M extends Record<keyof M, (params: any, abortSignal: AbortSignal) => Promise<MutationResponse<T>>>
+  M extends Record<keyof M, Mutation<T>>
 >(
   typenames: T,
   queries: Q,

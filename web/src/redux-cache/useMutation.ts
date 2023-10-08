@@ -7,9 +7,10 @@ import {
   EntitiesMap,
   ExtractMutationParams,
   ExtractMutationResult,
+  Mutation,
   MutationCacheOptions,
-  MutationResponse,
   QueryMutationState,
+  Typenames,
 } from './types'
 
 export const DEFAULT_MUTATION_CACHE_OPTIONS: MutationCacheOptions = {
@@ -17,24 +18,16 @@ export const DEFAULT_MUTATION_CACHE_OPTIONS: MutationCacheOptions = {
   cacheEntities: true,
 }
 
-export const useMutation = <
-  T,
-  M extends Record<
-    keyof M,
-    (
-      params: Parameters<M[keyof M]>[0],
-      abortSignal: AbortSignal
-    ) => Promise<MutationResponse<T, ExtractMutationResult<M[keyof M]>>>
-  >,
-  P = ExtractMutationParams<M[keyof M]>,
-  D = ExtractMutationResult<M[keyof M]>
->(
+export const useMutation = <T extends Typenames, M extends Record<keyof M, Mutation<T>>>(
   cache: Cache<T, any, M>,
   options: {
     mutation: keyof M
     cacheOptions?: MutationCacheOptions
   }
 ) => {
+  type P = ExtractMutationParams<M[keyof M]>
+  type D = ExtractMutationResult<M[keyof M]>
+
   const {mutation: mutationKey, cacheOptions = DEFAULT_MUTATION_CACHE_OPTIONS} = options
 
   const dispatch = useDispatch()

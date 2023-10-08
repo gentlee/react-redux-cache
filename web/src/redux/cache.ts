@@ -1,5 +1,6 @@
 import {getUser} from '../api/getUser'
 import {getUsers} from '../api/getUsers'
+import {removeUser} from '../api/removeUser'
 import {User, Bank} from '../api/types'
 import {updateUser} from '../api/updateUser'
 import {createCache} from '../redux-cache'
@@ -34,7 +35,8 @@ export const {cache, reducer, useMutation, useQuery} = createCache({
     },
   },
   mutations: {
-    updateUser, // TODO add options etc
+    updateUser,
+    removeUser,
   },
 })
 

@@ -3,7 +3,6 @@ import {useSelector, useStore} from 'react-redux'
 import {setStateAction} from 'redux-light'
 import {
   Cache,
-  EntitiesMap,
   ExtractQueryParams,
   ExtractQueryResult,
   Key,
@@ -11,6 +10,7 @@ import {
   QueryCachePolicy,
   QueryInfo,
   QueryResponse,
+  Typenames,
 } from './types'
 import {
   defaultEndpointState,
@@ -50,10 +50,10 @@ type RefState<T, P, D> = {
 }
 
 export const useQuery = <
-  T,
+  T extends Typenames,
   Q extends Record<
     keyof Q,
-    QueryInfo<T, ExtractQueryResult<Q[keyof Q]>, ExtractQueryParams<Q[keyof Q]>>
+    QueryInfo<T, ExtractQueryParams<Q[keyof Q]>, ExtractQueryResult<Q[keyof Q]>>
   >,
   P extends ExtractQueryParams<Q[keyof Q]>,
   D extends ExtractQueryResult<Q[keyof Q]>
@@ -61,12 +61,8 @@ export const useQuery = <
   cache: Cache<T, Q, any>,
   options: {
     query: keyof Q
-    cacheOptions?: QueryCacheOptions | QueryCachePolicy
     params: P
-    mergeResults?: (oldResult: D | undefined, newResult: D, newEntities: EntitiesMap<T>) => D
-    getCacheKey?: (params?: P) => string
-    getParamsKey?: (params?: P) => string | number
-  }
+  } & Pick<QueryInfo<T, P, D>, 'cacheOptions' | 'mergeResults' | 'getCacheKey' | 'getParamsKey'>
 ) => {
   const {
     query: queryKey,
