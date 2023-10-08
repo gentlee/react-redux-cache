@@ -6,10 +6,7 @@ import {updateUser} from '../api/updateUser'
 import {createCache} from '../redux-cache'
 
 export const {cache, reducer, useMutation, useQuery} = createCache({
-  typenames: {
-    users: {},
-    banks: {},
-  } as {
+  typenames: {} as {
     users: User
     banks: Bank
   },
