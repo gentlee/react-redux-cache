@@ -14,7 +14,7 @@ export const UserScreen = () => {
   const [{data, loading, error}] = useQuery(cache, {
     query: 'getUser',
     cacheOptions: 'cache-first',
-    params: {id},
+    params: {id: Number(id)},
   })
 
   const [updateUser, {loading: updatingUser}] = useMutation(cache, {
@@ -45,10 +45,12 @@ export const UserScreen = () => {
         <button
           className="User-screen-update-user-button"
           onClick={() => {
-            updateUser({
-              id: Number(id),
-              name: data.name + ' *',
-            })
+            data &&
+              updateUser({
+                id: Number(id),
+                // @ts-ignore TODO dataSelector
+                name: data.name + ' *',
+              })
           }}
         >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
         <p>{'User data: ' + JSON.stringify(data)}</p>

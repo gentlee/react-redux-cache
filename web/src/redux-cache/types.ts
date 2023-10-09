@@ -20,11 +20,8 @@ export type Typenames<E = any> = Record<string, E>
 
 export type Cache<
   T extends Typenames,
-  Q extends Record<
-    keyof Q,
-    QueryInfo<T, ExtractQueryParams<Q[keyof Q]>, ExtractQueryResult<Q[keyof Q]>>
-  >,
-  M extends Record<keyof M, Mutation<T>>
+  Q extends Record<keyof Q, QueryInfo<T, any, any>>,
+  M extends Record<keyof M, MutationInfo<T, any, any>>
 > = {
   typenames: T
   queries: Q
@@ -67,16 +64,27 @@ export type QueryResponse<T extends Typenames, D> = Response<T> & {
   result: D
 }
 
-export type ExtractQueryParams<T> = T extends QueryInfo<any, infer P, any> ? P : never
+export type ExtractQueryParams<
+  Q extends Record<keyof Q, QueryInfo<any, any, any>>,
+  QK extends keyof Q
+> = Parameters<Q[QK]['query']>[0]
 
-export type ExtractQueryResult<T> = T extends QueryInfo<any, any, infer R> ? R : never
+export type ExtractQueryResult<
+  Q extends Record<keyof Q, QueryInfo<any, any, any>>,
+  QK extends keyof Q
+> = Awaited<ReturnType<Q[QK]['query']>>['result']
 
 // Mutation
 
-export type Mutation<T extends Typenames, P = any, D = any> = (
+export type Mutation<T extends Typenames, P, D> = (
   params: P,
   abortSignal: AbortSignal
 ) => Promise<MutationResponse<T, D>>
+
+export type MutationInfo<T extends Typenames, P, D> = {
+  mutation: Mutation<T, P, D>
+  cacheOptions?: MutationCacheOptions
+}
 
 export type MutationCacheOptions = Pick<QueryCacheOptions, 'cacheEntities'> & {
   cacheMutationState: boolean
@@ -86,9 +94,15 @@ export type MutationResponse<T extends Typenames, D> = Response<T> & {
   result?: D
 }
 
-export type ExtractMutationParams<M> = M extends Mutation<any, infer P, any> ? P : never
+export type ExtractMutationParams<
+  M extends Record<keyof M, MutationInfo<any, any, any>>,
+  MK extends keyof M
+> = Parameters<M[MK]['mutation']>[0]
 
-export type ExtractMutationResult<M> = M extends Mutation<any, any, infer R> ? R : never
+export type ExtractMutationResult<
+  M extends Record<keyof M, MutationInfo<any, any, any>>,
+  MK extends keyof M
+> = Awaited<ReturnType<M[MK]['mutation']>>['result']
 
 // Query & Mutation
 

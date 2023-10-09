@@ -35,8 +35,12 @@ export const {cache, reducer, useMutation, useQuery} = createCache({
     },
   },
   mutations: {
-    updateUser,
-    removeUser,
+    updateUser: {
+      mutation: updateUser,
+    },
+    removeUser: {
+      mutation: removeUser,
+    },
   },
 })
 

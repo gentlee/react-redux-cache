@@ -3,9 +3,9 @@ import {PACKAGE_NAME} from './utilsAndConstants'
 import {
   Dict,
   EntitiesMap,
-  ExtractQueryParams,
+  ExtractMutationResult,
   ExtractQueryResult,
-  Mutation,
+  MutationInfo,
   QueryInfo,
   QueryMutationState,
   Typenames,
@@ -15,11 +15,8 @@ export type ReduxCacheState = ReturnType<ReturnType<typeof createCacheReducer>>
 
 export const createCacheReducer = <
   T extends Typenames,
-  Q extends Record<
-    keyof Q,
-    QueryInfo<T, ExtractQueryParams<Q[keyof Q]>, ExtractQueryResult<Q[keyof Q]>>
-  >,
-  M extends Record<keyof M, Mutation<T>>
+  Q extends Record<keyof Q, QueryInfo<T, any, any>>,
+  M extends Record<keyof M, MutationInfo<T, any, any>>
 >(
   typenames: T,
   queries: Q,
@@ -31,18 +28,12 @@ export const createCacheReducer = <
     entitiesMap[key] = {}
   }
 
-  const queriesMap = {} as Record<
-    keyof Q,
-    Dict<QueryMutationState<Awaited<ReturnType<Q[keyof Q]['query']>>['result']>>
-  >
+  const queriesMap = {} as Record<keyof Q, Dict<QueryMutationState<ExtractQueryResult<Q, keyof Q>>>>
   for (const key in queries) {
     queriesMap[key] = {}
   }
 
-  const mutationsMap = {} as Record<
-    keyof M,
-    QueryMutationState<Awaited<ReturnType<M[keyof M]>>['result']>
-  >
+  const mutationsMap = {} as Record<keyof M, QueryMutationState<ExtractMutationResult<M, keyof M>>>
 
   const initialState = {
     entities: entitiesMap,

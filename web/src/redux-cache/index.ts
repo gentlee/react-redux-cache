@@ -1,14 +1,5 @@
 import {createCacheReducer} from './reducer'
-import {
-  Cache,
-  CacheOptions,
-  ExtractQueryParams,
-  ExtractQueryResult,
-  Mutation,
-  Optional,
-  QueryInfo,
-  Typenames,
-} from './types'
+import {Cache, CacheOptions, MutationInfo, Optional, QueryInfo, Typenames} from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
 import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
@@ -16,14 +7,13 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // TODO
 
 // ! high
-// proper types, remove as any
+// skip query option
+// proper types, remove as, any, TODO
 // set options in cache, in hook and in refresh/mutate functions
 // cover with tests
 // documentation
 // export actions for merging entities, result etc
-// 1. CRUD entities on response: entities -> merge / replace / remove?[
-// 1. callback option on error / success?
-// 1. invalidate cache
+// callback option on error / success?
 
 // ! medium
 // support hot reload
@@ -37,6 +27,7 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // support multiple stores, override store as param
 // add validation if entity is full enough
 // optimistic response
+// invalidate cache
 
 // ! low
 // cancellation to queries
@@ -56,11 +47,8 @@ export * from './utilsAndConstants'
 
 export const createCache = <
   T extends Typenames,
-  Q extends Record<
-    keyof Q,
-    QueryInfo<T, ExtractQueryParams<Q[keyof Q]>, ExtractQueryResult<Q[keyof Q]>>
-  >,
-  M extends Record<keyof M, Mutation<T>>
+  Q extends Record<keyof Q, QueryInfo<T, any, any>>,
+  M extends Record<keyof M, MutationInfo<T, any, any>>
 >(
   cache: Optional<Cache<T, Q, M>, 'options' | 'cacheStateSelector'>
 ) => {
