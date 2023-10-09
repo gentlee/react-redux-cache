@@ -1,14 +1,18 @@
 import {useRef} from 'react'
 import {useDispatch, useSelector, useStore} from 'react-redux'
 import {setStateAction} from 'redux-light'
-import {defaultEndpointState, shallowMerge, useAssertValueNotChanged} from './utilsAndConstants'
+import {
+  defaultEndpointState,
+  mergeResponseToEntities,
+  useAssertValueNotChanged,
+} from './utilsAndConstants'
 import {
   Cache,
-  EntitiesMap,
   ExtractMutationParams,
   ExtractMutationResult,
   Mutation,
   MutationCacheOptions,
+  MutationResponse,
   QueryMutationState,
   Typenames,
 } from './types'
@@ -45,8 +49,7 @@ export const useMutation = <T extends Typenames, M extends Record<keyof M, Mutat
         [
           ['cache', cache],
           ['cacheStateSelector', cache.cacheStateSelector],
-          ['queryKey', mutationKey],
-          ['dataSelector', cache.mutations[mutationKey]],
+          ['mutationKey', mutationKey],
         ] as [key: string, value: any][]
       ).forEach((args) => useAssertValueNotChanged(...args))
     })()
@@ -58,18 +61,21 @@ export const useMutation = <T extends Typenames, M extends Record<keyof M, Mutat
       state,
       cacheState: cache.cacheStateSelector(state),
     })
-    return cache.cacheStateSelector(state).mutations[mutationKey] as QueryMutationState<D>
+    return cache.cacheStateSelector(state).mutations[mutationKey]
   }
 
-  const setMutationState = (newState: any, normalizedEntities?: Partial<EntitiesMap<T>>) => {
-    if (!newState && !normalizedEntities) return
+  const setMutationState = (
+    newState: Partial<QueryMutationState<T>> | undefined,
+    response?: MutationResponse<T, D>
+  ) => {
+    const entities = cache.cacheStateSelector(store.getState()).entities
+    const newEntities = response && mergeResponseToEntities(entities, response, cache.options)
+
+    if (!newState && !newEntities) return
 
     dispatch(
       setStateAction({
-        entities: shallowMerge(
-          cache.cacheStateSelector(store.getState()).entities,
-          normalizedEntities
-        ),
+        ...(newEntities ? {entities: newEntities} : null),
         mutations: {
           [mutationKey]: {
             ...mutationStateSelector(store.getState()),
@@ -98,17 +104,17 @@ export const useMutation = <T extends Typenames, M extends Record<keyof M, Mutat
     const abortController = new AbortController()
     abortControllerRef.current = abortController
 
-    let data
+    let response
     let error
     const fetchFn = cache.mutations[mutationKey]
     try {
-      data = await fetchFn(params, abortController.signal)
+      response = await fetchFn(params, abortController.signal)
     } catch (e) {
       error = e
     }
 
     console.log('[mutate] finished', {
-      data,
+      data: response,
       error,
       aborted: abortController.signal.aborted,
     })
@@ -119,19 +125,19 @@ export const useMutation = <T extends Typenames, M extends Record<keyof M, Mutat
 
     abortControllerRef.current = undefined
 
-    if (data) {
+    if (response) {
       setMutationState(
         cacheOptions.cacheMutationState
           ? {
               error: undefined,
               loading: false,
-              data: data.result,
+              data: response.result,
             }
           : undefined,
-        cacheOptions.cacheEntities ? data.entities : undefined
+        cacheOptions.cacheEntities ? response : undefined
       )
     } else if (error && cacheOptions.cacheMutationState) {
-      setMutationState({error, loading: false})
+      setMutationState({error: error as Error, loading: false})
     }
   }
 

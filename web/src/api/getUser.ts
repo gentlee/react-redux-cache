@@ -32,5 +32,8 @@ export const getUser = async ({id}: {id: number}) => {
     normalizedData,
   })
 
-  return normalizedData
+  return {
+    result: normalizedData.result,
+    merge: normalizedData.entities,
+  }
 }

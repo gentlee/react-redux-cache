@@ -1,10 +1,18 @@
 // Common
 
+import type {ReduxCacheState} from './reducer'
+
 export type Key = string | number | symbol
 
 export type Dict<T> = Record<Key, T>
 
 export type Optional<T, K extends keyof T> = Partial<Pick<T, K>> & Omit<T, K>
+
+export type Response<T extends Typenames> = {
+  merge?: Partial<PartialEntitiesMap<T>>
+  replace?: Partial<EntitiesMap<T>>
+  remove?: Partial<EntityIds<T>>
+}
 
 // Cache
 
@@ -22,7 +30,7 @@ export type Cache<
   queries: Q
   mutations: M
   options: CacheOptions
-  cacheStateSelector: (state: any) => any
+  cacheStateSelector: (state: any) => ReduxCacheState
 }
 
 export type CacheOptions = {
@@ -30,7 +38,11 @@ export type CacheOptions = {
   logsEnabled: boolean
 }
 
+export type PartialEntitiesMap<T> = Record<keyof T, Dict<Partial<T[keyof T]>>>
+
 export type EntitiesMap<T> = Record<keyof T, Dict<T[keyof T]>>
+
+export type EntityIds<T> = Record<keyof T, Key[]>
 
 // Query
 
@@ -38,11 +50,7 @@ export type QueryInfo<T extends Typenames, P, D> = {
   query: (params: P) => Promise<QueryResponse<T, D>>
   cacheOptions?: QueryCacheOptions | QueryCachePolicy
   dataSelector?: (state: any, params: P) => D // TODO resultSelector?
-  mergeResults?: (
-    oldResult: D | undefined,
-    newResult: D,
-    newEntities?: Partial<EntitiesMap<T>>
-  ) => D
+  mergeResults?: (oldResult: D | undefined, response: QueryResponse<T, D>) => D
   getCacheKey?: (params?: P) => string
   getParamsKey?: (params?: P) => string | number // TODO why number?
 }
@@ -55,9 +63,8 @@ export type QueryCacheOptions = {
   cacheEntities: boolean
 }
 
-export type QueryResponse<T, D> = {
+export type QueryResponse<T extends Typenames, D> = Response<T> & {
   result: D
-  entities?: Partial<EntitiesMap<T>>
 }
 
 export type ExtractQueryParams<T> = T extends QueryInfo<any, infer P, any> ? P : never
@@ -75,9 +82,8 @@ export type MutationCacheOptions = Pick<QueryCacheOptions, 'cacheEntities'> & {
   cacheMutationState: boolean
 }
 
-export type MutationResponse<T, D = any> = {
+export type MutationResponse<T extends Typenames, D> = Response<T> & {
   result?: D
-  entities?: Partial<EntitiesMap<T>>
 }
 
 export type ExtractMutationParams<M> = M extends Mutation<any, infer P, any> ? P : never

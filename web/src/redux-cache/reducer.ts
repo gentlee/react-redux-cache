@@ -11,6 +11,8 @@ import {
   Typenames,
 } from './types'
 
+export type ReduxCacheState = ReturnType<ReturnType<typeof createCacheReducer>>
+
 export const createCacheReducer = <
   T extends Typenames,
   Q extends Record<
@@ -39,11 +41,8 @@ export const createCacheReducer = <
 
   const mutationsMap = {} as Record<
     keyof M,
-    Dict<QueryMutationState<Awaited<ReturnType<M[keyof M]>>['result']>>
+    QueryMutationState<Awaited<ReturnType<M[keyof M]>>['result']>
   >
-  for (const key in mutations) {
-    mutationsMap[key] = {}
-  }
 
   const initialState = {
     entities: entitiesMap,

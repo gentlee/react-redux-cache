@@ -6,7 +6,10 @@ import {updateUser} from '../api/updateUser'
 import {createCache} from '../redux-cache'
 
 export const {cache, reducer, useMutation, useQuery} = createCache({
-  typenames: {} as {
+  typenames: {
+    users: {}, // TODO keys needed to fill reducer
+    banks: {},
+  } as {
     users: User
     banks: Bank
   },
@@ -16,7 +19,7 @@ export const {cache, reducer, useMutation, useQuery} = createCache({
       cacheOptions: 'cache-first',
       getParamsKey: (params: any) => params?.page ?? 0,
       getCacheKey: () => 'all-pages',
-      mergeResults: (oldData: any, newData: any) => {
+      mergeResults: (oldData: any, {result: newData}: any) => {
         if (!oldData || newData.page === 1) {
           return newData
         }

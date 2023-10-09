@@ -20,6 +20,7 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // set options in cache, in hook and in refresh/mutate functions
 // cover with tests
 // documentation
+// export actions for merging entities, result etc
 // 1. CRUD entities on response: entities -> merge / replace / remove?[
 // 1. callback option on error / success?
 // 1. invalidate cache

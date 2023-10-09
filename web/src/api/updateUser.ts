@@ -6,7 +6,7 @@ export const updateUser = async (user: Partial<User> & Pick<User, 'id'>) => {
   await delay(1000)
 
   const response = {
-    entities: {
+    merge: {
       users: {
         [user.id]: {
           ...(users.find((x) => x.id === user.id) as User),

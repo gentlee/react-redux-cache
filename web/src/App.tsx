@@ -2,7 +2,7 @@ import {useMemo} from 'react'
 import logo from './logo.svg'
 import './App.css'
 import {Provider, useSelector} from 'react-redux'
-import {ReduxState, persistor, store} from './redux/store'
+import {PERSIST_ENABLED, ReduxState, persistor, store} from './redux/store'
 import {BrowserRouter, Link, Route, Routes} from 'react-router-dom'
 import {denormalize} from 'normalizr'
 import {getUsersSchema} from './api/getUsers'
@@ -68,17 +68,26 @@ const RootScreen = () => {
 }
 
 const App = () => {
+  const router = (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<RootScreen />} />
+        <Route path="/home" element={<RootScreen />} />
+        <Route path="/user/:id" element={<UserScreen />} />
+      </Routes>
+    </BrowserRouter>
+  )
+
   return (
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<RootScreen />} />
-            <Route path="/home" element={<RootScreen />} />
-            <Route path="/user/:id" element={<UserScreen />} />
-          </Routes>
-        </BrowserRouter>
-      </PersistGate>
+      {PERSIST_ENABLED ? (
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        <PersistGate loading={null} persistor={persistor!}>
+          {router}
+        </PersistGate>
+      ) : (
+        router
+      )}
     </Provider>
   )
 }
