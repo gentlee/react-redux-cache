@@ -60,11 +60,9 @@ export const createCache = <
 
   return {
     cache: cache as Cache<T, Q, M>,
-    useQuery: (options: Parameters<typeof useQuery>[1]) =>
-      // @ts-ignore TODO options
+    useQuery: <QK extends keyof Q>(options: Parameters<typeof useQuery<T, Q, QK>>[1]) =>
       useQuery(cache as Cache<T, Q, M>, options),
-    useMutation: (options: Parameters<typeof useMutation>[1]) =>
-      // @ts-ignore TODO options
+    useMutation: <MK extends keyof M>(options: Parameters<typeof useMutation<T, M, MK>>[1]) =>
       useMutation(cache as Cache<T, Q, M>, options),
     reducer: createCacheReducer(
       cache.typenames,

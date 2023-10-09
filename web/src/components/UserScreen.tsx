@@ -1,23 +1,22 @@
 import {denormalize} from 'normalizr'
 import {useMemo} from 'react'
 import {useParams} from 'react-router-dom'
-import {useMutation, useQuery} from '../redux-cache'
 import logo from '../logo.svg'
 import {getUserSchema} from '../api/getUser'
 import {useSelector} from 'react-redux'
-import {cache} from '../redux/cache'
 import {ReduxState} from '../redux/store'
+import {useMutation, useQuery} from '../redux/cache'
 
 export const UserScreen = () => {
   const {id} = useParams()
 
-  const [{data, loading, error}] = useQuery(cache, {
+  const [{data, loading, error}] = useQuery({
     query: 'getUser',
     cacheOptions: 'cache-first',
     params: {id: Number(id)},
   })
 
-  const [updateUser, {loading: updatingUser}] = useMutation(cache, {
+  const [updateUser, {loading: updatingUser}] = useMutation({
     mutation: 'updateUser',
   })
 

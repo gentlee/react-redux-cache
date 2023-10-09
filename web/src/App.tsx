@@ -8,11 +8,10 @@ import {denormalize} from 'normalizr'
 import {getUsersSchema} from './api/getUsers'
 import {UserScreen} from './components/UserScreen'
 import {PersistGate} from 'redux-persist/integration/react'
-import {useQuery} from './redux-cache/useQuery'
-import {cache} from './redux/cache'
+import {useQuery} from './redux/cache'
 
 const RootScreen = () => {
-  const [{data, loading, error}, fetch] = useQuery(cache, {
+  const [{data, loading, error}, fetch] = useQuery({
     query: 'getUsers',
     params: {
       page: 1,
