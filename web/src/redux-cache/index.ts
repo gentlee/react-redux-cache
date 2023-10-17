@@ -1,14 +1,24 @@
 import {createCacheReducer} from './reducer'
-import {Cache, CacheOptions, MutationInfo, Optional, QueryInfo, Typenames} from './types'
+import {
+  Cache,
+  CacheOptions,
+  ExtractQueryParams,
+  ExtractQueryResult,
+  MutationInfo,
+  Optional,
+  QueryInfo,
+  Typenames,
+} from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
 import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 
-// TODO
+// Backlog
 
 // ! high
+// query key as string | function
 // skip query option
-// proper types, remove as, any, TODO
+// proper types, remove as, any, todo
 // set options in cache, in hook and in refresh/mutate functions
 // cover with tests
 // documentation
@@ -47,10 +57,10 @@ export * from './utilsAndConstants'
 
 export const createCache = <
   T extends Typenames,
-  Q extends Record<keyof Q, QueryInfo<T, any, any>>,
+  QP extends object,
   M extends Record<keyof M, MutationInfo<T, any, any>>
 >(
-  cache: Optional<Cache<T, Q, M>, 'options' | 'cacheStateSelector'>
+  cache: Optional<Cache<T, QP, M>, 'options' | 'cacheStateSelector'>
 ) => {
   cache.options ??= {} as CacheOptions
   cache.options.runtimeErrorChecksEnabled ??= isDev
@@ -59,11 +69,11 @@ export const createCache = <
   cache.cacheStateSelector ??= defaultCacheStateSelector
 
   return {
-    cache: cache as Cache<T, Q, M>,
-    useQuery: <QK extends keyof Q>(options: Parameters<typeof useQuery<T, Q, QK>>[1]) =>
-      useQuery(cache as Cache<T, Q, M>, options),
+    cache: cache as Cache<T, QP, M>,
+    useQuery: <QPK extends keyof QP>(options: Parameters<typeof useQuery<T, QP, QPK>>[1]) =>
+      useQuery(cache as Cache<T, QP, M>, options),
     useMutation: <MK extends keyof M>(options: Parameters<typeof useMutation<T, M, MK>>[1]) =>
-      useMutation(cache as Cache<T, Q, M>, options),
+      useMutation(cache as Cache<T, QP, M>, options),
     reducer: createCacheReducer(
       cache.typenames,
       cache.queries,

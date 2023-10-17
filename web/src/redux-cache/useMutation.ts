@@ -41,7 +41,6 @@ export const useMutation = <
     cacheOptions = cache.mutations[mutationKey].cacheOptions ?? DEFAULT_MUTATION_CACHE_OPTIONS,
   } = options
 
-  const dispatch = useDispatch()
   const store = useStore()
 
   cache.options.logsEnabled &&
@@ -92,7 +91,7 @@ export const useMutation = <
 
     if (!newState && !newEntities) return
 
-    dispatch(
+    store.dispatch(
       setStateAction({
         ...(newEntities ? {entities: newEntities} : null),
         mutations: {

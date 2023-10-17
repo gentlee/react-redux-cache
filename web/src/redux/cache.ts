@@ -7,19 +7,16 @@ import {createCache} from '../redux-cache'
 
 export const {cache, reducer, useMutation, useQuery} = createCache({
   typenames: {
-    users: {}, // TODO keys needed to fill reducer
-    banks: {},
-  } as {
-    users: User
-    banks: Bank
+    users: {} as User,
+    banks: {} as Bank,
   },
   queries: {
     getUsers: {
       query: getUsers,
       cacheOptions: 'cache-first',
-      getParamsKey: (params: any) => params?.page ?? 0,
+      getParamsKey: (params) => params?.page ?? 0,
       getCacheKey: () => 'all-pages',
-      mergeResults: (oldData: any, {result: newData}: any) => {
+      mergeResults: (oldData, {result: newData}) => {
         if (!oldData || newData.page === 1) {
           return newData
         }
@@ -31,7 +28,7 @@ export const {cache, reducer, useMutation, useQuery} = createCache({
     },
     getUser: {
       query: getUser,
-      dataSelector: (state: any, params: any) => state.entities.users[params.id],
+      dataSelector: (state, params) => state.entities.users[params.id],
     },
   },
   mutations: {

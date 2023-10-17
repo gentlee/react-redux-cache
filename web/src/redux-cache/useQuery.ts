@@ -49,22 +49,18 @@ type RefState<P, D> = {
   dataSelector?: (state: any) => D | undefined
 }
 
-export const useQuery = <
-  T extends Typenames,
-  Q extends Record<keyof Q, QueryInfo<T, any, any>>,
-  QK extends keyof Q
->(
-  cache: Cache<T, Q, any>,
+export const useQuery = <T extends Typenames, QP extends object, QK extends keyof QP>(
+  cache: Cache<T, QP, any>,
   options: {
     query: QK
-    params: ExtractQueryParams<Q, QK>
+    params: QP[QK]
   } & Pick<
-    QueryInfo<T, ExtractQueryParams<Q, QK>, ExtractQueryResult<Q, QK>>,
+    QueryInfo<T, QP[QK], any>,
     'cacheOptions' | 'mergeResults' | 'getCacheKey' | 'getParamsKey'
   >
 ) => {
-  type P = ExtractQueryParams<Q, QK>
-  type D = ExtractQueryResult<Q, QK>
+  type P = QP[QK]
+  type D = any
 
   const {
     query: queryKey,

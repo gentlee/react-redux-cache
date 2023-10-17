@@ -20,14 +20,14 @@ export type Typenames<E = any> = Record<string, E>
 
 export type Cache<
   T extends Typenames,
-  Q extends Record<keyof Q, QueryInfo<T, any, any>>,
+  QP extends object,
   M extends Record<keyof M, MutationInfo<T, any, any>>
 > = {
   typenames: T
-  queries: Q
-  mutations: M
+  queries: {[QK in keyof QP]: QueryInfo<T, QP[QK], any>}
+  mutations: Record<keyof M, M[keyof M]>
   options: CacheOptions
-  cacheStateSelector: (state: any) => ReduxCacheState
+  cacheStateSelector: (state: any) => ReduxCacheState<T, QP, M>
 }
 
 export type CacheOptions = {
