@@ -27,7 +27,7 @@ export type Cache<
   queries: Q
   mutations: M
   options: CacheOptions
-  cacheStateSelector: (state: any) => ReduxCacheState
+  cacheStateSelector: (state: any) => ReduxCacheState<T, Q, M>
 }
 
 export type CacheOptions = {

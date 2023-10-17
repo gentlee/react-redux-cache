@@ -11,7 +11,11 @@ import {
   Typenames,
 } from './types'
 
-export type ReduxCacheState = ReturnType<ReturnType<typeof createCacheReducer>>
+export type ReduxCacheState<
+  T extends Typenames,
+  Q extends Record<keyof Q, QueryInfo<T, any, any>>,
+  M extends Record<keyof M, MutationInfo<T, any, any>>
+> = ReturnType<ReturnType<typeof createCacheReducer<T, Q, M>>>
 
 export const createCacheReducer = <
   T extends Typenames,
