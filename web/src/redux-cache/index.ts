@@ -28,6 +28,7 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // add validation if entity is full enough
 // optimistic response
 // invalidate cache
+// make error type generic
 
 // ! low
 // cancellation to queries

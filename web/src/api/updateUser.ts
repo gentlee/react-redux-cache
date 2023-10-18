@@ -6,6 +6,7 @@ export const updateUser = async (user: Partial<User> & Pick<User, 'id'>) => {
   await delay(1000)
 
   const response = {
+    result: user.id,
     merge: {
       users: {
         [user.id]: {

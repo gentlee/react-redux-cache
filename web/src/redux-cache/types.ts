@@ -47,7 +47,7 @@ export type QueryInfo<T extends Typenames, P, D> = {
   query: (params: P) => Promise<QueryResponse<T, D>>
   cacheOptions?: QueryCacheOptions | QueryCachePolicy
   dataSelector?: (state: any, params: P) => D // TODO resultSelector?
-  mergeResults?: (oldResult: D | undefined, response: QueryResponse<T, D>) => D
+  mergeResults?: (oldResult: D | undefined, response: QueryResponse<T, D>, params?: P) => D
   getCacheKey?: (params?: P) => string
   getParamsKey?: (params?: P) => string | number // TODO why number?
 }
@@ -102,7 +102,7 @@ export type ExtractMutationParams<
 export type ExtractMutationResult<
   M extends Record<keyof M, MutationInfo<any, any, any>>,
   MK extends keyof M
-> = Awaited<ReturnType<M[MK]['mutation']>>['result']
+> = Awaited<ReturnType<M[MK]['mutation']>> extends MutationResponse<any, infer R> ? R : undefined
 
 // Query & Mutation
 
