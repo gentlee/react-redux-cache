@@ -8,14 +8,13 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 
 // ! high
 // type entities
-// response allow entities field same as merge
-// callback option on error / success?
-// export actions for merging entities, result, denormalize selector etc
+// export actions for merging entities, result, denormalize selector, invalidate cache
 // documentation
+// support hot reload
 // cover with tests
 
 // ! medium
-// support hot reload
+// callback option on error / success?
 // cache policy as function? needsRefetch
 // add verbose debug logs
 // refetch queries on query / mutation success?
@@ -26,7 +25,6 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // support multiple stores
 // add validation if entity is full enough
 // optimistic response
-// invalidate cache
 // make error type generic
 // proper types, remove as, any, todo
 

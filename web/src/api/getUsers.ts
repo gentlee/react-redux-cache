@@ -38,8 +38,5 @@ export const getUsers = async ({page = 1, pageSize = 5}) => {
     normalizedData,
   })
 
-  return {
-    result: normalizedData.result,
-    merge: normalizedData.entities,
-  }
+  return normalizedData
 }

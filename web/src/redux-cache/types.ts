@@ -12,6 +12,9 @@ export type Response<T extends Typenames> = {
   merge?: Partial<PartialEntitiesMap<T>>
   replace?: Partial<EntitiesMap<T>>
   remove?: Partial<EntityIds<T>>
+
+  // Alias for `merge` to support normalizr.
+  entities?: Response<T>['merge']
 }
 
 // Cache

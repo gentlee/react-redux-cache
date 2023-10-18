@@ -45,13 +45,19 @@ export const mergeResponseToEntities = <T extends Typenames>(
   response: Response<T>,
   options: CacheOptions
 ) => {
-  const {merge, replace, remove} = response
+  const {merge = response.entities, replace, remove} = response
 
   if (!merge && !replace && !remove) {
     return undefined
   }
 
   if (options.runtimeErrorChecksEnabled) {
+    // check for merge and entities both set
+    if (response.merge && response.entities) {
+      throw new Error('Response merge and entities should not be both set')
+    }
+
+    // check for key intersection
     const mergeKeys = merge && Object.keys(merge)
     const replaceKeys = replace && Object.keys(replace)
     const removeKeys = remove && Object.keys(remove)
