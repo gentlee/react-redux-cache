@@ -41,9 +41,9 @@ export const {cache, reducer, useMutation, useQuery} = createCache({
   },
 })
 
-// const state = reducer({} as ReturnType<typeof reducer>, {type: 'redux-light/SET_STATE', state: {}})
-// state.entities.users.a
-// state.queries.getUser.a.data
-// state.queries.getUsers.a.data
-// state.mutations.removeUser.data
-// state.mutations.updateUser.data
+const state = reducer({} as ReturnType<typeof reducer>, {type: 'redux-light/SET_STATE', state: {}})
+state.entities.banks.a
+state.queries.getUser.a.data
+state.queries.getUsers.a.data
+state.mutations.removeUser.data
+state.mutations.updateUser.data

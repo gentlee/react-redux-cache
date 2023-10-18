@@ -41,11 +41,11 @@ export type CacheOptions = {
   logsEnabled: boolean
 }
 
-export type PartialEntitiesMap<T> = Record<keyof T, Dict<Partial<T[keyof T]>>>
+export type PartialEntitiesMap<T extends Typenames> = {[K in keyof T]: Dict<Partial<T[K]>>}
 
-export type EntitiesMap<T> = Record<keyof T, Dict<T[keyof T]>>
+export type EntitiesMap<T extends Typenames> = {[K in keyof T]: Dict<T[K]>}
 
-export type EntityIds<T> = Record<keyof T, Key[]>
+export type EntityIds<T extends Typenames> = {[K in keyof T]: Key[]}
 
 // Query
 

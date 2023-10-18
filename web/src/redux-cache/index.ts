@@ -7,7 +7,6 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // Backlog
 
 // ! high
-// type entities
 // export actions for merging entities, result, denormalize selector, invalidate cache
 // documentation
 // support hot reload
