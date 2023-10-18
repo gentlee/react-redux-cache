@@ -3,8 +3,6 @@ import {useSelector, useStore} from 'react-redux'
 import {setStateAction} from 'redux-light'
 import {
   Cache,
-  ExtractQueryParams,
-  ExtractQueryResult,
   Key,
   QueryCacheOptions,
   QueryCachePolicy,
@@ -49,18 +47,18 @@ type RefState<P, D> = {
   dataSelector?: (state: any) => D | undefined
 }
 
-export const useQuery = <T extends Typenames, QP extends object, QK extends keyof QP>(
-  cache: Cache<T, QP, any>,
+export const useQuery = <T extends Typenames, QR extends object, QK extends keyof QR>(
+  cache: Cache<T, QR, any>,
   options: {
     query: QK
-    params: QP[QK]
+    params: any
   } & Pick<
-    QueryInfo<T, QP[QK], any>,
+    QueryInfo<T, any, QR[QK]>,
     'cacheOptions' | 'mergeResults' | 'getCacheKey' | 'getParamsKey'
   >
 ) => {
-  type P = QP[QK]
-  type D = any
+  type P = any
+  type D = QR[QK]
 
   const {
     query: queryKey,
@@ -181,6 +179,7 @@ export const useQuery = <T extends Typenames, QP extends object, QK extends keyo
     if (!newState && !newEntities) return
 
     store.dispatch(
+      // @ts-ignore fix later
       setStateAction({
         ...(newEntities ? {entities: newEntities} : null),
         queries: {

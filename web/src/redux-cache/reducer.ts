@@ -1,31 +1,15 @@
 import {createReducer} from 'redux-light'
 import {PACKAGE_NAME} from './utilsAndConstants'
-import {
-  Cache,
-  Dict,
-  EntitiesMap,
-  ExtractMutationResult,
-  ExtractQueryResult,
-  MutationInfo,
-  QueryInfo,
-  QueryMutationState,
-  Typenames,
-} from './types'
+import {Cache, Dict, EntitiesMap, QueryMutationState, Typenames} from './types'
 
-export type ReduxCacheState<
-  T extends Typenames,
-  QP extends object,
-  M extends Record<keyof M, MutationInfo<T, any, any>>
-> = ReturnType<ReturnType<typeof createCacheReducer<T, QP, M>>>
+export type ReduxCacheState<T extends Typenames, QR extends object, MR extends object> = ReturnType<
+  ReturnType<typeof createCacheReducer<T, QR, MR>>
+>
 
-export const createCacheReducer = <
-  T extends Typenames,
-  QP extends object,
-  M extends Record<keyof M, MutationInfo<T, any, any>>
->(
-  typenames: Cache<T, QP, M>['typenames'],
-  queries: Cache<T, QP, M>['queries'],
-  mutations: Cache<T, QP, M>['mutations'],
+export const createCacheReducer = <T extends Typenames, QR extends object, MR extends object>(
+  typenames: Cache<T, QR, MR>['typenames'],
+  queries: Cache<T, QR, MR>['queries'],
+  mutations: Cache<T, QR, MR>['mutations'],
   logsEnabled: boolean
 ) => {
   const entitiesMap = {} as EntitiesMap<T>
@@ -33,12 +17,12 @@ export const createCacheReducer = <
     entitiesMap[key] = {}
   }
 
-  const queriesMap = {} as {[QK in keyof QP]: Dict<QueryMutationState<any>>}
+  const queriesMap = {} as {[QK in keyof QR]: Dict<QueryMutationState<QR[QK]>>}
   for (const key in queries) {
     queriesMap[key] = {}
   }
 
-  const mutationsMap = {} as Record<keyof M, QueryMutationState<ExtractMutationResult<M, keyof M>>>
+  const mutationsMap = {} as {[MK in keyof MR]: QueryMutationState<MR[MK]>}
 
   const initialState = {
     entities: entitiesMap,

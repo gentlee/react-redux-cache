@@ -18,16 +18,12 @@ export type Response<T extends Typenames> = {
 
 export type Typenames<E = any> = Record<string, E>
 
-export type Cache<
-  T extends Typenames,
-  QP extends object,
-  M extends Record<keyof M, MutationInfo<T, any, any>>
-> = {
+export type Cache<T extends Typenames, QR extends object, MR extends object> = {
   typenames: T
-  queries: {[QK in keyof QP]: QueryInfo<T, QP[QK], any>}
-  mutations: Record<keyof M, M[keyof M]>
+  queries: {[QK in keyof QR]: QueryInfo<T, any, QR[QK]>}
+  mutations: {[MK in keyof MR]: MutationInfo<T, any, MR[MK]>}
   options: CacheOptions
-  cacheStateSelector: (state: any) => ReduxCacheState<T, QP, M>
+  cacheStateSelector: (state: any) => ReduxCacheState<T, QR, MR>
 }
 
 export type CacheOptions = {
@@ -47,7 +43,7 @@ export type QueryInfo<T extends Typenames, P, D> = {
   query: (params: P) => Promise<QueryResponse<T, D>>
   cacheOptions?: QueryCacheOptions | QueryCachePolicy
   dataSelector?: (state: any, params: P) => D // TODO resultSelector?
-  mergeResults?: (oldResult: D | undefined, response: QueryResponse<T, D>) => D
+  mergeResults?: (oldResult: D | undefined, response: QueryResponse<T, D>, params?: P) => D
   getCacheKey?: (params?: P) => string
   getParamsKey?: (params?: P) => string | number // TODO why number?
 }
@@ -63,16 +59,6 @@ export type QueryCacheOptions = {
 export type QueryResponse<T extends Typenames, D> = Response<T> & {
   result: D
 }
-
-export type ExtractQueryParams<
-  Q extends Record<keyof Q, QueryInfo<any, any, any>>,
-  QK extends keyof Q
-> = Parameters<Q[QK]['query']>[0]
-
-export type ExtractQueryResult<
-  Q extends Record<keyof Q, QueryInfo<any, any, any>>,
-  QK extends keyof Q
-> = Awaited<ReturnType<Q[QK]['query']>>['result']
 
 // Mutation
 
@@ -102,7 +88,7 @@ export type ExtractMutationParams<
 export type ExtractMutationResult<
   M extends Record<keyof M, MutationInfo<any, any, any>>,
   MK extends keyof M
-> = Awaited<ReturnType<M[MK]['mutation']>>['result']
+> = Awaited<ReturnType<M[MK]['mutation']>> extends MutationResponse<any, infer R> ? R : undefined
 
 // Query & Mutation
 

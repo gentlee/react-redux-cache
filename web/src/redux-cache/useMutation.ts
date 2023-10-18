@@ -6,41 +6,29 @@ import {
   mergeResponseToEntities,
   useAssertValueNotChanged,
 } from './utilsAndConstants'
-import {
-  Cache,
-  ExtractMutationParams,
-  ExtractMutationResult,
-  MutationCacheOptions,
-  MutationInfo,
-  MutationResponse,
-  QueryMutationState,
-  Typenames,
-} from './types'
+import {Cache, MutationCacheOptions, MutationResponse, QueryMutationState, Typenames} from './types'
 
 export const DEFAULT_MUTATION_CACHE_OPTIONS: MutationCacheOptions = {
   cacheMutationState: true,
   cacheEntities: true,
 }
 
-export const useMutation = <
-  T extends Typenames,
-  M extends Record<keyof M, MutationInfo<T, any, any>>,
-  MK extends keyof M
->(
-  cache: Cache<T, any, M>,
+export const useMutation = <T extends Typenames, MR extends object, MK extends keyof MR>(
+  cache: Cache<T, any, MR>,
   options: {
     mutation: MK
     cacheOptions?: MutationCacheOptions
   }
 ) => {
-  type P = ExtractMutationParams<M, MK>
-  type D = ExtractMutationResult<M, MK>
+  type P = any
+  type D = MR[MK]
 
   const {
     mutation: mutationKey,
     cacheOptions = cache.mutations[mutationKey].cacheOptions ?? DEFAULT_MUTATION_CACHE_OPTIONS,
   } = options
 
+  const dispatch = useDispatch()
   const store = useStore()
 
   cache.options.logsEnabled &&
@@ -83,7 +71,7 @@ export const useMutation = <
 
   // no useCallback because deps are empty
   const setMutationState = (
-    newState: Partial<QueryMutationState<T>> | undefined,
+    newState: Partial<QueryMutationState<MR[MK]>> | undefined,
     response?: MutationResponse<T, D>
   ) => {
     const entities = cache.cacheStateSelector(store.getState()).entities
@@ -91,7 +79,8 @@ export const useMutation = <
 
     if (!newState && !newEntities) return
 
-    store.dispatch(
+    dispatch(
+      // @ts-ignore fix later
       setStateAction({
         ...(newEntities ? {entities: newEntities} : null),
         mutations: {

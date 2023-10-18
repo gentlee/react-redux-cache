@@ -1,14 +1,5 @@
 import {createCacheReducer} from './reducer'
-import {
-  Cache,
-  CacheOptions,
-  ExtractQueryParams,
-  ExtractQueryResult,
-  MutationInfo,
-  Optional,
-  QueryInfo,
-  Typenames,
-} from './types'
+import {Cache, CacheOptions, Optional, Typenames} from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
 import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
@@ -38,6 +29,7 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // add validation if entity is full enough
 // optimistic response
 // invalidate cache
+// make error type generic
 
 // ! low
 // cancellation to queries
@@ -55,12 +47,8 @@ export * from './useMutation'
 export * from './useQuery'
 export * from './utilsAndConstants'
 
-export const createCache = <
-  T extends Typenames,
-  QP extends object,
-  M extends Record<keyof M, MutationInfo<T, any, any>>
->(
-  cache: Optional<Cache<T, QP, M>, 'options' | 'cacheStateSelector'>
+export const createCache = <T extends Typenames, QR extends object, MR extends object>(
+  cache: Optional<Cache<T, QR, MR>, 'options' | 'cacheStateSelector'>
 ) => {
   cache.options ??= {} as CacheOptions
   cache.options.runtimeErrorChecksEnabled ??= isDev
@@ -69,11 +57,11 @@ export const createCache = <
   cache.cacheStateSelector ??= defaultCacheStateSelector
 
   return {
-    cache: cache as Cache<T, QP, M>,
-    useQuery: <QPK extends keyof QP>(options: Parameters<typeof useQuery<T, QP, QPK>>[1]) =>
-      useQuery(cache as Cache<T, QP, M>, options),
-    useMutation: <MK extends keyof M>(options: Parameters<typeof useMutation<T, M, MK>>[1]) =>
-      useMutation(cache as Cache<T, QP, M>, options),
+    cache: cache as Cache<T, QR, MR>,
+    useQuery: <QK extends keyof QR>(options: Parameters<typeof useQuery<T, QR, QK>>[1]) =>
+      useQuery(cache as Cache<T, QR, MR>, options),
+    useMutation: <MK extends keyof MR>(options: Parameters<typeof useMutation<T, MR, MK>>[1]) =>
+      useMutation(cache as Cache<T, QR, MR>, options),
     reducer: createCacheReducer(
       cache.typenames,
       cache.queries,
