@@ -4,6 +4,7 @@ import {setStateAction} from 'redux-light'
 import {
   Cache,
   Key,
+  Query,
   QueryCacheOptions,
   QueryCachePolicy,
   QueryInfo,
@@ -47,21 +48,35 @@ type RefState<P, D> = {
   dataSelector?: (state: any) => D | undefined
 }
 
-export const useQuery = <T extends Typenames, QR extends object, QK extends keyof QR>(
-  cache: Cache<T, QR, any>,
+export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
+  cache: Cache<T, any, any>,
   options: {
-    query: QK
-    params: any
+    query: Q
+    params: Q extends Query<T, infer P, any> ? P : never
   } & Pick<
-    QueryInfo<T, any, QR[QK]>,
+    QueryInfo<
+      T,
+      Q extends Query<T, infer P, any> ? P : never,
+      Q extends Query<T, any, infer D> ? D : never
+    >,
     'cacheOptions' | 'mergeResults' | 'getCacheKey' | 'getParamsKey'
   >
 ) => {
-  type P = any
-  type D = QR[QK]
+  type P = Q extends Query<T, infer P, any> ? P : never
+  type D = Q extends Query<T, any, infer D> ? D : never
+
+  const queryKey = useMemo(() => {
+    const queryKeys = Object.keys(cache.queries)
+    for (const key of queryKeys) {
+      if (cache.queries[key].query === options.query) {
+        return key
+      }
+    }
+    throw new Error(`Can't find query function in cache.queries.`)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const {
-    query: queryKey,
     params: hookParams,
     cacheOptions: cacheOptionsOrPolicy = cache.queries[queryKey].cacheOptions ??
       DEFAULT_QUERY_CACHE_OPTIONS,
@@ -90,6 +105,7 @@ export const useQuery = <T extends Typenames, QR extends object, QK extends keyo
           ['cacheStateSelector', cache.cacheStateSelector],
           ['cacheOptions.cacheEntities', cacheOptions.cacheEntities],
           ['cacheOptions.cacheQueryState', cacheOptions.cacheQueryState],
+          ['options.query', options.query],
           ['queryKey', queryKey],
           ['dataSelector', cache.queries[queryKey].dataSelector],
         ] as [key: string, value: any][]

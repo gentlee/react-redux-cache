@@ -2,22 +2,23 @@ import {denormalize} from 'normalizr'
 import {useMemo} from 'react'
 import {useParams} from 'react-router-dom'
 import logo from '../logo.svg'
-import {getUserSchema} from '../api/getUser'
+import {getUser, getUserSchema} from '../api/getUser'
 import {useSelector} from 'react-redux'
 import {ReduxState} from '../redux/store'
 import {useMutation, useQuery} from '../redux/cache'
+import {updateUser as updateUserMutation} from '../api/updateUser'
 
 export const UserScreen = () => {
   const {id} = useParams()
 
   const [{data, loading, error}] = useQuery({
-    query: 'getUser',
+    query: getUser,
     cacheOptions: 'cache-first',
     params: {id: Number(id)},
   })
 
   const [updateUser, {loading: updatingUser}] = useMutation({
-    mutation: 'updateUser',
+    mutation: updateUserMutation,
   })
 
   const entities = useSelector((state: ReduxState) => state.entities)

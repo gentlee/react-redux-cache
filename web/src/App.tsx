@@ -5,14 +5,14 @@ import {Provider, useSelector} from 'react-redux'
 import {PERSIST_ENABLED, ReduxState, persistor, store} from './redux/store'
 import {BrowserRouter, Link, Route, Routes} from 'react-router-dom'
 import {denormalize} from 'normalizr'
-import {getUsersSchema} from './api/getUsers'
+import {getUsers, getUsersSchema} from './api/getUsers'
 import {UserScreen} from './components/UserScreen'
 import {PersistGate} from 'redux-persist/integration/react'
 import {useQuery} from './redux/cache'
 
 const RootScreen = () => {
   const [{data, loading, error}, fetch] = useQuery({
-    query: 'getUsers',
+    query: getUsers,
     params: {
       page: 1,
     },

@@ -39,8 +39,10 @@ export type EntityIds<T> = Record<keyof T, Key[]>
 
 // Query
 
+export type Query<T extends Typenames, P, D> = (params: P) => Promise<QueryResponse<T, D>>
+
 export type QueryInfo<T extends Typenames, P, D> = {
-  query: (params: P) => Promise<QueryResponse<T, D>>
+  query: Query<T, P, D>
   cacheOptions?: QueryCacheOptions | QueryCachePolicy
   dataSelector?: (state: any, params: P) => D // TODO resultSelector?
   mergeResults?: (oldResult: D | undefined, response: QueryResponse<T, D>, params?: P) => D

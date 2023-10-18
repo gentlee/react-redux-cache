@@ -1,5 +1,5 @@
 import {createCacheReducer} from './reducer'
-import {Cache, CacheOptions, Optional, Typenames} from './types'
+import {Cache, CacheOptions, Mutation, Optional, Query, Typenames} from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
 import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
@@ -15,6 +15,7 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // documentation
 // export actions for merging entities, result etc
 // callback option on error / success?
+// data selector state - pass cache state?
 
 // ! medium
 // support hot reload
@@ -58,10 +59,11 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
 
   return {
     cache: cache as Cache<T, QR, MR>,
-    useQuery: <QK extends keyof QR>(options: Parameters<typeof useQuery<T, QR, QK>>[1]) =>
+    useQuery: <Q extends Query<T, any, any>>(options: Parameters<typeof useQuery<T, Q>>[1]) =>
       useQuery(cache as Cache<T, QR, MR>, options),
-    useMutation: <MK extends keyof MR>(options: Parameters<typeof useMutation<T, MR, MK>>[1]) =>
-      useMutation(cache as Cache<T, QR, MR>, options),
+    useMutation: <M extends Mutation<T, any, any>>(
+      options: Parameters<typeof useMutation<T, M>>[1]
+    ) => useMutation(cache as Cache<T, QR, MR>, options),
     reducer: createCacheReducer(
       cache.typenames,
       cache.queries,

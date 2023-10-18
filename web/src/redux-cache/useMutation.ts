@@ -1,4 +1,4 @@
-import {useCallback, useRef} from 'react'
+import {useCallback, useMemo, useRef} from 'react'
 import {useDispatch, useSelector, useStore} from 'react-redux'
 import {setStateAction} from 'redux-light'
 import {
@@ -6,25 +6,42 @@ import {
   mergeResponseToEntities,
   useAssertValueNotChanged,
 } from './utilsAndConstants'
-import {Cache, MutationCacheOptions, MutationResponse, QueryMutationState, Typenames} from './types'
+import {
+  Cache,
+  Mutation,
+  MutationCacheOptions,
+  MutationResponse,
+  QueryMutationState,
+  Typenames,
+} from './types'
 
 export const DEFAULT_MUTATION_CACHE_OPTIONS: MutationCacheOptions = {
   cacheMutationState: true,
   cacheEntities: true,
 }
 
-export const useMutation = <T extends Typenames, MR extends object, MK extends keyof MR>(
-  cache: Cache<T, any, MR>,
+export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>>(
+  cache: Cache<T, any, any>,
   options: {
-    mutation: MK
+    mutation: M
     cacheOptions?: MutationCacheOptions
   }
 ) => {
-  type P = any
-  type D = MR[MK]
+  type P = M extends Mutation<T, infer P, any> ? P : never
+  type D = M extends Mutation<T, any, infer D> ? D : never
+
+  const mutationKey = useMemo(() => {
+    const mutationKeys = Object.keys(cache.mutations)
+    for (const key of mutationKeys) {
+      if (cache.mutations[key].mutation === options.mutation) {
+        return key
+      }
+    }
+    throw new Error(`Can't find mutation function in cache.mutations.`)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const {
-    mutation: mutationKey,
     cacheOptions = cache.mutations[mutationKey].cacheOptions ?? DEFAULT_MUTATION_CACHE_OPTIONS,
   } = options
 
@@ -71,7 +88,7 @@ export const useMutation = <T extends Typenames, MR extends object, MK extends k
 
   // no useCallback because deps are empty
   const setMutationState = (
-    newState: Partial<QueryMutationState<MR[MK]>> | undefined,
+    newState: Partial<QueryMutationState<D>> | undefined,
     response?: MutationResponse<T, D>
   ) => {
     const entities = cache.cacheStateSelector(store.getState()).entities
