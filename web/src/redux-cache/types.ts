@@ -1,6 +1,6 @@
 // Common
 
-import type {ReduxCacheState} from './reducer'
+import type {ReduxCacheState, createCacheReducer} from './reducer'
 
 export type Key = string | number | symbol
 
@@ -20,7 +20,14 @@ export type Typenames<E = any> = Record<string, E>
 
 export type Cache<T extends Typenames, QR extends object, MR extends object> = {
   typenames: T
-  queries: {[QK in keyof QR]: QueryInfo<T, any, QR[QK]>}
+  queries: {
+    [QK in keyof QR]: QueryInfo<
+      T,
+      any,
+      QR[QK],
+      ReturnType<ReturnType<typeof createCacheReducer<T, QR, MR>>>
+    >
+  }
   mutations: {[MK in keyof MR]: MutationInfo<T, any, MR[MK]>}
   options: CacheOptions
   cacheStateSelector: (state: any) => ReduxCacheState<T, QR, MR>
@@ -41,10 +48,10 @@ export type EntityIds<T> = Record<keyof T, Key[]>
 
 export type Query<T extends Typenames, P, D> = (params: P) => Promise<QueryResponse<T, D>>
 
-export type QueryInfo<T extends Typenames, P, D> = {
+export type QueryInfo<T extends Typenames, P, D, S> = {
   query: Query<T, P, D>
   cacheOptions?: QueryCacheOptions | QueryCachePolicy
-  dataSelector?: (state: any, params: P) => D // TODO resultSelector?
+  dataSelector?: (state: S, params: P) => D // TODO resultSelector?
   mergeResults?: (oldResult: D | undefined, response: QueryResponse<T, D>, params?: P) => D
   getCacheKey?: (params?: P) => string
   getParamsKey?: (params?: P) => string | number // TODO why number?

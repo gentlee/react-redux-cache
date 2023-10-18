@@ -58,7 +58,8 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
     QueryInfo<
       T,
       Q extends Query<T, infer P, any> ? P : never,
-      Q extends Query<T, any, infer D> ? D : never
+      Q extends Query<T, any, infer D> ? D : never,
+      any
     >,
     'cacheOptions' | 'mergeResults' | 'getCacheKey' | 'getParamsKey'
   >
@@ -135,13 +136,16 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
     state.cacheKey = getCacheKey(hookParams)
     state.requestKey = getRequestKey(queryKey, hookParamsKey)
     state.latestHookRequestKey = state.requestKey
-    state.dataSelector = dataSelectorImpl && ((state: any) => dataSelectorImpl(state, hookParams))
+    state.dataSelector =
+      dataSelectorImpl &&
+      ((state: any) => dataSelectorImpl(cache.cacheStateSelector(state), hookParams))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hookParamsKey])
 
-  const responseFromSelector =
+  const resultFromSelector =
     // eslint-disable-next-line react-hooks/rules-of-hooks
     stateRef.current.dataSelector && useSelector(stateRef.current.dataSelector)
+  const hasResultFromSelector = resultFromSelector != null
 
   // no useCallback because deps are empty
   const queryStateSelector = (state: any) => {
@@ -158,10 +162,10 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
 
   const queryStateFromSelector =
     useSelector(queryStateSelector) ?? (defaultEndpointState as QueryMutationState<D>)
-  const queryState = responseFromSelector
+  const queryState = hasResultFromSelector
     ? {
         ...queryStateFromSelector,
-        data: responseFromSelector,
+        data: resultFromSelector,
       }
     : queryStateFromSelector
 
@@ -171,6 +175,8 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
       queryKey,
       refState: stateRef.current,
       cacheOptions,
+      resultFromSelector,
+      hasResultFromSelector,
       queryState,
       queryStateFromSelector,
     })
@@ -239,7 +245,7 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
           : {
               error: undefined,
               loading: false,
-              data: responseFromSelector
+              data: hasResultFromSelector
                 ? undefined
                 : mergeResults
                 ? mergeResults(queryStateSelector(store.getState())?.data, response)
@@ -249,13 +255,13 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mergeResults, queryState.loading, !!responseFromSelector])
+  }, [mergeResults, queryState.loading, hasResultFromSelector])
 
   useEffect(() => {
     if (skip) {
       return
     }
-    if (queryState.data && cacheOptions.policy === 'cache-first') {
+    if (queryState.data != null && cacheOptions.policy === 'cache-first') {
       return
     }
 
@@ -279,7 +285,9 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
           state.cacheKey = getCacheKey(params)
           state.requestKey = getRequestKey(queryKey, state.paramsKey)
           // @ts-ignore
-          state.dataSelector = dataSelectorImpl && ((state: any) => dataSelectorImpl(state, params))
+          state.dataSelector =
+            dataSelectorImpl &&
+            ((state: any) => dataSelectorImpl(cache.cacheStateSelector(state), hookParams))
 
           forceUpdate()
         }

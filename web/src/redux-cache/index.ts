@@ -7,11 +7,10 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // Backlog
 
 // ! high
-// skip query option
-// query key as string | function
-// data selector state - pass cache state?
-// export actions for merging entities, result etc
+// type entities
+// response allow entities field same as merge
 // callback option on error / success?
+// export actions for merging entities, result, denormalize selector etc
 // documentation
 // cover with tests
 

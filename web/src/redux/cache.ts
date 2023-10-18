@@ -28,7 +28,7 @@ export const {cache, reducer, useMutation, useQuery} = createCache({
     },
     getUser: {
       query: getUser,
-      dataSelector: (state, params) => state.entities.users[params.id],
+      dataSelector: (state, {id}: {id: number}) => (state.entities.users[id] as User)?.id,
     },
   },
   mutations: {
@@ -42,6 +42,7 @@ export const {cache, reducer, useMutation, useQuery} = createCache({
 })
 
 // const state = reducer({} as ReturnType<typeof reducer>, {type: 'redux-light/SET_STATE', state: {}})
+// state.entities.users.a
 // state.queries.getUser.a.data
 // state.queries.getUsers.a.data
 // state.mutations.removeUser.data

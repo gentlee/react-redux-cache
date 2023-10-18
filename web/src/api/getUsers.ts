@@ -9,11 +9,6 @@ export const getUsersSchema = new schema.Object({
 })
 
 export const getUsers = async ({page = 1, pageSize = 5}) => {
-  console.log('[getUsers]', {
-    page,
-    pageSize,
-  })
-
   await delay(1000)
 
   const data = {
@@ -36,7 +31,7 @@ export const getUsers = async ({page = 1, pageSize = 5}) => {
     }
   } = normalize(data, getUsersSchema)
 
-  console.log('[getUsers] response', {
+  console.log('< [getUsers]', {
     data,
     page,
     pageSize,

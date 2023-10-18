@@ -28,7 +28,7 @@ export const UserScreen = () => {
     [data, entities]
   )
 
-  console.log('[App]', {data, status: loading, error})
+  console.log('[UserScreen]', {data, loading, error, entities, denormalizedData})
 
   if (loading) {
     return (
@@ -45,11 +45,10 @@ export const UserScreen = () => {
         <button
           className="User-screen-update-user-button"
           onClick={() => {
-            data &&
+            denormalizedData &&
               updateUser({
-                id: Number(id),
-                // @ts-ignore TODO dataSelector
-                name: data.name + ' *',
+                id: denormalizedData.id,
+                name: denormalizedData.name + ' *',
               })
           }}
         >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
