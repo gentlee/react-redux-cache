@@ -53,6 +53,7 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
   options: {
     query: Q
     params: Q extends Query<T, infer P, any> ? P : never
+    skip?: boolean
   } & Pick<
     QueryInfo<
       T,
@@ -77,6 +78,7 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
   }, [])
 
   const {
+    skip,
     params: hookParams,
     cacheOptions: cacheOptionsOrPolicy = cache.queries[queryKey].cacheOptions ??
       DEFAULT_QUERY_CACHE_OPTIONS,
@@ -250,13 +252,16 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
   }, [mergeResults, queryState.loading, !!responseFromSelector])
 
   useEffect(() => {
+    if (skip) {
+      return
+    }
     if (queryState.data && cacheOptions.policy === 'cache-first') {
       return
     }
 
     fetchImpl()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateRef.current.latestHookRequestKey])
+  }, [stateRef.current.latestHookRequestKey, skip])
 
   const fetch = useCallback(
     (params?: P) => {

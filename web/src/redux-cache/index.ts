@@ -7,15 +7,13 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // Backlog
 
 // ! high
-// query key as string | function
 // skip query option
-// proper types, remove as, any, todo
-// set options in cache, in hook and in refresh/mutate functions
-// cover with tests
-// documentation
+// query key as string | function
+// data selector state - pass cache state?
 // export actions for merging entities, result etc
 // callback option on error / success?
-// data selector state - pass cache state?
+// documentation
+// cover with tests
 
 // ! medium
 // support hot reload
@@ -26,11 +24,12 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // set default options like getParams
 // selectors for loading state of similar query or mutation (wihout using params as key)
 // deep equal entities while merging state
-// support multiple stores, override store as param
+// support multiple stores
 // add validation if entity is full enough
 // optimistic response
 // invalidate cache
 // make error type generic
+// proper types, remove as, any, todo
 
 // ! low
 // cancellation to queries
@@ -41,6 +40,7 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // replace try/catch with returned error
 // support any store, not only redux
 // QueryInfo.defaultOptions
+// set options in refresh/mutate functions
 
 export * from './reducer'
 export * from './types'
