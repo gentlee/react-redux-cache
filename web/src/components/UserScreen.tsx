@@ -11,7 +11,7 @@ import {updateUser as updateUserMutation} from '../api/updateUser'
 export const UserScreen = () => {
   const {id} = useParams()
 
-  const [{data, loading, error}] = useQuery({
+  const [{result, loading, error}] = useQuery({
     query: getUser,
     cacheOptions: 'cache-first',
     params: {id: Number(id)},
@@ -23,12 +23,18 @@ export const UserScreen = () => {
 
   const entities = useSelector((state: ReduxState) => state.entities)
 
-  const denormalizedData = useMemo(
-    () => denormalize(data, getUserSchema, entities),
-    [data, entities]
+  const denormalizedResult = useMemo(
+    () => denormalize(result, getUserSchema, entities),
+    [result, entities]
   )
 
-  console.log('[UserScreen]', {data, loading, error, entities, denormalizedData})
+  console.log('[UserScreen]', {
+    result,
+    loading,
+    error,
+    entities,
+    denormalizedResult,
+  })
 
   if (loading) {
     return (
@@ -45,15 +51,15 @@ export const UserScreen = () => {
         <button
           className="User-screen-update-user-button"
           onClick={() => {
-            denormalizedData &&
+            denormalizedResult &&
               updateUser({
-                id: denormalizedData.id,
-                name: denormalizedData.name + ' *',
+                id: denormalizedResult.id,
+                name: denormalizedResult.name + ' *',
               })
           }}
         >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
-        <p>{'User data: ' + JSON.stringify(data)}</p>
-        <p>{'User denormalized data: ' + JSON.stringify(denormalizedData)}</p>
+        <p>{'User result: ' + JSON.stringify(result)}</p>
+        <p>{'User denormalized result: ' + JSON.stringify(denormalizedResult)}</p>
       </header>
     </div>
   )

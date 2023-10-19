@@ -11,7 +11,7 @@ export const getUsersSchema = new schema.Object({
 export const getUsers = async ({page = 1, pageSize = 5}) => {
   await delay(1000)
 
-  const data = {
+  const result = {
     array: Array.from({length: pageSize}, (_, index) =>
       generateMockUser(index + pageSize * (page - 1))
     ),
@@ -19,7 +19,7 @@ export const getUsers = async ({page = 1, pageSize = 5}) => {
     pageSize,
   }
 
-  const normalizedData: {
+  const normalizedResult: {
     result: {
       array: number[]
       page: number
@@ -29,14 +29,14 @@ export const getUsers = async ({page = 1, pageSize = 5}) => {
       users: Record<number, User>
       banks: Record<string, Bank>
     }
-  } = normalize(data, getUsersSchema)
+  } = normalize(result, getUsersSchema)
 
   console.log('< [getUsers]', {
-    data,
+    result,
     page,
     pageSize,
-    normalizedData,
+    normalizedResult,
   })
 
-  return normalizedData
+  return normalizedResult
 }

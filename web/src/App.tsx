@@ -11,7 +11,7 @@ import {PersistGate} from 'redux-persist/integration/react'
 import {useQuery} from './redux/cache'
 
 const RootScreen = () => {
-  const [{data, loading, error}, fetch] = useQuery({
+  const [{result, loading, error}, fetch] = useQuery({
     query: getUsers,
     params: {
       page: 1,
@@ -20,14 +20,19 @@ const RootScreen = () => {
 
   const entities = useSelector((state: ReduxState) => state.entities)
 
-  const denormalizedData = useMemo(() => {
-    console.log('[RootScreen] denormalize', {data, entities})
-    return denormalize(data, getUsersSchema, entities)
-  }, [data, entities])
+  const denormalizedResult = useMemo(() => {
+    console.log('[RootScreen] denormalize', {result, entities})
+    return denormalize(result, getUsersSchema, entities)
+  }, [result, entities])
 
-  console.log('[RootScreen]', {data, status: loading, error, denormalizedData})
+  console.log('[RootScreen]', {
+    result,
+    loading,
+    error,
+    denormalizedResult,
+  })
 
-  if (loading && !data) {
+  if (loading && !result) {
     return (
       <div className="App">
         <p>Loading</p>
@@ -39,12 +44,12 @@ const RootScreen = () => {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>{'getUsers data: ' + JSON.stringify(data)}</p>
-        <p>{'getUsers denormalized data: ' + JSON.stringify(denormalizedData)}</p>
+        <p>{'getUsers result: ' + JSON.stringify(result)}</p>
+        <p>{'getUsers denormalized result: ' + JSON.stringify(denormalizedResult)}</p>
         <Link className={'App-link'} to={'/home'}>
           Home
         </Link>
-        {data?.array.map((userId: number) => {
+        {result?.array.map((userId: number) => {
           return (
             <Link key={userId} className={'App-link'} to={'/user/' + userId}>
               {'User id: ' + userId}
@@ -55,7 +60,7 @@ const RootScreen = () => {
           onClick={() => {
             const lastLoadedPage: number =
               // @ts-ignore page type
-              store.getState().queries.getUsers?.['all-pages'].data?.page ?? 0
+              store.getState().queries.getUsers?.['all-pages'].result?.page ?? 0
             fetch({page: lastLoadedPage + 1})
           }}
         >

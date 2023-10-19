@@ -9,24 +9,24 @@ export const getUserSchema = userSchema
 export const getUser = async ({id}: {id: number}) => {
   await delay(1000)
 
-  const data = {
+  const result = {
     ...generateMockUser(id),
     newField: 'new field: ' + id,
   }
 
-  const normalizedData: {
+  const normalizedResult: {
     result: number
     entities: {
       users: Record<number, User>
       banks: Record<string, Bank>
     }
-  } = normalize(data, getUserSchema)
+  } = normalize(result, getUserSchema)
 
   console.log('< [getUser]', {
     id,
-    data,
-    normalizedData,
+    result,
+    normalizedResult,
   })
 
-  return normalizedData
+  return normalizedResult
 }

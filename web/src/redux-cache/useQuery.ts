@@ -39,13 +39,13 @@ export const DEFAULT_QUERY_CACHE_OPTIONS = QUERY_CACHE_OPTIONS_BY_POLICY['cache-
 const getRequestKey = (queryKey: Key, paramsKey: string | number) =>
   `${String(queryKey)}:${paramsKey}` // TODO change Key to string | number and remove String()?
 
-type RefState<P, D> = {
+type RefState<P, R> = {
   params: P
   paramsKey: string | number
   cacheKey: string
   requestKey: string
   latestHookRequestKey: string
-  dataSelector?: (state: any) => D | undefined
+  resultSelector?: (state: any) => R | undefined
 }
 
 export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
@@ -58,14 +58,14 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
     QueryInfo<
       T,
       Q extends Query<T, infer P, any> ? P : never,
-      Q extends Query<T, any, infer D> ? D : never,
+      Q extends Query<T, any, infer R> ? R : never,
       any
     >,
     'cacheOptions' | 'mergeResults' | 'getCacheKey' | 'getParamsKey'
   >
 ) => {
   type P = Q extends Query<T, infer P, any> ? P : never
-  type D = Q extends Query<T, any, infer D> ? D : never
+  type R = Q extends Query<T, any, infer R> ? R : never
 
   const queryKey = useMemo(() => {
     const queryKeys = Object.keys(cache.queries)
@@ -110,7 +110,7 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
           ['cacheOptions.cacheQueryState', cacheOptions.cacheQueryState],
           ['options.query', options.query],
           ['queryKey', queryKey],
-          ['dataSelector', cache.queries[queryKey].dataSelector],
+          ['resultSelector', cache.queries[queryKey].resultSelector],
         ] as [key: string, value: any][]
       )
         // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -123,12 +123,12 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
 
   // Keeps most of local state.
   // Reference because state is changed not only by changing hook arguments, but also by calling fetch, and it should be done synchronously.
-  const stateRef = useRef({} as RefState<P, D>)
+  const stateRef = useRef({} as RefState<P, R>)
 
   useMemo(() => {
     if (stateRef.current.paramsKey === hookParamsKey) return
 
-    const dataSelectorImpl = cache.queries[queryKey].dataSelector
+    const resultSelectorImpl = cache.queries[queryKey].resultSelector
 
     const state = stateRef.current
     state.params = hookParams
@@ -136,15 +136,17 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
     state.cacheKey = getCacheKey(hookParams)
     state.requestKey = getRequestKey(queryKey, hookParamsKey)
     state.latestHookRequestKey = state.requestKey
-    state.dataSelector =
-      dataSelectorImpl &&
-      ((state: any) => dataSelectorImpl(cache.cacheStateSelector(state), hookParams))
+    state.resultSelector = createResultSelector(
+      resultSelectorImpl,
+      cache.cacheStateSelector,
+      hookParams
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hookParamsKey])
 
   const resultFromSelector =
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    stateRef.current.dataSelector && useSelector(stateRef.current.dataSelector)
+    stateRef.current.resultSelector && useSelector(stateRef.current.resultSelector)
   const hasResultFromSelector = resultFromSelector != null
 
   // no useCallback because deps are empty
@@ -157,16 +159,16 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
         cacheState: cache.cacheStateSelector(state),
       })
     const queryState = cache.cacheStateSelector(state).queries[queryKey][stateRef.current.cacheKey]
-    return queryState as QueryMutationState<D> | undefined // TODO proper type
+    return queryState as QueryMutationState<R> | undefined // TODO proper type
   }
 
   const queryStateFromSelector =
-    useSelector(queryStateSelector) ?? (defaultEndpointState as QueryMutationState<D>)
+    useSelector(queryStateSelector) ?? (defaultEndpointState as QueryMutationState<R>)
   const queryState = hasResultFromSelector
-    ? {
+    ? ({
         ...queryStateFromSelector,
-        data: resultFromSelector,
-      }
+        result: resultFromSelector,
+      } satisfies QueryMutationState<R>)
     : queryStateFromSelector
 
   cache.options.logsEnabled &&
@@ -183,8 +185,8 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
 
   // no useCallback because deps are empty
   const setQueryState = (
-    newState: Partial<QueryMutationState<D>> | undefined,
-    response?: QueryResponse<T, D>
+    newState: Partial<QueryMutationState<R>> | undefined,
+    response?: QueryResponse<T, R>
   ) => {
     const cacheKey = stateRef.current.cacheKey
 
@@ -245,10 +247,10 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
           : {
               error: undefined,
               loading: false,
-              data: hasResultFromSelector
+              result: hasResultFromSelector
                 ? undefined
                 : mergeResults
-                ? mergeResults(queryStateSelector(store.getState())?.data, response)
+                ? mergeResults(queryStateSelector(store.getState())?.result, response)
                 : response.result,
             },
         cacheOptions.cacheEntities ? response : undefined
@@ -261,7 +263,7 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
     if (skip) {
       return
     }
-    if (queryState.data != null && cacheOptions.policy === 'cache-first') {
+    if (queryState.result != null && cacheOptions.policy === 'cache-first') {
       return
     }
 
@@ -278,16 +280,17 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
         const paramsKey = getParamsKey(params)
 
         if (state.paramsKey !== paramsKey) {
-          const dataSelectorImpl = cache.queries[queryKey].dataSelector
+          const resultSelectorImpl = cache.queries[queryKey].resultSelector
 
           state.params = params
           state.paramsKey = paramsKey
           state.cacheKey = getCacheKey(params)
           state.requestKey = getRequestKey(queryKey, state.paramsKey)
-          // @ts-ignore
-          state.dataSelector =
-            dataSelectorImpl &&
-            ((state: any) => dataSelectorImpl(cache.cacheStateSelector(state), hookParams))
+          state.resultSelector = createResultSelector(
+            resultSelectorImpl,
+            cache.cacheStateSelector,
+            hookParams
+          )
 
           forceUpdate()
         }
@@ -300,4 +303,12 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
   )
 
   return [queryState, fetch] as const
+}
+
+const createResultSelector = <P, R, S>(
+  resultSelector: QueryInfo<any, P, R, S>['resultSelector'],
+  cacheStateSelector: (state: any) => S,
+  params: P
+): RefState<P, R>['resultSelector'] => {
+  return resultSelector && ((state: any) => resultSelector(cacheStateSelector(state) as S, params))
 }

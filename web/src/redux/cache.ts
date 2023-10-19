@@ -16,19 +16,19 @@ export const {cache, reducer, useMutation, useQuery} = createCache({
       cacheOptions: 'cache-first',
       getParamsKey: (params) => params?.page ?? 0,
       getCacheKey: () => 'all-pages',
-      mergeResults: (oldData, {result: newData}) => {
-        if (!oldData || newData.page === 1) {
-          return newData
+      mergeResults: (oldResult, {result: newResult}) => {
+        if (!oldResult || newResult.page === 1) {
+          return newResult
         }
         return {
-          ...newData,
-          array: [...oldData.array, ...newData.array],
+          ...newResult,
+          array: [...oldResult.array, ...newResult.array],
         }
       },
     },
     getUser: {
       query: getUser,
-      dataSelector: (state, {id}: {id: number}) => (state.entities.users[id] as User)?.id,
+      resultSelector: (state, {id}: {id: number}) => (state.entities.users[id] as User)?.id,
     },
   },
   mutations: {
@@ -41,9 +41,9 @@ export const {cache, reducer, useMutation, useQuery} = createCache({
   },
 })
 
-const state = reducer({} as ReturnType<typeof reducer>, {type: 'redux-light/SET_STATE', state: {}})
-state.entities.banks.a
-state.queries.getUser.a.data
-state.queries.getUsers.a.data
-state.mutations.removeUser.data
-state.mutations.updateUser.data
+// const state = reducer({} as ReturnType<typeof reducer>, {type: 'redux-light/SET_STATE', state: {}})
+// state.entities.banks.a
+// state.queries.getUser.a.result
+// state.queries.getUsers.a.result
+// state.mutations.removeUser.result
+// state.mutations.updateUser.result

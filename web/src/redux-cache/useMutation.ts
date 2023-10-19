@@ -28,7 +28,7 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
   }
 ) => {
   type P = M extends Mutation<T, infer P, any> ? P : never
-  type D = M extends Mutation<T, any, infer D> ? D : never
+  type R = M extends Mutation<T, any, infer R> ? R : never
 
   const mutationKey = useMemo(() => {
     const mutationKeys = Object.keys(cache.mutations)
@@ -88,8 +88,8 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
 
   // no useCallback because deps are empty
   const setMutationState = (
-    newState: Partial<QueryMutationState<D>> | undefined,
-    response?: MutationResponse<T, D>
+    newState: Partial<QueryMutationState<R>> | undefined,
+    response?: MutationResponse<T, R>
   ) => {
     const entities = cache.cacheStateSelector(store.getState()).entities
     const newEntities = response && mergeResponseToEntities(entities, response, cache.options)
@@ -140,7 +140,7 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
 
       cache.options.logsEnabled &&
         console.log('[mutate] finished', {
-          data: response,
+          response,
           error,
           aborted: abortController.signal.aborted,
         })
@@ -157,7 +157,7 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
             ? {
                 error: undefined,
                 loading: false,
-                data: response.result,
+                result: response.result,
               }
             : undefined,
           cacheOptions.cacheEntities ? response : undefined

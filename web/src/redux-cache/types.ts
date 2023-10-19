@@ -49,13 +49,13 @@ export type EntityIds<T extends Typenames> = {[K in keyof T]: Key[]}
 
 // Query
 
-export type Query<T extends Typenames, P, D> = (params: P) => Promise<QueryResponse<T, D>>
+export type Query<T extends Typenames, P, R> = (params: P) => Promise<QueryResponse<T, R>>
 
-export type QueryInfo<T extends Typenames, P, D, S> = {
-  query: Query<T, P, D>
+export type QueryInfo<T extends Typenames, P, R, S> = {
+  query: Query<T, P, R>
   cacheOptions?: QueryCacheOptions | QueryCachePolicy
-  dataSelector?: (state: S, params: P) => D // TODO resultSelector?
-  mergeResults?: (oldResult: D | undefined, response: QueryResponse<T, D>, params?: P) => D
+  resultSelector?: (state: S, params: P) => R // TODO resultSelector?
+  mergeResults?: (oldResult: R | undefined, response: QueryResponse<T, R>, params?: P) => R
   getCacheKey?: (params?: P) => string
   getParamsKey?: (params?: P) => string | number // TODO why number?
 }
@@ -68,19 +68,19 @@ export type QueryCacheOptions = {
   cacheEntities: boolean
 }
 
-export type QueryResponse<T extends Typenames, D> = Response<T> & {
-  result: D
+export type QueryResponse<T extends Typenames, R> = Response<T> & {
+  result: R
 }
 
 // Mutation
 
-export type Mutation<T extends Typenames, P, D> = (
+export type Mutation<T extends Typenames, P, R> = (
   params: P,
   abortSignal: AbortSignal
-) => Promise<MutationResponse<T, D>>
+) => Promise<MutationResponse<T, R>>
 
-export type MutationInfo<T extends Typenames, P, D> = {
-  mutation: Mutation<T, P, D>
+export type MutationInfo<T extends Typenames, P, R> = {
+  mutation: Mutation<T, P, R>
   cacheOptions?: MutationCacheOptions
 }
 
@@ -88,8 +88,8 @@ export type MutationCacheOptions = Pick<QueryCacheOptions, 'cacheEntities'> & {
   cacheMutationState: boolean
 }
 
-export type MutationResponse<T extends Typenames, D> = Response<T> & {
-  result?: D
+export type MutationResponse<T extends Typenames, R> = Response<T> & {
+  result?: R
 }
 
 export type ExtractMutationParams<
@@ -104,8 +104,8 @@ export type ExtractMutationResult<
 
 // Query & Mutation
 
-export type QueryMutationState<D> = {
+export type QueryMutationState<R> = {
   loading: boolean
-  data?: D
+  result?: R
   error?: Error
 }
