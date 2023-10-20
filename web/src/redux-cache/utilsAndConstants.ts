@@ -1,7 +1,7 @@
 import {useMemo, useRef} from 'react'
 
 import {useReducer} from 'react'
-import {CacheOptions, EntitiesMap, Response, Typenames} from './types'
+import {CacheOptions, EntitiesMap, EntityChanges, Typenames} from './types'
 
 export const PACKAGE_NAME = 'redux-cache'
 
@@ -40,12 +40,16 @@ export const useAssertValueNotChanged = (name: string, value: any) => {
   }, [value])
 }
 
-export const mergeResponseToEntities = <T extends Typenames>(
+/**
+ * Process changes to entities map.
+ * @return `undefined` if nothing to change, otherwise processed entities map.
+ */
+export const processEntityChanges = <T extends Typenames>(
   entities: EntitiesMap<T>,
-  response: Response<T>,
+  changes: EntityChanges<T>,
   options: CacheOptions
-) => {
-  const {merge = response.entities, replace, remove} = response
+): EntitiesMap<T> | undefined => {
+  const {merge = changes.entities, replace, remove} = changes
 
   if (!merge && !replace && !remove) {
     return undefined
@@ -53,7 +57,7 @@ export const mergeResponseToEntities = <T extends Typenames>(
 
   if (options.runtimeErrorChecksEnabled) {
     // check for merge and entities both set
-    if (response.merge && response.entities) {
+    if (changes.merge && changes.entities) {
       throw new Error('Response merge and entities should not be both set')
     }
 
@@ -107,9 +111,9 @@ export const mergeResponseToEntities = <T extends Typenames>(
     result[typename] = newEntities
   }
 
-  console.log('[mergeResponseToEntities]', {
+  console.log('[processEntityChanges]', {
     entities,
-    response,
+    changes,
     result,
   })
 

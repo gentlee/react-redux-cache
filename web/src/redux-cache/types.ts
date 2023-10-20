@@ -8,13 +8,13 @@ export type Dict<T> = Record<Key, T>
 
 export type Optional<T, K extends keyof T> = Partial<Pick<T, K>> & Omit<T, K>
 
-export type Response<T extends Typenames> = {
+export type EntityChanges<T extends Typenames> = {
   merge?: Partial<PartialEntitiesMap<T>>
   replace?: Partial<EntitiesMap<T>>
   remove?: Partial<EntityIds<T>>
 
-  // Alias for `merge` to support normalizr.
-  entities?: Response<T>['merge']
+  /** Alias for `merge` to support normalizr. */
+  entities?: EntityChanges<T>['merge']
 }
 
 // Cache
@@ -55,7 +55,11 @@ export type QueryInfo<T extends Typenames, P, R, S> = {
   query: Query<T, P, R>
   cacheOptions?: QueryCacheOptions | QueryCachePolicy
   resultSelector?: (state: S, params: P) => R // TODO resultSelector?
-  mergeResults?: (oldResult: R | undefined, response: QueryResponse<T, R>, params?: P) => R
+  mergeResults?: (
+    oldResult: R | undefined,
+    response: QueryResponse<T, R>,
+    params: P | undefined
+  ) => R
   getCacheKey?: (params?: P) => string
   getParamsKey?: (params?: P) => string | number // TODO why number?
 }
@@ -68,7 +72,7 @@ export type QueryCacheOptions = {
   cacheEntities: boolean
 }
 
-export type QueryResponse<T extends Typenames, R> = Response<T> & {
+export type QueryResponse<T extends Typenames, R> = EntityChanges<T> & {
   result: R
 }
 
@@ -88,7 +92,7 @@ export type MutationCacheOptions = Pick<QueryCacheOptions, 'cacheEntities'> & {
   cacheMutationState: boolean
 }
 
-export type MutationResponse<T extends Typenames, R> = Response<T> & {
+export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
   result?: R
 }
 

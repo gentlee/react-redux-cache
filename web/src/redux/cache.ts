@@ -5,7 +5,7 @@ import {User, Bank} from '../api/types'
 import {updateUser} from '../api/updateUser'
 import {createCache} from '../redux-cache'
 
-export const {cache, reducer, useMutation, useQuery} = createCache({
+export const {cache, reducer, useMutation, useQuery, actions} = createCache({
   typenames: {
     users: {} as User,
     banks: {} as Bank,
@@ -40,6 +40,10 @@ export const {cache, reducer, useMutation, useQuery} = createCache({
     },
   },
 })
+
+// actions.setQueryStateAndEntities('getUser', 'a', {
+//   result: 0,
+// })
 
 // const state = reducer({} as ReturnType<typeof reducer>, {type: 'redux-light/SET_STATE', state: {}})
 // state.entities.banks.a

@@ -1,19 +1,8 @@
 import {useCallback, useMemo, useRef} from 'react'
-import {useDispatch, useSelector, useStore} from 'react-redux'
-import {setStateAction} from 'redux-light'
-import {
-  defaultEndpointState,
-  mergeResponseToEntities,
-  useAssertValueNotChanged,
-} from './utilsAndConstants'
-import {
-  Cache,
-  Mutation,
-  MutationCacheOptions,
-  MutationResponse,
-  QueryMutationState,
-  Typenames,
-} from './types'
+import {useDispatch, useSelector} from 'react-redux'
+import {defaultEndpointState, useAssertValueNotChanged} from './utilsAndConstants'
+import {Cache, Mutation, MutationCacheOptions, QueryMutationState, Typenames} from './types'
+import {setMutationStateAndEntities} from './reducer'
 
 export const DEFAULT_MUTATION_CACHE_OPTIONS: MutationCacheOptions = {
   cacheMutationState: true,
@@ -46,11 +35,9 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
   } = options
 
   const dispatch = useDispatch()
-  const store = useStore()
 
   cache.options.logsEnabled &&
     console.log('[useMutation]', {
-      state: store.getState(),
       cacheOptions,
     })
 
@@ -76,41 +63,18 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
 
   const abortControllerRef = useRef<AbortController>()
 
-  // no useCallback because deps are empty
-  const mutationStateSelector = (state: any) => {
+  const mutationStateSelector = useCallback((state: any) => {
     cache.options.logsEnabled &&
       console.log('[mutationStateSelector]', {
         state,
         cacheState: cache.cacheStateSelector(state),
       })
     return cache.cacheStateSelector(state).mutations[mutationKey]
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  // no useCallback because deps are empty
-  const setMutationState = (
-    newState: Partial<QueryMutationState<R>> | undefined,
-    response?: MutationResponse<T, R>
-  ) => {
-    const entities = cache.cacheStateSelector(store.getState()).entities
-    const newEntities = response && mergeResponseToEntities(entities, response, cache.options)
-
-    if (!newState && !newEntities) return
-
-    dispatch(
-      // @ts-ignore fix later
-      setStateAction({
-        ...(newEntities ? {entities: newEntities} : null),
-        mutations: {
-          [mutationKey]: {
-            ...mutationStateSelector(store.getState()),
-            ...newState,
-          },
-        },
-      })
-    )
-  }
-
-  const mutationState = useSelector(mutationStateSelector) ?? defaultEndpointState
+  const mutationState: QueryMutationState<R> =
+    useSelector(mutationStateSelector) ?? defaultEndpointState
 
   const mutate = useCallback(
     async (params: P) => {
@@ -124,7 +88,14 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
       } else {
-        cacheOptions.cacheMutationState && setMutationState({loading: true})
+        cacheOptions.cacheMutationState &&
+          dispatch(
+            setMutationStateAndEntities(
+              // @ts-ignore
+              mutationKey,
+              {loading: true}
+            )
+          )
       }
       const abortController = new AbortController()
       abortControllerRef.current = abortController
@@ -152,18 +123,28 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
       abortControllerRef.current = undefined
 
       if (response) {
-        setMutationState(
-          cacheOptions.cacheMutationState
-            ? {
-                error: undefined,
-                loading: false,
-                result: response.result,
-              }
-            : undefined,
-          cacheOptions.cacheEntities ? response : undefined
+        dispatch(
+          setMutationStateAndEntities(
+            // @ts-ignore
+            mutationKey,
+            cacheOptions.cacheMutationState
+              ? {
+                  error: undefined,
+                  loading: false,
+                  result: response.result,
+                }
+              : undefined,
+            cacheOptions.cacheEntities ? response : undefined
+          )
         )
       } else if (error && cacheOptions.cacheMutationState) {
-        setMutationState({error: error as Error, loading: false})
+        dispatch(
+          setMutationStateAndEntities(
+            // @ts-ignore
+            mutationKey,
+            {error: error as Error, loading: false}
+          )
+        )
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

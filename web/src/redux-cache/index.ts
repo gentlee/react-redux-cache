@@ -1,4 +1,9 @@
-import {createCacheReducer} from './reducer'
+import {
+  createCacheReducer,
+  mergeEntityChanges,
+  setMutationStateAndEntities,
+  setQueryStateAndEntities,
+} from './reducer'
 import {Cache, CacheOptions, Mutation, Optional, Query, Typenames} from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
@@ -7,7 +12,7 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // Backlog
 
 // ! high
-// export actions for merging entities, result, denormalize selector, invalidate cache
+// denormalize selector, invalidate cache
 // documentation
 // support hot reload
 // cover with tests
@@ -37,6 +42,7 @@ import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
 // support any store, not only redux
 // QueryInfo.defaultOptions
 // set options in refresh/mutate functions
+// multiple reducers instead of 1?
 
 export * from './reducer'
 export * from './types'
@@ -60,11 +66,17 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
     useMutation: <M extends Mutation<T, any, any>>(
       options: Parameters<typeof useMutation<T, M>>[1]
     ) => useMutation(cache as Cache<T, QR, MR>, options),
-    reducer: createCacheReducer(
-      cache.typenames,
-      cache.queries,
-      cache.mutations,
-      cache.options.logsEnabled
-    ),
+    reducer: createCacheReducer(cache.typenames, cache.queries, cache.mutations, cache.options),
+    actions: {
+      setQueryStateAndEntities: setQueryStateAndEntities as <K extends keyof QR>(
+        ...args: Parameters<typeof setQueryStateAndEntities<T, QR, K>>
+      ) => ReturnType<typeof setQueryStateAndEntities<T, QR, K>>,
+
+      setMutationStateAndEntities: setMutationStateAndEntities as <K extends keyof MR>(
+        ...args: Parameters<typeof setMutationStateAndEntities<T, MR, K>>
+      ) => ReturnType<typeof setMutationStateAndEntities<T, MR, K>>,
+
+      mergeEntityChanges: mergeEntityChanges as typeof mergeEntityChanges<T>,
+    },
   }
 }

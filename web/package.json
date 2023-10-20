@@ -13,8 +13,7 @@
     "react-dom": "^18.2.0",
     "react-redux": "8.0.5",
     "react-router-dom": "6.11.2",
-    "redux": "4.2.1",
-    "redux-light": "2.1.1"
+    "redux": "4.2.1"
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "7.21.11",

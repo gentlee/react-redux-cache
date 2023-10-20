@@ -1,6 +1,5 @@
 import {useEffect, useMemo, useCallback, useRef} from 'react'
 import {useSelector, useStore} from 'react-redux'
-import {setStateAction} from 'redux-light'
 import {
   Cache,
   Key,
@@ -9,16 +8,15 @@ import {
   QueryCachePolicy,
   QueryInfo,
   QueryMutationState,
-  QueryResponse,
   Typenames,
 } from './types'
 import {
   defaultEndpointState,
   defaultGetParamsKey,
-  mergeResponseToEntities,
   useAssertValueNotChanged,
   useForceUpdate,
 } from './utilsAndConstants'
+import {setQueryStateAndEntities} from './reducer'
 
 const CACHE_FIRST_OPTIONS = {
   policy: 'cache-first',
@@ -149,8 +147,7 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
     stateRef.current.resultSelector && useSelector(stateRef.current.resultSelector)
   const hasResultFromSelector = resultFromSelector != null
 
-  // no useCallback because deps are empty
-  const queryStateSelector = (state: any) => {
+  const queryStateSelector = useCallback((state: any) => {
     cache.options.logsEnabled &&
       console.log('[queryStateSelector]', {
         state,
@@ -160,7 +157,8 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
       })
     const queryState = cache.cacheStateSelector(state).queries[queryKey][stateRef.current.cacheKey]
     return queryState as QueryMutationState<R> | undefined // TODO proper type
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const queryStateFromSelector =
     useSelector(queryStateSelector) ?? (defaultEndpointState as QueryMutationState<R>)
@@ -173,7 +171,6 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
 
   cache.options.logsEnabled &&
     console.log('[useQuery]', {
-      state: store.getState(),
       queryKey,
       refState: stateRef.current,
       cacheOptions,
@@ -183,77 +180,60 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
       queryStateFromSelector,
     })
 
-  // no useCallback because deps are empty
-  const setQueryState = (
-    newState: Partial<QueryMutationState<R>> | undefined,
-    response?: QueryResponse<T, R>
-  ) => {
-    const cacheKey = stateRef.current.cacheKey
-
-    cache.options.logsEnabled &&
-      console.log('[setQueryStateImpl]', {
-        newState,
-        response,
-        queryKey,
-        cacheKey: stateRef.current.cacheKey,
-      })
-
-    const cacheState = cache.cacheStateSelector(store.getState())
-    const entities = cacheState.entities
-    const newEntities = response && mergeResponseToEntities(entities, response, cache.options)
-
-    if (!newState && !newEntities) return
-
-    store.dispatch(
-      // @ts-ignore fix later
-      setStateAction({
-        ...(newEntities ? {entities: newEntities} : null),
-        queries: {
-          [queryKey]: {
-            ...cacheState.queries[queryKey],
-            [cacheKey]: {
-              ...cacheState.queries[queryKey][cacheKey],
-              ...newState,
-            },
-          },
-        },
-      })
-    )
-  }
-
   const fetchImpl = useCallback(async () => {
     cache.options.logsEnabled && console.log('[useQuery.fetch]', {queryState})
 
     if (queryState.loading) return
 
-    const {requestKey} = stateRef.current
+    cacheOptions.cacheQueryState &&
+      store.dispatch(
+        // @ts-ignore
+        setQueryStateAndEntities(queryKey, stateRef.current.cacheKey, {
+          loading: true,
+        })
+      )
 
-    cacheOptions.cacheQueryState && setQueryState({loading: true})
+    const {requestKey, params} = stateRef.current
 
     let response
     const fetchFn = cache.queries[queryKey].query
     try {
-      response = await fetchFn(stateRef.current.params)
+      response = await fetchFn(params)
     } catch (error) {
       if (stateRef.current.requestKey === requestKey && cacheOptions.cacheQueryState) {
-        setQueryState({error: error as Error, loading: false})
+        store.dispatch(
+          setQueryStateAndEntities(
+            // @ts-ignore
+            queryKey,
+            stateRef.current.cacheKey,
+            {
+              error: error as Error,
+              loading: false,
+            }
+          )
+        )
       }
     }
 
     if (response && stateRef.current.requestKey === requestKey) {
-      setQueryState(
-        !cacheOptions.cacheQueryState
-          ? undefined
-          : {
-              error: undefined,
-              loading: false,
-              result: hasResultFromSelector
-                ? undefined
-                : mergeResults
-                ? mergeResults(queryStateSelector(store.getState())?.result, response)
-                : response.result,
-            },
-        cacheOptions.cacheEntities ? response : undefined
+      store.dispatch(
+        setQueryStateAndEntities(
+          // @ts-ignore
+          queryKey,
+          stateRef.current.cacheKey,
+          !cacheOptions.cacheQueryState
+            ? undefined
+            : {
+                error: undefined,
+                loading: false,
+                result: hasResultFromSelector
+                  ? undefined
+                  : mergeResults
+                  ? mergeResults(queryStateSelector(store.getState())?.result, response, params)
+                  : response.result,
+              },
+          cacheOptions.cacheEntities ? response : undefined
+        )
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
