@@ -5,7 +5,14 @@ import {User, Bank} from '../api/types'
 import {updateUser} from '../api/updateUser'
 import {createCache} from '../redux-cache'
 
-export const {cache, reducer, useMutation, useQuery, actions} = createCache({
+export const {
+  cache,
+  reducer,
+  useMutation,
+  useQuery,
+  actions,
+  selectors: {useDenormalizeSelector},
+} = createCache({
   typenames: {
     users: {} as User,
     banks: {} as Bank,

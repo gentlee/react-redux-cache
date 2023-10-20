@@ -1,14 +1,12 @@
-import {useMemo} from 'react'
 import logo from './logo.svg'
 import './App.css'
-import {Provider, useSelector} from 'react-redux'
-import {PERSIST_ENABLED, ReduxState, persistor, store} from './redux/store'
+import {Provider} from 'react-redux'
+import {PERSIST_ENABLED, persistor, store} from './redux/store'
 import {BrowserRouter, Link, Route, Routes} from 'react-router-dom'
-import {denormalize} from 'normalizr'
 import {getUsers, getUsersSchema} from './api/getUsers'
 import {UserScreen} from './components/UserScreen'
 import {PersistGate} from 'redux-persist/integration/react'
-import {useQuery} from './redux/cache'
+import {useDenormalizeSelector, useQuery} from './redux/cache'
 
 const RootScreen = () => {
   const [{result, loading, error}, fetch] = useQuery({
@@ -18,12 +16,7 @@ const RootScreen = () => {
     },
   })
 
-  const entities = useSelector((state: ReduxState) => state.entities)
-
-  const denormalizedResult = useMemo(() => {
-    console.log('[RootScreen] denormalize', {result, entities})
-    return denormalize(result, getUsersSchema, entities)
-  }, [result, entities])
+  const denormalizedResult = useDenormalizeSelector(result, getUsersSchema, ['users'])
 
   console.log('[RootScreen]', {
     result,

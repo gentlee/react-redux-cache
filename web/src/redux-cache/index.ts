@@ -1,20 +1,22 @@
+import {useSelector} from 'react-redux'
 import {
   createCacheReducer,
   mergeEntityChanges,
   setMutationStateAndEntities,
   setQueryStateAndEntities,
 } from './reducer'
-import {Cache, CacheOptions, Mutation, Optional, Query, Typenames} from './types'
+import {Cache, CacheOptions, EntitiesMap, Mutation, Optional, Query, Typenames} from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
-import {defaultCacheStateSelector, isDev} from './utilsAndConstants'
+import {defaultCacheStateSelector, isDev, useAssertValueNotChanged} from './utilsAndConstants'
+import {Schema, denormalize} from 'normalizr'
+import {useMemo} from 'react'
 
 // Backlog
 
 // ! high
-// denormalize selector, invalidate cache
-// documentation
 // support hot reload
+// documentation
 // cover with tests
 
 // ! medium
@@ -51,21 +53,39 @@ export * from './useQuery'
 export * from './utilsAndConstants'
 
 export const createCache = <T extends Typenames, QR extends object, MR extends object>(
-  cache: Optional<Cache<T, QR, MR>, 'options' | 'cacheStateSelector'>
+  optionalCache: Optional<Cache<T, QR, MR>, 'options' | 'cacheStateSelector'>
 ) => {
-  cache.options ??= {} as CacheOptions
-  cache.options.runtimeErrorChecksEnabled ??= isDev
-  cache.options.logsEnabled ??= isDev
+  // provide all optional fields
 
-  cache.cacheStateSelector ??= defaultCacheStateSelector
+  optionalCache.options ??= {} as CacheOptions
+  optionalCache.options.runtimeErrorChecksEnabled ??= isDev
+  optionalCache.options.logsEnabled ??= isDev
+
+  optionalCache.cacheStateSelector ??= defaultCacheStateSelector
+
+  const cache = optionalCache as Cache<T, QR, MR>
+
+  // make selectors
+
+  const entitiesSelector = (state: any) => {
+    return cache.cacheStateSelector(state).entities
+  }
+
+  const enitityMapSelectorByTypename = Object.keys(optionalCache.typenames).reduce(
+    (result, x: keyof T) => {
+      result[x] = (state: any) => cache.cacheStateSelector(state).entities[x]
+      return result
+    },
+    {} as {[K in keyof T]: (state: any) => EntitiesMap<T>[K]}
+  )
 
   return {
-    cache: cache as Cache<T, QR, MR>,
+    cache,
     useQuery: <Q extends Query<T, any, any>>(options: Parameters<typeof useQuery<T, Q>>[1]) =>
-      useQuery(cache as Cache<T, QR, MR>, options),
+      useQuery(cache, options),
     useMutation: <M extends Mutation<T, any, any>>(
       options: Parameters<typeof useMutation<T, M>>[1]
-    ) => useMutation(cache as Cache<T, QR, MR>, options),
+    ) => useMutation(cache, options),
     reducer: createCacheReducer(cache.typenames, cache.queries, cache.mutations, cache.options),
     actions: {
       setQueryStateAndEntities: setQueryStateAndEntities as <K extends keyof QR>(
@@ -77,6 +97,46 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
       ) => ReturnType<typeof setMutationStateAndEntities<T, MR, K>>,
 
       mergeEntityChanges: mergeEntityChanges as typeof mergeEntityChanges<T>,
+    },
+    selectors: {
+      entitiesSelector,
+      useDenormalizeSelector: (
+        input: any,
+        schema: Schema<any>,
+        /**
+         * Set on which typenames result depends, to optimize redux state subscriptions and re-renders.
+         * If undefined then dependent on all entities.
+         * Should not change length during runtime. Not required to be memoized.
+         * */
+        dependentEntities?: (keyof T)[]
+      ) => {
+        cache.options.runtimeErrorChecksEnabled &&
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          useAssertValueNotChanged('dependentEntities.length', dependentEntities?.length)
+
+        const dependentEntityMaps =
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          dependentEntities?.map((x) => useSelector(enitityMapSelectorByTypename[x])) ??
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          useSelector(entitiesSelector)
+        const isArray = Array.isArray(dependentEntityMaps)
+
+        return useMemo(
+          () =>
+            denormalize(
+              input,
+              schema,
+              dependentEntities && isArray
+                ? dependentEntities.reduce((map, x, i) => {
+                    map[x] = dependentEntityMaps[i]
+                    return map
+                  }, {} as Partial<EntitiesMap<T>>)
+                : dependentEntityMaps
+            ),
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+          isArray ? [...dependentEntityMaps, input, schema] : [dependentEntityMaps, input, schema]
+        )
+      },
     },
   }
 }
