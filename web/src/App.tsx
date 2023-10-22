@@ -6,7 +6,7 @@ import {BrowserRouter, Link, Route, Routes} from 'react-router-dom'
 import {getUsers, getUsersSchema} from './api/getUsers'
 import {UserScreen} from './components/UserScreen'
 import {PersistGate} from 'redux-persist/integration/react'
-import {useDenormalizeSelector, useQuery} from './redux/cache'
+import {useSelectDenormalized, useQuery} from './redux/cache'
 
 const RootScreen = () => {
   const [{result, loading, error}, fetch] = useQuery({
@@ -16,7 +16,7 @@ const RootScreen = () => {
     },
   })
 
-  const denormalizedResult = useDenormalizeSelector(result, getUsersSchema, ['users'])
+  const denormalizedResult = useSelectDenormalized(result, getUsersSchema, ['users'])
 
   console.log('[RootScreen]', {
     result,

@@ -101,9 +101,8 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
 
       mergeEntityChanges: mergeEntityChanges as typeof mergeEntityChanges<T>,
     },
-    selectors: {
-      entitiesSelector,
-      useDenormalizeSelector: (
+    hooks: {
+      useSelectDenormalized: (
         input: any,
         schema: Schema<any>,
         /**

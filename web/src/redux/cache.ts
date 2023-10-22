@@ -11,7 +11,7 @@ export const {
   useMutation,
   useQuery,
   actions,
-  selectors: {useDenormalizeSelector},
+  hooks: {useSelectDenormalized},
 } = createCache({
   typenames: {
     users: {} as User,

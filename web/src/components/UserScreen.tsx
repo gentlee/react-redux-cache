@@ -1,7 +1,7 @@
 import {useParams} from 'react-router-dom'
 import logo from '../logo.svg'
 import {getUser, getUserSchema} from '../api/getUser'
-import {useDenormalizeSelector, useMutation, useQuery} from '../redux/cache'
+import {useSelectDenormalized, useMutation, useQuery} from '../redux/cache'
 import {updateUser as updateUserMutation} from '../api/updateUser'
 
 export const UserScreen = () => {
@@ -17,7 +17,7 @@ export const UserScreen = () => {
     mutation: updateUserMutation,
   })
 
-  const denormalizedResult = useDenormalizeSelector(result, getUserSchema, ['users', 'banks'])
+  const denormalizedResult = useSelectDenormalized(result, getUserSchema, ['users', 'banks'])
 
   console.log('[UserScreen]', {
     result,
