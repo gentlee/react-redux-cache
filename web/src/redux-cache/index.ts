@@ -57,9 +57,12 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
 ) => {
   // provide all optional fields
 
+  // @ts-expect-error
+  const hotReloadDisabled = !module?.hot
+
   optionalCache.options ??= {} as CacheOptions
-  optionalCache.options.runtimeErrorChecksEnabled ??= isDev
   optionalCache.options.logsEnabled ??= isDev
+  optionalCache.options.runtimeErrorChecksEnabled ??= isDev && hotReloadDisabled
 
   optionalCache.cacheStateSelector ??= defaultCacheStateSelector
 
