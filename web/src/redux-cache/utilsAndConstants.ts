@@ -53,7 +53,7 @@ export const processEntityChanges = <T extends Typenames>(
     return undefined
   }
 
-  if (options.runtimeErrorChecksEnabled) {
+  if (options.validateFunctionArguments) {
     // check for merge and entities both set
     if (changes.merge && changes.entities) {
       throw new Error('Response merge and entities should not be both set')

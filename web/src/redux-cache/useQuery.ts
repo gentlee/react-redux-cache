@@ -93,14 +93,12 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
   const store = useStore()
 
   // Check values that should be set once.
-  cache.options.runtimeErrorChecksEnabled &&
+  cache.options.validateHookArguments &&
     (() => {
       ;(
         [
           ['store', store],
           ['cache', cache],
-          ['cache.options.logsEnabled', cache.options.logsEnabled],
-          ['cache.options.runtimeErrorChecksEnabled', cache.options.runtimeErrorChecksEnabled],
           ['cache.queries', cache.queries],
           ['cacheStateSelector', cache.cacheStateSelector],
           ['cacheOptions.cacheEntities', cacheOptions.cacheEntities],

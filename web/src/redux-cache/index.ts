@@ -15,7 +15,6 @@ import {useMemo} from 'react'
 // Backlog
 
 // ! high
-// disable only specific checks when hot reload enabled?
 // README
 // cover with tests
 
@@ -60,13 +59,14 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
   optionalCache: Optional<Cache<T, QR, MR>, 'options'>
 ) => {
   // @ts-expect-error
-  const hotReloadDisabled = !module?.hot
+  const hotReloadEnabled = Boolean(module?.hot)
 
   // provide all optional fields
 
   optionalCache.options ??= {} as CacheOptions
   optionalCache.options.logsEnabled ??= isDev
-  optionalCache.options.runtimeErrorChecksEnabled ??= isDev && hotReloadDisabled
+  optionalCache.options.validateFunctionArguments ??= isDev
+  optionalCache.options.validateHookArguments ??= isDev && !hotReloadEnabled
 
   const cache = optionalCache as Cache<T, QR, MR>
 
@@ -134,7 +134,7 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
          * */
         dependentEntities?: (keyof T)[]
       ) => {
-        cache.options.runtimeErrorChecksEnabled &&
+        cache.options.validateHookArguments &&
           // eslint-disable-next-line react-hooks/rules-of-hooks
           useAssertValueNotChanged('dependentEntities.length', dependentEntities?.length)
 

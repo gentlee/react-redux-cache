@@ -43,14 +43,13 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
 
   // Check values that should be set once.
   // Can be removed from deps.
-  cache.options.runtimeErrorChecksEnabled &&
+  cache.options.validateHookArguments &&
     (() => {
       ;(
         [
           ['cache', cache],
           ['cache.options', cache.options],
           ['cache.options.logsEnabled', cache.options.logsEnabled],
-          ['cache.options.runtimeErrorChecksEnabled', cache.options.runtimeErrorChecksEnabled],
           ['cacheStateSelector', cache.cacheStateSelector],
           ['mutationKey', mutationKey],
           ['cacheOptions.cacheEntities', cacheOptions.cacheEntities],
