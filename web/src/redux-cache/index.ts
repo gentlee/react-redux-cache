@@ -5,21 +5,23 @@ import {
   setMutationStateAndEntities,
   setQueryStateAndEntities,
 } from './reducer'
-import {Cache, CacheOptions, EntitiesMap, Mutation, Optional, Query, Typenames} from './types'
+import {Cache, CacheOptions, EntitiesMap, Key, Mutation, Optional, Query, Typenames} from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
-import {defaultCacheStateSelector, isDev, useAssertValueNotChanged} from './utilsAndConstants'
+import {isDev, useAssertValueNotChanged} from './utilsAndConstants'
 import {Schema, denormalize} from 'normalizr'
 import {useMemo} from 'react'
 
 // Backlog
 
 // ! high
-// support hot reload
-// documentation
+// disable only specific checks when hot reload enabled?
+// README
 // cover with tests
 
 // ! medium
+// provide call query/mutation function to call them without hooks, but with all state updates
+// get typenames from schema? (useSelectDenormalized)
 // callback option on error / success?
 // cache policy as function? needsRefetch
 // add verbose debug logs
@@ -45,6 +47,7 @@ import {useMemo} from 'react'
 // QueryInfo.defaultOptions
 // set options in refresh/mutate functions
 // multiple reducers instead of 1?
+// don't cache result if resultSelector set?
 
 export * from './reducer'
 export * from './types'
@@ -52,19 +55,18 @@ export * from './useMutation'
 export * from './useQuery'
 export * from './utilsAndConstants'
 
+/** Creates reducer, actions and hooks for managing queries and mutations through redux cache. */
 export const createCache = <T extends Typenames, QR extends object, MR extends object>(
-  optionalCache: Optional<Cache<T, QR, MR>, 'options' | 'cacheStateSelector'>
+  optionalCache: Optional<Cache<T, QR, MR>, 'options'>
 ) => {
-  // provide all optional fields
-
   // @ts-expect-error
   const hotReloadDisabled = !module?.hot
+
+  // provide all optional fields
 
   optionalCache.options ??= {} as CacheOptions
   optionalCache.options.logsEnabled ??= isDev
   optionalCache.options.runtimeErrorChecksEnabled ??= isDev && hotReloadDisabled
-
-  optionalCache.cacheStateSelector ??= defaultCacheStateSelector
 
   const cache = optionalCache as Cache<T, QR, MR>
 
@@ -84,27 +86,47 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
 
   return {
     cache,
-    useQuery: <Q extends Query<T, any, any>>(options: Parameters<typeof useQuery<T, Q>>[1]) =>
-      useQuery(cache, options),
-    useMutation: <M extends Mutation<T, any, any>>(
-      options: Parameters<typeof useMutation<T, M>>[1]
-    ) => useMutation(cache, options),
+    /** Reducer of the cache, should be added to redux store. */
     reducer: createCacheReducer(cache.typenames, cache.queries, cache.mutations, cache.options),
     actions: {
+      /** Updates query state, and optionally merges entity changes in a single action. */
       setQueryStateAndEntities: setQueryStateAndEntities as <K extends keyof QR>(
         ...args: Parameters<typeof setQueryStateAndEntities<T, QR, K>>
       ) => ReturnType<typeof setQueryStateAndEntities<T, QR, K>>,
 
+      /** Updates mutation state, and optionally merges entity changes in a single action. */
       setMutationStateAndEntities: setMutationStateAndEntities as <K extends keyof MR>(
         ...args: Parameters<typeof setMutationStateAndEntities<T, MR, K>>
       ) => ReturnType<typeof setMutationStateAndEntities<T, MR, K>>,
 
+      /** Merge EntityChanges to the state. */
       mergeEntityChanges: mergeEntityChanges as typeof mergeEntityChanges<T>,
     },
     hooks: {
-      useSelectDenormalized: (
+      /** Fetches query when params change and subscribes to query state. */
+      useQuery: <Q extends Query<T, any, any>>(options: Parameters<typeof useQuery<T, Q>>[1]) =>
+        useQuery(cache, options),
+
+      /** Subscribes to provided mutation state and provides mutate function. */
+      useMutation: <M extends Mutation<T, any, any>>(
+        options: Parameters<typeof useMutation<T, M>>[1]
+      ) => useMutation(cache, options),
+
+      /** Selects entity by id and subscribes to the changes. */
+      useSelectEntityById: <K extends keyof T>(id: Key, typename: K): T[K] | undefined => {
+        return useSelector((state) => cache.cacheStateSelector(state).entities[typename][id])
+      },
+
+      /**
+       * Denormalizes provided input with schema and subscribes to changes of provided typenames.
+       * It is not recommended to use this hook. Prefer using useSelectEntityById.
+       * Keep in mind that normalized types differ from denormalized.
+       * */
+      useSelectDenormalized: <S = any>(
+        /** Passed as input to denormalize function of normalizr. */
         input: any,
-        schema: Schema<any>,
+        /** Passed as schema to denormalize function of normalizr. */
+        schema: Schema<S>,
         /**
          * Set on which typenames result depends, to optimize redux state subscriptions and re-renders.
          * If undefined then dependent on all entities.

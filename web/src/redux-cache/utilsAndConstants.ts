@@ -18,8 +18,6 @@ export const defaultEndpointState = {loading: false} as const
 
 export const defaultGetParamsKey = (params: any) => (!params ? '' : JSON.stringify(params))
 
-export const defaultCacheStateSelector = (state: any) => state
-
 const forceUpdateReducer = (i: number) => i + 1
 
 /**

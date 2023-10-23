@@ -3,16 +3,15 @@ import {getUsers} from '../api/getUsers'
 import {removeUser} from '../api/removeUser'
 import {User, Bank} from '../api/types'
 import {updateUser} from '../api/updateUser'
-import {createCache} from '../redux-cache'
+import {GetQueryInfo, createCache} from '../redux-cache'
 
 export const {
   cache,
   reducer,
-  useMutation,
-  useQuery,
-  actions,
-  hooks: {useSelectDenormalized},
+  actions: {setQueryStateAndEntities, setMutationStateAndEntities, mergeEntityChanges},
+  hooks: {useMutation, useQuery, useSelectDenormalized},
 } = createCache({
+  cacheStateSelector: (state) => state,
   typenames: {
     users: {} as User,
     banks: {} as Bank,
@@ -32,10 +31,10 @@ export const {
           array: [...oldResult.array, ...newResult.array],
         }
       },
-    },
+    } satisfies GetQueryInfo<typeof getUsers>,
     getUser: {
       query: getUser,
-      resultSelector: (state, {id}: {id: number}) => (state.entities.users[id] as User)?.id,
+      resultSelector: (state, {id}) => state.entities.users[id]?.id,
     },
   },
   mutations: {

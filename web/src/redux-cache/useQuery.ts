@@ -26,21 +26,20 @@ const CACHE_FIRST_OPTIONS = {
 
 export const QUERY_CACHE_OPTIONS_BY_POLICY: Record<QueryCachePolicy, QueryCacheOptions> = {
   'cache-first': CACHE_FIRST_OPTIONS,
-  'cache-and-network': {
+  'cache-and-fetch': {
     ...CACHE_FIRST_OPTIONS,
-    policy: 'cache-and-network',
+    policy: 'cache-and-fetch',
   },
 } as const
 
 export const DEFAULT_QUERY_CACHE_OPTIONS = QUERY_CACHE_OPTIONS_BY_POLICY['cache-first']
 
-const getRequestKey = (queryKey: Key, paramsKey: string | number) =>
-  `${String(queryKey)}:${paramsKey}` // TODO change Key to string | number and remove String()?
+const getRequestKey = (queryKey: Key, paramsKey: Key) => `${String(queryKey)}:${String(paramsKey)}`
 
 type RefState<P, R> = {
   params: P
-  paramsKey: string | number
-  cacheKey: string
+  paramsKey: Key
+  cacheKey: Key
   requestKey: string
   latestHookRequestKey: string
   resultSelector?: (state: any) => R | undefined
@@ -82,8 +81,8 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
     cacheOptions: cacheOptionsOrPolicy = cache.queries[queryKey].cacheOptions ??
       DEFAULT_QUERY_CACHE_OPTIONS,
     mergeResults = cache.queries[queryKey].mergeResults,
-    getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetParamsKey,
     getParamsKey = cache.queries[queryKey].getParamsKey ?? defaultGetParamsKey,
+    getCacheKey = cache.queries[queryKey].getCacheKey ?? getParamsKey,
   } = options
 
   const cacheOptions =
@@ -145,7 +144,7 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
   const resultFromSelector =
     // eslint-disable-next-line react-hooks/rules-of-hooks
     stateRef.current.resultSelector && useSelector(stateRef.current.resultSelector)
-  const hasResultFromSelector = resultFromSelector != null
+  const hasResultFromSelector = resultFromSelector !== undefined
 
   const queryStateSelector = useCallback((state: any) => {
     cache.options.logsEnabled &&
