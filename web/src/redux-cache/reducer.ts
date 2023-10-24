@@ -1,15 +1,15 @@
-import {Cache, Dict, EntitiesMap, EntityChanges, QueryMutationState, Typenames} from './types'
+import {Cache, Dict, EntitiesMap, EntityChanges, Key, QueryMutationState, Typenames} from './types'
 import {PACKAGE_NAME, processEntityChanges} from './utilsAndConstants'
 
-export type ReduxCacheState<T extends Typenames, QR extends object, MR extends object> = ReturnType<
-  ReturnType<typeof createCacheReducer<T, QR, MR>>
+export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
+  ReturnType<typeof createCacheReducer<T, QP, QR, MP, MR>>
 >
 
-export const createCacheReducer = <T extends Typenames, QR extends object, MR extends object>(
-  typenames: Cache<T, QR, MR>['typenames'],
-  queries: Cache<T, QR, MR>['queries'],
-  mutations: Cache<T, QR, MR>['mutations'],
-  cacheOptions: Cache<T, QR, MR>['options']
+export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
+  typenames: Cache<T, QP, QR, MP, MR>['typenames'],
+  queries: Cache<T, QP, QR, MP, MR>['queries'],
+  mutations: Cache<T, QP, QR, MP, MR>['mutations'],
+  cacheOptions: Cache<T, QP, QR, MP, MR>['options']
 ) => {
   const entitiesMap = {} as EntitiesMap<T>
   for (const key in typenames) {
@@ -18,7 +18,7 @@ export const createCacheReducer = <T extends Typenames, QR extends object, MR ex
 
   const queriesMap = {} as {[QK in keyof QR]: Dict<QueryMutationState<QR[QK]>>}
   for (const key in queries) {
-    queriesMap[key] = {}
+    queriesMap[key as keyof QR] = {}
   }
 
   const mutationsMap = {} as {[MK in keyof MR]: QueryMutationState<MR[MK]>}
@@ -103,13 +103,9 @@ export const createCacheReducer = <T extends Typenames, QR extends object, MR ex
 
 const actionPrefix = `@${PACKAGE_NAME}/`
 
-export const setQueryStateAndEntities = <
-  T extends Typenames,
-  QR extends object,
-  K extends keyof QR
->(
+export const setQueryStateAndEntities = <T extends Typenames, QR, K extends keyof QR>(
   queryKey: K,
-  queryCacheKey: string,
+  queryCacheKey: Key,
   state?: Partial<QueryMutationState<QR[K]>>,
   entityChagnes?: EntityChanges<T>
 ) => ({
@@ -120,11 +116,7 @@ export const setQueryStateAndEntities = <
   entityChagnes,
 })
 
-export const setMutationStateAndEntities = <
-  T extends Typenames,
-  MR extends object,
-  K extends keyof MR
->(
+export const setMutationStateAndEntities = <T extends Typenames, MR, K extends keyof MR>(
   mutationKey: K,
   state?: Partial<QueryMutationState<MR[K]>>,
   entityChagnes?: EntityChanges<T>

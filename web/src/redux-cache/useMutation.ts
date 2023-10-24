@@ -1,7 +1,7 @@
-import {useCallback, useMemo, useRef} from 'react'
+import {useCallback, useRef} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
 import {defaultEndpointState, useAssertValueNotChanged} from './utilsAndConstants'
-import {Cache, Mutation, MutationCacheOptions, QueryMutationState, Typenames} from './types'
+import {Cache, MutationCacheOptions, QueryMutationState, Typenames} from './types'
 import {setMutationStateAndEntities} from './reducer'
 
 export const DEFAULT_MUTATION_CACHE_OPTIONS: MutationCacheOptions = {
@@ -9,28 +9,18 @@ export const DEFAULT_MUTATION_CACHE_OPTIONS: MutationCacheOptions = {
   cacheEntities: true,
 }
 
-export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>>(
-  cache: Cache<T, any, any>,
+export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & MR)>(
+  cache: Cache<T, any, any, MP, MR>,
   options: {
-    mutation: M
+    mutation: MK
     cacheOptions?: MutationCacheOptions
   }
 ) => {
-  type P = M extends Mutation<T, infer P, any> ? P : never
-  type R = M extends Mutation<T, any, infer R> ? R : never
-
-  const mutationKey = useMemo(() => {
-    const mutationKeys = Object.keys(cache.mutations)
-    for (const key of mutationKeys) {
-      if (cache.mutations[key].mutation === options.mutation) {
-        return key
-      }
-    }
-    throw new Error(`Can't find mutation function in cache.mutations.`)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  type P = MK extends keyof (MP | MR) ? MP[MK] : never
+  type R = MK extends keyof (MP | MR) ? MP[MK] : never
 
   const {
+    mutation: mutationKey,
     cacheOptions = cache.mutations[mutationKey].cacheOptions ?? DEFAULT_MUTATION_CACHE_OPTIONS,
   } = options
 
@@ -68,10 +58,11 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
         state,
         cacheState: cache.cacheStateSelector(state),
       })
-    return cache.cacheStateSelector(state).mutations[mutationKey]
+    return cache.cacheStateSelector(state).mutations[mutationKey as keyof MR]
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // @ts-expect-error fix later
   const mutationState: QueryMutationState<R> =
     useSelector(mutationStateSelector) ?? defaultEndpointState
 
@@ -89,11 +80,7 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
       } else {
         cacheOptions.cacheMutationState &&
           dispatch(
-            setMutationStateAndEntities(
-              // @ts-ignore
-              mutationKey,
-              {loading: true}
-            )
+            setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {loading: true})
           )
       }
       const abortController = new AbortController()
@@ -103,7 +90,11 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
       let error
       const fetchFn = cache.mutations[mutationKey].mutation
       try {
-        response = await fetchFn(params, abortController.signal)
+        response = await fetchFn(
+          // @ts-expect-error fix later
+          params,
+          abortController.signal
+        )
       } catch (e) {
         error = e
       }
@@ -124,8 +115,7 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
       if (response) {
         dispatch(
           setMutationStateAndEntities(
-            // @ts-ignore
-            mutationKey,
+            mutationKey as keyof MR,
             cacheOptions.cacheMutationState
               ? {
                   error: undefined,
@@ -138,11 +128,10 @@ export const useMutation = <T extends Typenames, M extends Mutation<T, any, any>
         )
       } else if (error && cacheOptions.cacheMutationState) {
         dispatch(
-          setMutationStateAndEntities(
-            // @ts-ignore
-            mutationKey,
-            {error: error as Error, loading: false}
-          )
+          setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
+            error: error as Error,
+            loading: false,
+          })
         )
       }
     },

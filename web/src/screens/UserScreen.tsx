@@ -1,20 +1,19 @@
 import {useParams} from 'react-router-dom'
 import logo from '../logo.svg'
-import {getUser, getUserSchema} from '../api/getUser'
+import {getUserSchema} from '../api/getUser'
 import {useSelectDenormalized, useMutation, useQuery} from '../redux/cache'
-import {updateUser as updateUserMutation} from '../api/updateUser'
 
 export const UserScreen = () => {
   const {id} = useParams()
 
   const [{result, loading, error}] = useQuery({
-    query: getUser,
+    query: 'getUser',
     cacheOptions: 'cache-first',
     params: {id: Number(id)},
   })
 
   const [updateUser, {loading: updatingUser}] = useMutation({
-    mutation: updateUserMutation,
+    mutation: 'updateUser',
   })
 
   const denormalizedResult = useSelectDenormalized(result, getUserSchema, ['users', 'banks'])

@@ -3,7 +3,7 @@ import {getUsers} from '../api/getUsers'
 import {removeUser} from '../api/removeUser'
 import {User, Bank} from '../api/types'
 import {updateUser} from '../api/updateUser'
-import {GetQueryInfo, createCache} from '../redux-cache'
+import {createCache} from '../redux-cache'
 
 export const {
   cache,
@@ -12,6 +12,9 @@ export const {
   hooks: {useMutation, useQuery, useSelectDenormalized},
 } = createCache({
   cacheStateSelector: (state) => state,
+  options: {
+    logsEnabled: true,
+  },
   typenames: {
     users: {} as User,
     banks: {} as Bank,
@@ -31,7 +34,7 @@ export const {
           array: [...oldResult.array, ...newResult.array],
         }
       },
-    } satisfies GetQueryInfo<typeof getUsers>,
+    },
     getUser: {
       query: getUser,
       resultSelector: (state, {id}) => state.entities.users[id]?.id,
@@ -47,11 +50,11 @@ export const {
   },
 })
 
-// actions.setQueryStateAndEntities('getUser', 'a', {
+// setQueryStateAndEntities('getUser', 'a', {
 //   result: 0,
 // })
 
-// const state = reducer({} as ReturnType<typeof reducer>, {type: 'redux-light/SET_STATE', state: {}})
+// const state = reducer({} as ReturnType<typeof reducer>, null)
 // state.entities.banks.a
 // state.queries.getUser.a.result
 // state.queries.getUsers.a.result

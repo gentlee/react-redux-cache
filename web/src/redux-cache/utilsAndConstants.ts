@@ -7,7 +7,7 @@ export const PACKAGE_NAME = 'redux-cache'
 
 export const isDev: boolean = (() => {
   try {
-    // @ts-ignore
+    // @ts-expect-error
     return __DEV__
   } catch (e) {
     return process.env.NODE_ENV === 'development'
@@ -16,7 +16,7 @@ export const isDev: boolean = (() => {
 
 export const defaultEndpointState = {loading: false} as const
 
-export const defaultGetParamsKey = (params: any) => (!params ? '' : JSON.stringify(params))
+export const defaultGetParamsKey = <P = any>(params: P) => (!params ? '' : JSON.stringify(params))
 
 const forceUpdateReducer = (i: number) => i + 1
 

@@ -3,12 +3,12 @@ import {useSelector, useStore} from 'react-redux'
 import {
   Cache,
   Key,
-  Query,
   QueryCacheOptions,
   QueryCachePolicy,
   QueryInfo,
   QueryMutationState,
   Typenames,
+  UseQueryOptions,
 } from './types'
 import {
   defaultEndpointState,
@@ -16,7 +16,7 @@ import {
   useAssertValueNotChanged,
   useForceUpdate,
 } from './utilsAndConstants'
-import {setQueryStateAndEntities} from './reducer'
+import {ReduxCacheState, setQueryStateAndEntities} from './reducer'
 
 const CACHE_FIRST_OPTIONS = {
   policy: 'cache-first',
@@ -32,7 +32,7 @@ export const QUERY_CACHE_OPTIONS_BY_POLICY: Record<QueryCachePolicy, QueryCacheO
   },
 } as const
 
-export const DEFAULT_QUERY_CACHE_OPTIONS = QUERY_CACHE_OPTIONS_BY_POLICY['cache-first']
+export const DEFAULT_QUERY_CACHE_OPTIONS = CACHE_FIRST_OPTIONS
 
 const getRequestKey = (queryKey: Key, paramsKey: Key) => `${String(queryKey)}:${String(paramsKey)}`
 
@@ -45,43 +45,22 @@ type RefState<P, R> = {
   resultSelector?: (state: any) => R | undefined
 }
 
-export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
-  cache: Cache<T, any, any>,
-  options: {
-    query: Q
-    params: Q extends Query<T, infer P, any> ? P : never
-    skip?: boolean
-  } & Pick<
-    QueryInfo<
-      T,
-      Q extends Query<T, infer P, any> ? P : never,
-      Q extends Query<T, any, infer R> ? R : never,
-      any
-    >,
-    'cacheOptions' | 'mergeResults' | 'getCacheKey' | 'getParamsKey'
-  >
+export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
+  cache: Cache<T, QP, QR, MP, MR>,
+  options: UseQueryOptions<T, QP, QR, MP, MR, QK>
 ) => {
-  type P = Q extends Query<T, infer P, any> ? P : never
-  type R = Q extends Query<T, any, infer R> ? R : never
-
-  const queryKey = useMemo(() => {
-    const queryKeys = Object.keys(cache.queries)
-    for (const key of queryKeys) {
-      if (cache.queries[key].query === options.query) {
-        return key
-      }
-    }
-    throw new Error(`Can't find query function in cache.queries.`)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  type P = QK extends keyof (QP | QR) ? QP[QK] : never
+  type R = QK extends keyof (QP | QR) ? QR[QK] : never
+  type S = ReduxCacheState<T, QP, QR, MP, MR>
 
   const {
+    query: queryKey,
     skip,
     params: hookParams,
     cacheOptions: cacheOptionsOrPolicy = cache.queries[queryKey].cacheOptions ??
       DEFAULT_QUERY_CACHE_OPTIONS,
     mergeResults = cache.queries[queryKey].mergeResults,
-    getParamsKey = cache.queries[queryKey].getParamsKey ?? defaultGetParamsKey,
+    getParamsKey = cache.queries[queryKey].getParamsKey ?? defaultGetParamsKey<P>,
     getCacheKey = cache.queries[queryKey].getCacheKey ?? getParamsKey,
   } = options
 
@@ -114,7 +93,12 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
 
   const forceUpdate = useForceUpdate()
 
-  const hookParamsKey = useMemo(() => getParamsKey(hookParams), [getParamsKey, hookParams])
+  const hookParamsKey = useMemo(
+    () =>
+      // @ts-expect-error fix later
+      getParamsKey(hookParams),
+    [getParamsKey, hookParams]
+  )
 
   // Keeps most of local state.
   // Reference because state is changed not only by changing hook arguments, but also by calling fetch, and it should be done synchronously.
@@ -128,10 +112,12 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
     const state = stateRef.current
     state.params = hookParams
     state.paramsKey = hookParamsKey
+    // @ts-expect-error fix later
     state.cacheKey = getCacheKey(hookParams)
     state.requestKey = getRequestKey(queryKey, hookParamsKey)
     state.latestHookRequestKey = state.requestKey
-    state.resultSelector = createResultSelector(
+    state.resultSelector = createResultSelector<T, P, R, S>(
+      // @ts-expect-error fix later
       resultSelectorImpl,
       cache.cacheStateSelector,
       hookParams
@@ -152,7 +138,8 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
         cacheKey: stateRef.current.cacheKey,
         cacheState: cache.cacheStateSelector(state),
       })
-    const queryState = cache.cacheStateSelector(state).queries[queryKey][stateRef.current.cacheKey]
+    const queryState =
+      cache.cacheStateSelector(state).queries[queryKey as keyof QR][stateRef.current.cacheKey]
     return queryState as QueryMutationState<R> | undefined // TODO proper type
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -184,8 +171,7 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
 
     cacheOptions.cacheQueryState &&
       store.dispatch(
-        // @ts-ignore
-        setQueryStateAndEntities(queryKey, stateRef.current.cacheKey, {
+        setQueryStateAndEntities<T, QR, keyof QR>(queryKey as keyof QR, stateRef.current.cacheKey, {
           loading: true,
         })
       )
@@ -195,13 +181,15 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
     let response
     const fetchFn = cache.queries[queryKey].query
     try {
-      response = await fetchFn(params)
+      response = await fetchFn(
+        // @ts-expect-error fix later
+        params
+      )
     } catch (error) {
       if (stateRef.current.requestKey === requestKey && cacheOptions.cacheQueryState) {
         store.dispatch(
-          setQueryStateAndEntities(
-            // @ts-ignore
-            queryKey,
+          setQueryStateAndEntities<T, QR, keyof QR>(
+            queryKey as keyof QR,
             stateRef.current.cacheKey,
             {
               error: error as Error,
@@ -215,8 +203,7 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
     if (response && stateRef.current.requestKey === requestKey) {
       store.dispatch(
         setQueryStateAndEntities(
-          // @ts-ignore
-          queryKey,
+          queryKey as keyof QR,
           stateRef.current.cacheKey,
           !cacheOptions.cacheQueryState
             ? undefined
@@ -226,7 +213,12 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
                 result: hasResultFromSelector
                   ? undefined
                   : mergeResults
-                  ? mergeResults(queryStateSelector(store.getState())?.result, response, params)
+                  ? mergeResults(
+                      // @ts-expect-error fix later
+                      queryStateSelector(store.getState())?.result,
+                      response,
+                      params
+                    )
                   : response.result,
               },
           cacheOptions.cacheEntities ? response : undefined
@@ -254,6 +246,7 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
 
       if (params !== undefined) {
         const state = stateRef.current
+        // @ts-expect-error fix later
         const paramsKey = getParamsKey(params)
 
         if (state.paramsKey !== paramsKey) {
@@ -261,9 +254,11 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
 
           state.params = params
           state.paramsKey = paramsKey
+          // @ts-expect-error fix later
           state.cacheKey = getCacheKey(params)
           state.requestKey = getRequestKey(queryKey, state.paramsKey)
-          state.resultSelector = createResultSelector(
+          state.resultSelector = createResultSelector<T, P, R, S>(
+            // @ts-expect-error fix later
             resultSelectorImpl,
             cache.cacheStateSelector,
             hookParams
@@ -282,8 +277,8 @@ export const useQuery = <T extends Typenames, Q extends Query<T, any, any>>(
   return [queryState, fetch] as const
 }
 
-const createResultSelector = <P, R, S>(
-  resultSelector: QueryInfo<any, P, R, S>['resultSelector'],
+const createResultSelector = <T extends Typenames, P, R, S>(
+  resultSelector: QueryInfo<T, P, R, S>['resultSelector'],
   cacheStateSelector: (state: any) => S,
   params: P
 ): RefState<P, R>['resultSelector'] => {

@@ -5,7 +5,7 @@ import {
   setMutationStateAndEntities,
   setQueryStateAndEntities,
 } from './reducer'
-import {Cache, CacheOptions, EntitiesMap, Key, Mutation, Optional, Query, Typenames} from './types'
+import {Cache, CacheOptions, EntitiesMap, Key, OptionalPartial, Typenames} from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
 import {isDev, useAssertValueNotChanged} from './utilsAndConstants'
@@ -15,8 +15,8 @@ import {useMemo} from 'react'
 // Backlog
 
 // ! high
-// README
 // cover with tests
+// create package with README
 
 // ! medium
 // provide call query/mutation function to call them without hooks, but with all state updates
@@ -55,39 +55,41 @@ export * from './useQuery'
 export * from './utilsAndConstants'
 
 /** Creates reducer, actions and hooks for managing queries and mutations through redux cache. */
-export const createCache = <T extends Typenames, QR extends object, MR extends object>(
-  optionalCache: Optional<Cache<T, QR, MR>, 'options'>
+export const createCache = <T extends Typenames, QP, QR, MP, MR>(
+  cache: OptionalPartial<Cache<T, QP, QR, MP, MR>, 'options'>
 ) => {
-  // @ts-expect-error
+  // @ts-expect-error hot
   const hotReloadEnabled = Boolean(module?.hot)
 
   // provide all optional fields
 
-  optionalCache.options ??= {} as CacheOptions
-  optionalCache.options.logsEnabled ??= isDev
-  optionalCache.options.validateFunctionArguments ??= isDev
-  optionalCache.options.validateHookArguments ??= isDev && !hotReloadEnabled
+  cache.options ??= {} as CacheOptions
+  cache.options.logsEnabled ??= false
+  cache.options.validateFunctionArguments ??= isDev
+  cache.options.validateHookArguments ??= isDev && !hotReloadEnabled
 
-  const cache = optionalCache as Cache<T, QR, MR>
+  const nonPartialCache = cache as Cache<T, QP, QR, MP, MR>
 
   // make selectors
 
   const entitiesSelector = (state: any) => {
-    return cache.cacheStateSelector(state).entities
+    return nonPartialCache.cacheStateSelector(state).entities
   }
 
-  const enitityMapSelectorByTypename = Object.keys(optionalCache.typenames).reduce(
-    (result, x: keyof T) => {
-      result[x] = (state: any) => cache.cacheStateSelector(state).entities[x]
-      return result
-    },
-    {} as {[K in keyof T]: (state: any) => EntitiesMap<T>[K]}
-  )
+  const enitityMapSelectorByTypename = Object.keys(cache.typenames).reduce((result, x: keyof T) => {
+    result[x] = (state: any) => nonPartialCache.cacheStateSelector(state).entities[x]
+    return result
+  }, {} as {[K in keyof T]: (state: any) => EntitiesMap<T>[K]})
 
   return {
-    cache,
+    cache: nonPartialCache,
     /** Reducer of the cache, should be added to redux store. */
-    reducer: createCacheReducer(cache.typenames, cache.queries, cache.mutations, cache.options),
+    reducer: createCacheReducer<T, QP, QR, MP, MR>(
+      nonPartialCache.typenames,
+      nonPartialCache.queries,
+      nonPartialCache.mutations,
+      nonPartialCache.options
+    ),
     actions: {
       /** Updates query state, and optionally merges entity changes in a single action. */
       setQueryStateAndEntities: setQueryStateAndEntities as <K extends keyof QR>(
@@ -104,17 +106,20 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
     },
     hooks: {
       /** Fetches query when params change and subscribes to query state. */
-      useQuery: <Q extends Query<T, any, any>>(options: Parameters<typeof useQuery<T, Q>>[1]) =>
-        useQuery(cache, options),
+      useQuery: <QK extends keyof (QP & QR)>(
+        options: Parameters<typeof useQuery<T, QP, QR, MP, MR, QK>>[1]
+      ) => useQuery(nonPartialCache, options),
 
       /** Subscribes to provided mutation state and provides mutate function. */
-      useMutation: <M extends Mutation<T, any, any>>(
-        options: Parameters<typeof useMutation<T, M>>[1]
-      ) => useMutation(cache, options),
+      useMutation: <MK extends keyof (MP & MR)>(
+        options: Parameters<typeof useMutation<T, MP, MR, MK>>[1]
+      ) => useMutation(nonPartialCache, options),
 
       /** Selects entity by id and subscribes to the changes. */
       useSelectEntityById: <K extends keyof T>(id: Key, typename: K): T[K] | undefined => {
-        return useSelector((state) => cache.cacheStateSelector(state).entities[typename][id])
+        return useSelector(
+          (state) => nonPartialCache.cacheStateSelector(state).entities[typename][id]
+        )
       },
 
       /**
@@ -134,7 +139,7 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
          * */
         dependentEntities?: (keyof T)[]
       ) => {
-        cache.options.validateHookArguments &&
+        nonPartialCache.options.validateHookArguments &&
           // eslint-disable-next-line react-hooks/rules-of-hooks
           useAssertValueNotChanged('dependentEntities.length', dependentEntities?.length)
 
@@ -145,7 +150,7 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
           useSelector(entitiesSelector)
         const isArray = Array.isArray(dependentEntityMaps)
 
-        return useMemo(
+        const result = useMemo(
           () =>
             denormalize(
               input,
@@ -160,6 +165,8 @@ export const createCache = <T extends Typenames, QR extends object, MR extends o
           // eslint-disable-next-line react-hooks/exhaustive-deps
           isArray ? [...dependentEntityMaps, input, schema] : [dependentEntityMaps, input, schema]
         )
+
+        return result
       },
     },
   }

@@ -6,7 +6,7 @@ export type Key = string | number | symbol
 
 export type Dict<T> = Record<Key, T>
 
-export type Optional<T, K extends keyof T> = Partial<Pick<T, K>> & Omit<T, K>
+export type OptionalPartial<T, K extends keyof T> = Partial<{[A in K]: Partial<T[A]>}> & Omit<T, K>
 
 /** Entity changes to be merged to redux state. */
 export type EntityChanges<T extends Typenames> = {
@@ -26,20 +26,24 @@ export type EntityChanges<T extends Typenames> = {
 /** Record of typename and its corresponding entity type */
 export type Typenames = Record<string, object>
 
-export type Cache<T extends Typenames, QR extends object, MR extends object> = {
+export type Cache<T extends Typenames, QP, QR, MP, MR> = {
   typenames: T
   queries: {
-    [QK in keyof QR]: QueryInfo<
-      T,
-      any,
-      QR[QK],
-      ReturnType<ReturnType<typeof createCacheReducer<T, QR, MR>>>
-    >
+    [QK in keyof (QP & QR)]: QK extends keyof (QP | QR)
+      ? QueryInfo<
+          T,
+          QP[QK],
+          QR[QK],
+          ReturnType<ReturnType<typeof createCacheReducer<T, QP, QR, MP, MR>>>
+        >
+      : never
   }
-  mutations: {[MK in keyof MR]: MutationInfo<T, any, MR[MK]>}
+  mutations: {
+    [MK in keyof (MP & MR)]: MK extends keyof (MP | MR) ? MutationInfo<T, MP[MK], MR[MK]> : never
+  }
   options: CacheOptions
   /** Returns cache state from redux root state. */
-  cacheStateSelector: (state: any) => ReduxCacheState<T, QR, MR>
+  cacheStateSelector: (state: any) => ReduxCacheState<T, QP, QR, MP, MR>
 }
 
 export type CacheOptions = {
@@ -56,7 +60,7 @@ export type CacheOptions = {
   validateHookArguments: boolean
   /**
    * Enable console logs.
-   * Default is true in dev mode.
+   * Default is false.
    */
   logsEnabled: boolean
 }
@@ -71,21 +75,19 @@ export type EntityIds<T extends Typenames> = {[K in keyof T]: Key[]}
 
 export type Query<T extends Typenames, P, R> = (params: P) => Promise<QueryResponse<T, R>>
 
-/** Helper to get QueryInfo from query */
-export type GetQueryInfo<Q extends Query<any, any, any>, S = any> = Q extends Query<
-  infer T,
-  infer P,
-  infer R
->
-  ? QueryInfo<T, P, R, S>
-  : never
-
 export type QueryInfo<T extends Typenames, P, R, S> = {
   query: Query<T, P, R>
+  /**
+   * Cache policy string or cache options object.
+   * Default is { policy: 'cache-first', cacheQueryState: true, cacheEntities: true }
+   * @param cache-first for each params key fetch is not called if cache exists.
+   * @param cache-and-fetch for each params key result is taken from cache and fetch is called.
+   */
   cacheOptions?: QueryCacheOptions | QueryCachePolicy
   /**
-   * Custom selector for query result from redux state.
-   * Also used by cache policy to determine if fetch needed.
+   * Selector for query result from redux state.
+   * Can prevent hook from doing unnecessary fetches.
+   * Needed when query result may already be in the cache, e.g. for single entity query by id.
    * */
   resultSelector?: (state: S, params: P) => R | undefined
   /** Merges results before saving to the store. */
@@ -95,7 +97,8 @@ export type QueryInfo<T extends Typenames, P, R, S> = {
     params: P | undefined
   ) => R
   /**
-   * Cache key is used as a key of query state in queries map. Each key has its own query state.
+   * Cache key is a key in redux state for caching query state.
+   * Each key has its own query state. Queries with equal cache keys have the same state.
    * Default implementation is equal to `getParamsKey`.
    * */
   getCacheKey?: (params?: P) => Key
@@ -105,6 +108,17 @@ export type QueryInfo<T extends Typenames, P, R, S> = {
    * */
   getParamsKey?: (params?: P) => Key
 }
+
+export type UseQueryOptions<T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)> = {
+  query: QK
+  params: QK extends keyof (QP | QR) ? QP[QK] : never
+  skip?: boolean
+} & Pick<
+  QK extends keyof (QP | QR)
+    ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QP, QR, MP, MR>>
+    : never,
+  'cacheOptions' | 'mergeResults' | 'getCacheKey' | 'getParamsKey'
+>
 
 /**
  * @param cache-first for each params key fetch is not called if cache exists.
