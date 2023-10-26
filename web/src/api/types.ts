@@ -1,7 +1,7 @@
 export type User = {
   id: number
   name: string
-  bank: Bank
+  bank: string
 }
 
 export type Bank = {

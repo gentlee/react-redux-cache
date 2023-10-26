@@ -1,7 +1,6 @@
 import {useParams} from 'react-router-dom'
 import logo from '../logo.svg'
-import {getUserSchema} from '../api/getUser'
-import {useSelectDenormalized, useMutation, useQuery} from '../redux/cache'
+import {useMutation, useQuery, useSelectEntityById} from '../redux/cache'
 
 export const UserScreen = () => {
   const {id} = useParams()
@@ -16,13 +15,15 @@ export const UserScreen = () => {
     mutation: 'updateUser',
   })
 
-  const denormalizedResult = useSelectDenormalized(result, getUserSchema, ['users', 'banks'])
+  const user = useSelectEntityById(result, 'users')
+  const bank = useSelectEntityById(user?.bank, 'banks')
 
   console.log('[UserScreen]', {
     result,
     loading,
     error,
-    denormalizedResult,
+    user,
+    bank,
   })
 
   if (loading) {
@@ -40,15 +41,16 @@ export const UserScreen = () => {
         <button
           className="User-screen-update-user-button"
           onClick={() => {
-            denormalizedResult &&
+            user &&
               updateUser({
-                id: denormalizedResult.id,
-                name: denormalizedResult.name + ' *',
+                id: user.id,
+                name: user.name + ' *',
               })
           }}
         >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
-        <p>{'User result: ' + JSON.stringify(result)}</p>
-        <p>{'User denormalized result: ' + JSON.stringify(denormalizedResult)}</p>
+        <p>{'Result: ' + JSON.stringify(result)}</p>
+        <p>{'User: ' + JSON.stringify(user)}</p>
+        <p>{'Bank: ' + JSON.stringify(bank)}</p>
       </header>
     </div>
   )

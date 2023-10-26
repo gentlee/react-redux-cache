@@ -1,43 +1,14 @@
-import {User, Bank} from './types'
-
-export const banks: Bank[] = [
-  {
-    staticId: '1',
-    name: 'Bank 1',
-  },
-  {
-    staticId: '2',
-    name: 'Bank 2',
-  },
-]
-
-export const users: User[] = [
-  {
-    id: 1,
-    name: 'User 1',
-    bank: banks[0],
-  },
-  {
-    id: 2,
-    name: 'User 2',
-    bank: {
-      staticId: '1',
-    } as Bank,
-  },
-  {
-    id: 3,
-    name: 'User 3',
-    bank: banks[1],
-  },
-]
-
-export const generateMockUser = (id: number): User => {
+export const generateMockUser = (id: number) => {
   return {
     id,
     name: `User ${id}`,
-    bank: {
-      staticId: String(id),
-      name: `Bank ${id}`,
-    },
+    bank: generateMockBank(String(id)),
+  }
+}
+
+export const generateMockBank = (staticId: string) => {
+  return {
+    staticId,
+    name: 'Bank ' + staticId,
   }
 }

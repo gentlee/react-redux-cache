@@ -9,11 +9,11 @@ export const {
   cache,
   reducer,
   actions: {setQueryStateAndEntities, setMutationStateAndEntities, mergeEntityChanges},
-  hooks: {useMutation, useQuery, useSelectDenormalized},
+  hooks: {useMutation, useQuery, useSelectDenormalized, useSelectEntityById},
 } = createCache({
   cacheStateSelector: (state) => state,
   options: {
-    logsEnabled: true,
+    logsEnabled: false,
   },
   typenames: {
     users: {} as User,

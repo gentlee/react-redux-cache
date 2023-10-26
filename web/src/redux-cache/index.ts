@@ -15,8 +15,8 @@ import {useMemo} from 'react'
 // Backlog
 
 // ! high
-// cover with tests
 // create package with README
+// cover with tests
 
 // ! medium
 // provide call query/mutation function to call them without hooks, but with all state updates
@@ -116,9 +116,12 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
       ) => useMutation(nonPartialCache, options),
 
       /** Selects entity by id and subscribes to the changes. */
-      useSelectEntityById: <K extends keyof T>(id: Key, typename: K): T[K] | undefined => {
-        return useSelector(
-          (state) => nonPartialCache.cacheStateSelector(state).entities[typename][id]
+      useSelectEntityById: <K extends keyof T>(
+        id: Key | null | undefined,
+        typename: K
+      ): T[K] | undefined => {
+        return useSelector((state) =>
+          id == null ? undefined : nonPartialCache.cacheStateSelector(state).entities[typename][id]
         )
       },
 

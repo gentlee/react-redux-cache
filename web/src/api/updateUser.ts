@@ -1,22 +1,18 @@
-import {MutationResponse} from '../redux-cache'
-import {users} from './mocks'
+import {normalize} from 'normalizr'
 import {User} from './types'
 import {delay} from './utils'
+import {userSchema} from './schemas'
+import {generateMockUser} from './mocks'
 
-export const updateUser = async (user: Partial<User> & Pick<User, 'id'>) => {
+export const updateUser = async (user: Partial<Omit<User, 'bank'>> & Pick<User, 'id'>) => {
   await delay(1000)
 
   const response = {
-    result: user.id,
-    merge: {
-      users: {
-        [user.id]: {
-          ...(users.find((x) => x.id === user.id) as User),
-          ...user,
-        },
-      },
-    },
-  } satisfies MutationResponse<any, any>
+    ...generateMockUser(user.id),
+    ...user,
+  }
 
-  return response
+  const result = normalize(response, userSchema)
+
+  return result
 }
