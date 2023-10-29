@@ -43,6 +43,7 @@ export type Cache<T extends Typenames, QP, QR, MP, MR> = {
   }
   options: CacheOptions
   /** Returns cache state from redux root state. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cacheStateSelector: (state: any) => ReduxCacheState<T, QP, QR, MP, MR>
 }
 

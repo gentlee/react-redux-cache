@@ -1,6 +1,6 @@
 {
   "author": "Alexander Danilov",
-  "name": "redux-cache",
+  "name": "react-redux-query-normalized",
   "version": "0.0.1",
   "description": "Normalized query manager with redux.",
   "main": "dist/index.js",

@@ -6,7 +6,7 @@ import {useMutation, useQuery, useSelectEntityById} from '../redux/cache'
 export const UserScreen = () => {
   const {id} = useParams()
 
-  const [{result, loading, error}] = useQuery({
+  const [{result: userId, loading, error}] = useQuery({
     query: 'getUser',
     cacheOptions: 'cache-first',
     params: {id: Number(id)},
@@ -16,11 +16,11 @@ export const UserScreen = () => {
     mutation: 'updateUser',
   })
 
-  const user = useSelectEntityById(result, 'users')
+  const user = useSelectEntityById(userId, 'users')
   const bank = useSelectEntityById(user?.bank, 'banks')
 
   console.log('[UserScreen]', {
-    result,
+    result: userId,
     loading,
     error,
     user,
@@ -49,7 +49,7 @@ export const UserScreen = () => {
               })
           }}
         >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
-        <p>{'Result: ' + JSON.stringify(result)}</p>
+        <p>{'Result: ' + JSON.stringify(userId)}</p>
         <p>{'User: ' + JSON.stringify(user)}</p>
         <p>{'Bank: ' + JSON.stringify(bank)}</p>
       </header>

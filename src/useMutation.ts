@@ -11,7 +11,7 @@ export const DEFAULT_MUTATION_CACHE_OPTIONS: MutationCacheOptions = {
 }
 
 export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & MR)>(
-  cache: Cache<T, any, any, MP, MR>,
+  cache: Cache<T, unknown, unknown, MP, MR>,
   options: {
     mutation: MK
     cacheOptions?: MutationCacheOptions
@@ -45,7 +45,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
           ['mutationKey', mutationKey],
           ['cacheOptions.cacheEntities', cacheOptions.cacheEntities],
           ['cacheOptions.cacheMutationState', cacheOptions.cacheMutationState],
-        ] as [key: string, value: any][]
+        ] as [key: string, value: unknown][]
       )
         // eslint-disable-next-line react-hooks/rules-of-hooks
         .forEach((args) => useAssertValueNotChanged(...args))
@@ -53,7 +53,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
 
   const abortControllerRef = useRef<AbortController>()
 
-  const mutationStateSelector = useCallback((state: any) => {
+  const mutationStateSelector = useCallback((state: unknown) => {
     cache.options.logsEnabled &&
       console.log('[mutationStateSelector]', {
         state,

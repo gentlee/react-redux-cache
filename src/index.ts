@@ -18,6 +18,7 @@ import {isDev} from './utilsAndConstants'
 // cover with tests
 
 // ! medium
+// add params to the state
 // selector for entities by typename
 // provide call query/mutation function to call them without hooks, but with all state updates
 // get typenames from schema? (useSelectDenormalized)
@@ -72,14 +73,14 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
 
   // make selectors
 
-  const entitiesSelector = (state: any) => {
+  const entitiesSelector = (state: unknown) => {
     return nonPartialCache.cacheStateSelector(state).entities
   }
 
   const enitityMapSelectorByTypename = Object.keys(cache.typenames).reduce((result, x: keyof T) => {
-    result[x] = (state: any) => nonPartialCache.cacheStateSelector(state).entities[x]
+    result[x] = (state: unknown) => nonPartialCache.cacheStateSelector(state).entities[x]
     return result
-  }, {} as {[K in keyof T]: (state: any) => EntitiesMap<T>[K]})
+  }, {} as {[K in keyof T]: (state: unknown) => EntitiesMap<T>[K]})
 
   return {
     cache: nonPartialCache,
