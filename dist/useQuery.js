@@ -24,10 +24,13 @@ exports.QUERY_CACHE_OPTIONS_BY_POLICY = {
     'cache-and-fetch': Object.assign(Object.assign({}, CACHE_FIRST_OPTIONS), { policy: 'cache-and-fetch' }),
 };
 exports.DEFAULT_QUERY_CACHE_OPTIONS = CACHE_FIRST_OPTIONS;
-const getRequestKey = (queryKey, paramsKey) => `${String(queryKey)}:${String(paramsKey)}`;
 const useQuery = (cache, options) => {
     var _a, _b, _c, _d;
-    const { query: queryKey, skip, params: hookParams, cacheOptions: cacheOptionsOrPolicy = (_a = cache.queries[queryKey].cacheOptions) !== null && _a !== void 0 ? _a : exports.DEFAULT_QUERY_CACHE_OPTIONS, mergeResults = cache.queries[queryKey].mergeResults, getParamsKey = (_b = cache.queries[queryKey].getParamsKey) !== null && _b !== void 0 ? _b : (utilsAndConstants_1.defaultGetParamsKey), getCacheKey = (_c = cache.queries[queryKey].getCacheKey) !== null && _c !== void 0 ? _c : getParamsKey, } = options;
+    const getParamsKey = (_a = cache.queries[options.query].getParamsKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetParamsKey);
+    const { query: queryKey, skip, params: hookParams, cacheOptions: cacheOptionsOrPolicy = (_b = cache.queries[queryKey].cacheOptions) !== null && _b !== void 0 ? _b : exports.DEFAULT_QUERY_CACHE_OPTIONS, mergeResults = cache.queries[queryKey].mergeResults, getCacheKey = (_c = cache.queries[queryKey].getCacheKey) !== null && _c !== void 0 ? _c : getParamsKey, } = options;
+    const hookParamsKey = getParamsKey(
+    // @ts-expect-error fix later
+    hookParams);
     const cacheOptions = typeof cacheOptionsOrPolicy === 'string'
         ? exports.QUERY_CACHE_OPTIONS_BY_POLICY[cacheOptionsOrPolicy]
         : cacheOptionsOrPolicy;
@@ -51,29 +54,25 @@ const useQuery = (cache, options) => {
                 .forEach((args) => (0, utilsAndConstants_1.useAssertValueNotChanged)(...args));
         })();
     const forceUpdate = (0, utilsAndConstants_1.useForceUpdate)();
-    const hookParamsKey = (0, react_1.useMemo)(() => 
-    // @ts-expect-error fix later
-    getParamsKey(hookParams), [getParamsKey, hookParams]);
     // Keeps most of local state.
     // Reference because state is changed not only by changing hook arguments, but also by calling fetch, and it should be done synchronously.
     const stateRef = (0, react_1.useRef)({});
     (0, react_1.useMemo)(() => {
-        if (stateRef.current.paramsKey === hookParamsKey) {
+        if (skip || stateRef.current.paramsKey === hookParamsKey) {
             return;
         }
         const resultSelectorImpl = cache.queries[queryKey].resultSelector;
         const state = stateRef.current;
         state.params = hookParams;
         state.paramsKey = hookParamsKey;
+        state.latestHookParamsKey = state.paramsKey;
         // @ts-expect-error fix later
         state.cacheKey = getCacheKey(hookParams);
-        state.requestKey = getRequestKey(queryKey, hookParamsKey);
-        state.latestHookRequestKey = state.requestKey;
         state.resultSelector = createResultSelector(
         // @ts-expect-error fix later
         resultSelectorImpl, cache.cacheStateSelector, hookParams);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [hookParamsKey]);
+    }, [hookParamsKey, skip]);
     const resultFromSelector = 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     stateRef.current.resultSelector && (0, react_redux_1.useSelector)(stateRef.current.resultSelector);
@@ -81,7 +80,7 @@ const useQuery = (cache, options) => {
     const queryStateSelector = (0, react_1.useCallback)((state) => {
         cache.options.logsEnabled &&
             console.log('[queryStateSelector]', {
-                state: state,
+                state,
                 queryKey,
                 cacheKey: stateRef.current.cacheKey,
                 cacheState: cache.cacheStateSelector(state),
@@ -114,7 +113,7 @@ const useQuery = (cache, options) => {
             store.dispatch((0, reducer_1.setQueryStateAndEntities)(queryKey, stateRef.current.cacheKey, {
                 loading: true,
             }));
-        const { requestKey, params } = stateRef.current;
+        const { paramsKey, params } = stateRef.current;
         let response;
         const fetchFn = cache.queries[queryKey].query;
         try {
@@ -123,14 +122,14 @@ const useQuery = (cache, options) => {
             params);
         }
         catch (error) {
-            if (stateRef.current.requestKey === requestKey && cacheOptions.cacheQueryState) {
+            if (stateRef.current.paramsKey === paramsKey && cacheOptions.cacheQueryState) {
                 store.dispatch((0, reducer_1.setQueryStateAndEntities)(queryKey, stateRef.current.cacheKey, {
                     error: error,
                     loading: false,
                 }));
             }
         }
-        if (response && stateRef.current.requestKey === requestKey) {
+        if (response && stateRef.current.paramsKey === paramsKey) {
             store.dispatch((0, reducer_1.setQueryStateAndEntities)(queryKey, stateRef.current.cacheKey, !cacheOptions.cacheQueryState
                 ? undefined
                 : {
@@ -148,15 +147,12 @@ const useQuery = (cache, options) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [mergeResults, queryState.loading, hasResultFromSelector]);
     (0, react_1.useEffect)(() => {
-        if (skip) {
-            return;
-        }
         if (queryState.result != null && cacheOptions.policy === 'cache-first') {
             return;
         }
         fetchImpl();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [stateRef.current.latestHookRequestKey, skip]);
+    }, [stateRef.current.latestHookParamsKey]);
     const fetch = (0, react_1.useCallback)((params) => {
         cache.options.logsEnabled && console.log('[fetch]', params);
         if (params !== undefined) {
@@ -169,7 +165,6 @@ const useQuery = (cache, options) => {
                 state.paramsKey = paramsKey;
                 // @ts-expect-error fix later
                 state.cacheKey = getCacheKey(params);
-                state.requestKey = getRequestKey(queryKey, state.paramsKey);
                 state.resultSelector = createResultSelector(
                 // @ts-expect-error fix later
                 resultSelectorImpl, cache.cacheStateSelector, hookParams);
@@ -179,10 +174,10 @@ const useQuery = (cache, options) => {
         return fetchImpl();
     }, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [fetchImpl, getCacheKey, getParamsKey]);
+    [fetchImpl, getCacheKey]);
     return [queryState, fetch];
 };
 exports.useQuery = useQuery;
 const createResultSelector = (resultSelector, cacheStateSelector, params) => {
-    return resultSelector && ((state) => resultSelector(cacheStateSelector(state), params));
+    return (resultSelector && ((state) => resultSelector(cacheStateSelector(state), params)));
 };

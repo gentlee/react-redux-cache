@@ -98,16 +98,17 @@ export type QueryInfo<T extends Typenames, P, R, S> = {
     params: P | undefined
   ) => R
   /**
-   * Cache key is a key in redux state for caching query state.
-   * Each key has its own query state. Queries with equal cache keys have the same state.
-   * Default implementation is equal to `getParamsKey`.
-   * */
-  getCacheKey?: (params?: P) => Key
-  /**
    * Params key is used for determining if parameters were changed and fetch is needed.
+   * Also used as cache key, of `getCacheKey` wasn't provided.
    * Default implementation uses `JSON.stringify` of parameters.
    * */
   getParamsKey?: (params?: P) => Key
+  /**
+   * Cache key is a key in redux state for caching query state.
+   * Queries with equal cache keys have the same state.
+   * Default implementation is equal to `getParamsKey`.
+   * */
+  getCacheKey?: (params?: P) => Key
 }
 
 export type UseQueryOptions<T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)> = {
@@ -118,7 +119,7 @@ export type UseQueryOptions<T extends Typenames, QP, QR, MP, MR, QK extends keyo
   QK extends keyof (QP | QR)
     ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QP, QR, MP, MR>>
     : never,
-  'cacheOptions' | 'mergeResults' | 'getCacheKey' | 'getParamsKey'
+  'cacheOptions' | 'mergeResults' | 'getCacheKey'
 >
 
 /**

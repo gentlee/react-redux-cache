@@ -57,8 +57,8 @@ export declare const createCache: <T extends Typenames, QP, QR, MP, MR>(cache: O
         };
     };
     selectors: {
-        entitiesSelector: (state: any) => EntitiesMap<T>;
-        entitiesByTypenameSelector: <TN extends keyof T>(typename: TN) => { [K_2 in keyof T]: (state: any) => EntitiesMap<T>[K_2]; }[TN];
+        entitiesSelector: (state: unknown) => EntitiesMap<T>;
+        entitiesByTypenameSelector: <TN extends keyof T>(typename: TN) => { [K_2 in keyof T]: (state: unknown) => EntitiesMap<T>[K_2]; }[TN];
     };
     hooks: {
         /** Fetches query when params change and subscribes to query state. */

@@ -25,6 +25,7 @@ const utilsAndConstants_1 = require("./utilsAndConstants");
 // create package with README
 // cover with tests
 // ! medium
+// add params to the state
 // selector for entities by typename
 // provide call query/mutation function to call them without hooks, but with all state updates
 // get typenames from schema? (useSelectDenormalized)
