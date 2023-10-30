@@ -1,17 +1,21 @@
 {
-  "author": "Alexander Danilov",
   "name": "react-redux-query-normalized",
+  "author": "Alexander Danilov",
+  "license": "MIT",
   "version": "0.0.1",
-  "description": "Normalized query manager with redux.",
+  "description": "Powerful data fetching and caching library with normalization, built on top of redux",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "clean": "rm -rf dist",
     "build": "yarn clean && tsc",
     "test": "yarn build && node node_modules/jest/bin/jest.js",
-    "prepublishOnly": "yarn test"
+    "prepublishOnly": "yarn test",
+    "example": "yarn build && (cd example && yarn && yarn start)"
   },
-  "license": "MIT",
+  "files": [
+    "dist/*"
+  ],
   "devDependencies": {
     "@types/jest": "29.5.1",
     "@types/node": "20.1.2",

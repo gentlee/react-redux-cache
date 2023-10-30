@@ -23,7 +23,7 @@ const useMutation = (cache, options) => {
     const { mutation: mutationKey, cacheOptions = (_a = cache.mutations[mutationKey].cacheOptions) !== null && _a !== void 0 ? _a : exports.DEFAULT_MUTATION_CACHE_OPTIONS, } = options;
     const dispatch = (0, react_redux_1.useDispatch)();
     cache.options.logsEnabled &&
-        console.log('[useMutation]', {
+        (0, utilsAndConstants_1.log)('useMutation', {
             cacheOptions,
         });
     // Check values that should be set once.
@@ -46,7 +46,7 @@ const useMutation = (cache, options) => {
     const abortControllerRef = (0, react_1.useRef)();
     const mutationStateSelector = (0, react_1.useCallback)((state) => {
         cache.options.logsEnabled &&
-            console.log('[mutationStateSelector]', {
+            (0, utilsAndConstants_1.log)('mutationStateSelector', {
                 state,
                 cacheState: cache.cacheStateSelector(state),
             });
@@ -57,7 +57,7 @@ const useMutation = (cache, options) => {
     const mutationState = (_b = (0, react_redux_1.useSelector)(mutationStateSelector)) !== null && _b !== void 0 ? _b : utilsAndConstants_1.defaultEndpointState;
     const mutate = (0, react_1.useCallback)((params) => __awaiter(void 0, void 0, void 0, function* () {
         cache.options.logsEnabled &&
-            console.log('[mutate]', {
+            (0, utilsAndConstants_1.log)('mutate', {
                 mutationKey,
                 params,
                 abortController: abortControllerRef.current,
@@ -83,7 +83,7 @@ const useMutation = (cache, options) => {
             error = e;
         }
         cache.options.logsEnabled &&
-            console.log('[mutate] finished', {
+            (0, utilsAndConstants_1.log)('mutate finished', {
                 response,
                 error,
                 aborted: abortController.signal.aborted,

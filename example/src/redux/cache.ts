@@ -1,4 +1,4 @@
-import {createCache} from 'redux-cache'
+import {createCache} from 'react-redux-query-normalized'
 
 import {getUser} from '../api/getUser'
 import {getUsers} from '../api/getUsers'

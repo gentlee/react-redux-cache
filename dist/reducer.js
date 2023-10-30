@@ -18,7 +18,7 @@ const createCacheReducer = (typenames, queries, mutations, cacheOptions) => {
         mutations: mutationsMap,
     };
     cacheOptions.logsEnabled &&
-        console.debug(`@${utilsAndConstants_1.PACKAGE_NAME} [createCacheReducer]`, {
+        (0, utilsAndConstants_1.log)('createCacheReducer', {
             typenames,
             queries,
             mutations,
@@ -26,7 +26,7 @@ const createCacheReducer = (typenames, queries, mutations, cacheOptions) => {
         });
     return (state = initialState, action) => {
         switch (action.type) {
-            case '@redux-cache/SET_QUERY_STATE_AND_ENTITIES': {
+            case '@RRQN/SET_QUERY_STATE_AND_ENTITIES': {
                 const { queryKey, queryCacheKey, state: queryState, entityChagnes } = action;
                 const newEntities = entityChagnes && (0, utilsAndConstants_1.processEntityChanges)(state.entities, entityChagnes, cacheOptions);
                 if (!queryState && !newEntities) {
@@ -34,7 +34,7 @@ const createCacheReducer = (typenames, queries, mutations, cacheOptions) => {
                 }
                 return Object.assign(Object.assign(Object.assign({}, state), (newEntities ? { entities: newEntities } : null)), { queries: Object.assign(Object.assign({}, state.queries), { [queryKey]: Object.assign(Object.assign({}, state.queries[queryKey]), { [queryCacheKey]: Object.assign(Object.assign({}, state.queries[queryKey][queryCacheKey]), queryState) }) }) });
             }
-            case '@redux-cache/SET_MUTATION_STATE_AND_ENTITIES': {
+            case '@RRQN/SET_MUTATION_STATE_AND_ENTITIES': {
                 const { mutationKey, state: mutationState, entityChagnes } = action;
                 const newEntities = entityChagnes && (0, utilsAndConstants_1.processEntityChanges)(state.entities, entityChagnes, cacheOptions);
                 if (!mutationState && !newEntities) {
@@ -42,7 +42,7 @@ const createCacheReducer = (typenames, queries, mutations, cacheOptions) => {
                 }
                 return Object.assign(Object.assign(Object.assign({}, state), (newEntities ? { entities: newEntities } : null)), { mutations: Object.assign(Object.assign({}, state.mutations), { [mutationKey]: Object.assign(Object.assign({}, state.mutations[mutationKey]), mutationState) }) });
             }
-            case '@redux-cache/MERGE_ENTITY_CHANGES': {
+            case '@RRQN/MERGE_ENTITY_CHANGES': {
                 const { changes } = action;
                 const newEntities = (0, utilsAndConstants_1.processEntityChanges)(state.entities, changes, cacheOptions);
                 return newEntities ? Object.assign(Object.assign({}, state), { entities: newEntities }) : state;
@@ -52,7 +52,7 @@ const createCacheReducer = (typenames, queries, mutations, cacheOptions) => {
     };
 };
 exports.createCacheReducer = createCacheReducer;
-const actionPrefix = `@${utilsAndConstants_1.PACKAGE_NAME}/`;
+const actionPrefix = `@${utilsAndConstants_1.PACKAGE_SHORT_NAME}/`;
 const setQueryStateAndEntities = (queryKey, queryCacheKey, state, entityChagnes) => ({
     type: `${actionPrefix}SET_QUERY_STATE_AND_ENTITIES`,
     queryKey,

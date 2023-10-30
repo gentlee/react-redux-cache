@@ -15,6 +15,7 @@ import {
 import {
   defaultEndpointState,
   defaultGetParamsKey,
+  log,
   useAssertValueNotChanged,
   useForceUpdate,
 } from './utilsAndConstants'
@@ -130,7 +131,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
 
   const queryStateSelector = useCallback((state: unknown) => {
     cache.options.logsEnabled &&
-      console.log('[queryStateSelector]', {
+      log('queryStateSelector', {
         state,
         queryKey,
         cacheKey: stateRef.current.cacheKey,
@@ -151,19 +152,8 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
       } satisfies QueryMutationState<R>)
     : queryStateFromSelector
 
-  cache.options.logsEnabled &&
-    console.log('[useQuery]', {
-      queryKey,
-      refState: stateRef.current,
-      cacheOptions,
-      resultFromSelector,
-      hasResultFromSelector,
-      queryState,
-      queryStateFromSelector,
-    })
-
   const fetchImpl = useCallback(async () => {
-    cache.options.logsEnabled && console.log('[useQuery.fetch]', {queryState})
+    cache.options.logsEnabled && log('useQuery.fetchImpl', {queryState})
 
     if (queryState.loading) {
       return
@@ -239,7 +229,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
 
   const fetch = useCallback(
     (params?: P) => {
-      cache.options.logsEnabled && console.log('[fetch]', params)
+      cache.options.logsEnabled && log('useQuery.fetch', params)
 
       if (params !== undefined) {
         const state = stateRef.current

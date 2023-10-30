@@ -3,7 +3,7 @@ import {useDispatch, useSelector} from 'react-redux'
 
 import {setMutationStateAndEntities} from './reducer'
 import {Cache, MutationCacheOptions, QueryMutationState, Typenames} from './types'
-import {defaultEndpointState, useAssertValueNotChanged} from './utilsAndConstants'
+import {defaultEndpointState, log, useAssertValueNotChanged} from './utilsAndConstants'
 
 export const DEFAULT_MUTATION_CACHE_OPTIONS: MutationCacheOptions = {
   cacheMutationState: true,
@@ -28,7 +28,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
   const dispatch = useDispatch()
 
   cache.options.logsEnabled &&
-    console.log('[useMutation]', {
+    log('useMutation', {
       cacheOptions,
     })
 
@@ -55,7 +55,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
 
   const mutationStateSelector = useCallback((state: unknown) => {
     cache.options.logsEnabled &&
-      console.log('[mutationStateSelector]', {
+      log('mutationStateSelector', {
         state,
         cacheState: cache.cacheStateSelector(state),
       })
@@ -70,7 +70,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
   const mutate = useCallback(
     async (params: P) => {
       cache.options.logsEnabled &&
-        console.log('[mutate]', {
+        log('mutate', {
           mutationKey,
           params,
           abortController: abortControllerRef.current,
@@ -101,7 +101,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
       }
 
       cache.options.logsEnabled &&
-        console.log('[mutate] finished', {
+        log('mutate finished', {
           response,
           error,
           aborted: abortController.signal.aborted,

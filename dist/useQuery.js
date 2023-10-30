@@ -79,7 +79,7 @@ const useQuery = (cache, options) => {
     const hasResultFromSelector = resultFromSelector !== undefined;
     const queryStateSelector = (0, react_1.useCallback)((state) => {
         cache.options.logsEnabled &&
-            console.log('[queryStateSelector]', {
+            (0, utilsAndConstants_1.log)('queryStateSelector', {
                 state,
                 queryKey,
                 cacheKey: stateRef.current.cacheKey,
@@ -93,19 +93,9 @@ const useQuery = (cache, options) => {
     const queryState = hasResultFromSelector
         ? (Object.assign(Object.assign({}, queryStateFromSelector), { result: resultFromSelector }))
         : queryStateFromSelector;
-    cache.options.logsEnabled &&
-        console.log('[useQuery]', {
-            queryKey,
-            refState: stateRef.current,
-            cacheOptions,
-            resultFromSelector,
-            hasResultFromSelector,
-            queryState,
-            queryStateFromSelector,
-        });
     const fetchImpl = (0, react_1.useCallback)(() => __awaiter(void 0, void 0, void 0, function* () {
         var _e;
-        cache.options.logsEnabled && console.log('[useQuery.fetch]', { queryState });
+        cache.options.logsEnabled && (0, utilsAndConstants_1.log)('useQuery.fetchImpl', { queryState });
         if (queryState.loading) {
             return;
         }
@@ -154,7 +144,7 @@ const useQuery = (cache, options) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [stateRef.current.latestHookParamsKey]);
     const fetch = (0, react_1.useCallback)((params) => {
-        cache.options.logsEnabled && console.log('[fetch]', params);
+        cache.options.logsEnabled && (0, utilsAndConstants_1.log)('useQuery.fetch', params);
         if (params !== undefined) {
             const state = stateRef.current;
             // @ts-expect-error fix later

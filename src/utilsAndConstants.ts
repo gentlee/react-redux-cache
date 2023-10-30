@@ -3,11 +3,11 @@ import {useReducer} from 'react'
 
 import {CacheOptions, EntitiesMap, EntityChanges, Typenames} from './types'
 
-export const PACKAGE_NAME = 'redux-cache'
+export const PACKAGE_SHORT_NAME = 'RRQN'
 
 export const isDev: boolean = (() => {
   try {
-    // @ts-expect-error
+    // @ts-expect-error __DEV__ is only for React Native
     return __DEV__
   } catch (e) {
     return process.env.NODE_ENV === 'development'
@@ -16,7 +16,8 @@ export const isDev: boolean = (() => {
 
 export const defaultEndpointState = {loading: false} as const
 
-export const defaultGetParamsKey = <P = any>(params: P) => (!params ? '' : JSON.stringify(params))
+export const defaultGetParamsKey = <P = unknown>(params: P) =>
+  !params ? '' : JSON.stringify(params)
 
 const forceUpdateReducer = (i: number) => i + 1
 
@@ -27,7 +28,7 @@ export const useForceUpdate = () => {
   return useReducer(forceUpdateReducer, 0)[1]
 }
 
-export const useAssertValueNotChanged = (name: string, value: any) => {
+export const useAssertValueNotChanged = (name: string, value: unknown) => {
   const firstMountRef = useRef(false)
   useMemo(() => {
     if (firstMountRef.current) {
@@ -36,6 +37,10 @@ export const useAssertValueNotChanged = (name: string, value: any) => {
     firstMountRef.current = true
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
+}
+
+export const log = (tag: string, data: unknown) => {
+  console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
 }
 
 /**
@@ -109,7 +114,7 @@ export const processEntityChanges = <T extends Typenames>(
     result[typename] = newEntities
   }
 
-  console.log('[processEntityChanges]', {
+  log('processEntityChanges', {
     entities,
     changes,
     result,

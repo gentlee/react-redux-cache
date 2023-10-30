@@ -1,5 +1,5 @@
 import {Cache, Dict, EntitiesMap, EntityChanges, Key, QueryMutationState, Typenames} from './types'
-import {PACKAGE_NAME, processEntityChanges} from './utilsAndConstants'
+import {log, PACKAGE_SHORT_NAME, processEntityChanges} from './utilsAndConstants'
 
 export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
   ReturnType<typeof createCacheReducer<T, QP, QR, MP, MR>>
@@ -30,7 +30,7 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
   }
 
   cacheOptions.logsEnabled &&
-    console.debug(`@${PACKAGE_NAME} [createCacheReducer]`, {
+    log('createCacheReducer', {
       typenames,
       queries,
       mutations,
@@ -46,7 +46,7 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
     >
   ): typeof initialState => {
     switch (action.type) {
-      case '@redux-cache/SET_QUERY_STATE_AND_ENTITIES': {
+      case '@RRQN/SET_QUERY_STATE_AND_ENTITIES': {
         const {queryKey, queryCacheKey, state: queryState, entityChagnes} = action
 
         const newEntities =
@@ -71,7 +71,7 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
           },
         }
       }
-      case '@redux-cache/SET_MUTATION_STATE_AND_ENTITIES': {
+      case '@RRQN/SET_MUTATION_STATE_AND_ENTITIES': {
         const {mutationKey, state: mutationState, entityChagnes} = action
 
         const newEntities =
@@ -93,7 +93,7 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
           },
         }
       }
-      case '@redux-cache/MERGE_ENTITY_CHANGES': {
+      case '@RRQN/MERGE_ENTITY_CHANGES': {
         const {changes} = action
 
         const newEntities = processEntityChanges(state.entities, changes, cacheOptions)
@@ -105,7 +105,7 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
   }
 }
 
-const actionPrefix = `@${PACKAGE_NAME}/`
+const actionPrefix = `@${PACKAGE_SHORT_NAME}/`
 
 export const setQueryStateAndEntities = <T extends Typenames, QR, K extends keyof QR>(
   queryKey: K,

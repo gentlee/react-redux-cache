@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.processEntityChanges = exports.useAssertValueNotChanged = exports.useForceUpdate = exports.defaultGetParamsKey = exports.defaultEndpointState = exports.isDev = exports.PACKAGE_NAME = void 0;
+exports.processEntityChanges = exports.log = exports.useAssertValueNotChanged = exports.useForceUpdate = exports.defaultGetParamsKey = exports.defaultEndpointState = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
 const react_1 = require("react");
 const react_2 = require("react");
-exports.PACKAGE_NAME = 'redux-cache';
+exports.PACKAGE_SHORT_NAME = 'RRQN';
 exports.isDev = (() => {
     try {
-        // @ts-expect-error
+        // @ts-expect-error __DEV__ is only for React Native
         return __DEV__;
     }
     catch (e) {
@@ -14,7 +14,7 @@ exports.isDev = (() => {
     }
 })();
 exports.defaultEndpointState = { loading: false };
-const defaultGetParamsKey = (params) => (!params ? '' : JSON.stringify(params));
+const defaultGetParamsKey = (params) => !params ? '' : JSON.stringify(params);
 exports.defaultGetParamsKey = defaultGetParamsKey;
 const forceUpdateReducer = (i) => i + 1;
 /**
@@ -35,6 +35,10 @@ const useAssertValueNotChanged = (name, value) => {
     }, [value]);
 };
 exports.useAssertValueNotChanged = useAssertValueNotChanged;
+const log = (tag, data) => {
+    console.debug(`@${exports.PACKAGE_SHORT_NAME} [${tag}]`, data);
+};
+exports.log = log;
 /**
  * Process changes to entities map.
  * @return `undefined` if nothing to change, otherwise processed entities map.
@@ -88,7 +92,7 @@ const processEntityChanges = (entities, changes, options) => {
         result !== null && result !== void 0 ? result : (result = Object.assign({}, entities));
         result[typename] = newEntities;
     }
-    console.log('[processEntityChanges]', {
+    (0, exports.log)('processEntityChanges', {
         entities,
         changes,
         result,

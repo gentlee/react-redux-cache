@@ -1,16 +1,17 @@
 /// <reference types="react" />
 import { CacheOptions, EntitiesMap, EntityChanges, Typenames } from './types';
-export declare const PACKAGE_NAME = "redux-cache";
+export declare const PACKAGE_SHORT_NAME = "RRQN";
 export declare const isDev: boolean;
 export declare const defaultEndpointState: {
     readonly loading: false;
 };
-export declare const defaultGetParamsKey: <P = any>(params: P) => string;
+export declare const defaultGetParamsKey: <P = unknown>(params: P) => string;
 /**
  * @returns function to force update a function component.
  */
 export declare const useForceUpdate: () => import("react").DispatchWithoutAction;
-export declare const useAssertValueNotChanged: (name: string, value: any) => void;
+export declare const useAssertValueNotChanged: (name: string, value: unknown) => void;
+export declare const log: (tag: string, data: unknown) => void;
 /**
  * Process changes to entities map.
  * @return `undefined` if nothing to change, otherwise processed entities map.
