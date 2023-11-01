@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.processEntityChanges = exports.log = exports.useAssertValueNotChanged = exports.useForceUpdate = exports.defaultGetParamsKey = exports.defaultEndpointState = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
 const react_1 = require("react");
 const react_2 = require("react");
-exports.PACKAGE_SHORT_NAME = 'RRQN';
+exports.PACKAGE_SHORT_NAME = 'RRC';
 exports.isDev = (() => {
     try {
         // @ts-expect-error __DEV__ is only for React Native

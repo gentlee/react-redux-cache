@@ -1,5 +1,5 @@
 {
-  "name": "react-redux-query-normalized",
+  "name": "react-redux-cache",
   "author": "Alexander Danilov",
   "license": "MIT",
   "version": "0.0.1",
@@ -7,11 +7,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "clean": "rm -rf dist",
-    "build": "yarn clean && tsc",
+    "example": "yarn build && (cd example && yarn && yarn start)",
+    "clean": "rm -rf dist package.tgz",
+    "build": "yarn clean && tsc && yarn pack -f package.tgz",
     "test": "yarn build && node node_modules/jest/bin/jest.js",
-    "prepublishOnly": "yarn test",
-    "example": "yarn build && (cd example && yarn && yarn start)"
+    "prepublishOnly": "yarn test"
   },
   "files": [
     "dist/*"

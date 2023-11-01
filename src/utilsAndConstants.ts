@@ -3,7 +3,7 @@ import {useReducer} from 'react'
 
 import {CacheOptions, EntitiesMap, EntityChanges, Typenames} from './types'
 
-export const PACKAGE_SHORT_NAME = 'RRQN'
+export const PACKAGE_SHORT_NAME = 'RRC'
 
 export const isDev: boolean = (() => {
   try {

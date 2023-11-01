@@ -1,6 +1,6 @@
 /// <reference types="react" />
 import { CacheOptions, EntitiesMap, EntityChanges, Typenames } from './types';
-export declare const PACKAGE_SHORT_NAME = "RRQN";
+export declare const PACKAGE_SHORT_NAME = "RRC";
 export declare const isDev: boolean;
 export declare const defaultEndpointState: {
     readonly loading: false;
