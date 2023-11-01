@@ -9,7 +9,7 @@ export const UserScreen = () => {
   const [{result: userId, loading, error}] = useQuery({
     query: 'getUser',
     cacheOptions: 'cache-first',
-    params: {id: Number(id)},
+    params: Number(id),
   })
 
   const [updateUser, {loading: updatingUser}] = useMutation({

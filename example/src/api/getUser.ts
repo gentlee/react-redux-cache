@@ -7,7 +7,7 @@ import {delay} from './utils'
 
 export const getUserSchema = userSchema
 
-export const getUser = async ({id}: {id: number}) => {
+export const getUser = async (id: number) => {
   await delay(1000)
 
   const result = {
