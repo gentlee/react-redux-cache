@@ -2,7 +2,7 @@
   "name": "react-redux-cache",
   "author": "Alexander Danilov",
   "license": "MIT",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Powerful data fetching and caching library that supports normalization, built on top of redux",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -52,5 +52,9 @@
     "cache",
     "query",
     "normalization"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gentlee/react-redux-cache.git"
+  }
 }
