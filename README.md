@@ -1,6 +1,6 @@
 # react-redux-cache
 
-**Powerfull** and **customizable** data fetching and caching library that supports **normalization** (unlike `react-query` and `rtk-query`), built on top of `redux`.
+**Powerful** yet **lightweight** data fetching and caching library that supports **normalization** unlike `react-query` and `rtk-query`, while having similar interface. Built on top of `redux`.
 
 **Normalization** is the only way to keep the state of the app **consistent** between different views, reduces the number of fetches and allows to show cached data when navigating, which greatly improves **user experience**.
 
