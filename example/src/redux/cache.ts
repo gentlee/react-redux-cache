@@ -39,7 +39,7 @@ export const {
     },
     getUser: {
       query: getUser,
-      resultSelector: (state, {id}) => state.entities.users[id]?.id,
+      resultSelector: (state, id) => state.entities.users[id]?.id,
     },
   },
   mutations: {
