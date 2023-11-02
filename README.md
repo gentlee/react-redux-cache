@@ -79,7 +79,7 @@ export const getUser = async (id: number) => {
 }
 
 export const removeUser = async (id: number) => {
-  awwait ...
+  await ...
   return {
     remove: { users: [id] },
   }
@@ -113,6 +113,7 @@ export const UserScreen = () => {
 
   return ... // loaded state
 }
+```
 
 ### Advanced
 To be done...
