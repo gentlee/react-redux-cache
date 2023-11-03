@@ -14,11 +14,10 @@ import {isDev} from './utilsAndConstants'
 // Backlog
 
 // ! high
-// create package with README
 // cover with tests
 
 // ! medium
-// add params to the state
+// resultSelector - return also boolean that result is full enough
 // selector for entities by typename
 // provide call query/mutation function to call them without hooks, but with all state updates
 // get typenames from schema? (useSelectDenormalized)
@@ -37,6 +36,7 @@ import {isDev} from './utilsAndConstants'
 // proper types, remove as, any, todo
 
 // ! low
+// add params to the state?
 // cancellation to queries
 // if mutation & query alrady loading - make options: last, throttle, debounce, parallel?
 // add time-to-live option, and/or time-to-refresh

@@ -65,7 +65,7 @@ For normalization `normalizr` package is used in this example, but any other too
 Perfect implementation is when the backend already returns normalized data.
 ```typescript
 export const getUser = async (id: number) => {
-  const result: User = await ...
+  const result = await ...
   
   const normalizedResult: {
     result: number
@@ -105,13 +105,13 @@ export const UserScreen = () => {
 
   // This selector is created by createCache and also returns proper types - User and Bank
   const user = useSelectEntityById(userId, 'users')
-  const bank = useSelectEntityById(user?.bank, 'banks')
+  const bank = useSelectEntityById(user?.bankId, 'banks')
 
   if (loading) {
-    return ... // loading state
+    return ...
   }
 
-  return ... // loaded state
+  return ...
 }
 ```
 
