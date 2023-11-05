@@ -2,16 +2,16 @@
   "name": "react-redux-cache",
   "author": "Alexander Danilov",
   "license": "MIT",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Powerful data fetching and caching library that supports normalization, built on top of redux",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "example": "yarn build && (cd example && yarn cache clean && yarn add ../package.tgz && yarn start)",
-    "clean": "rm -rf dist package.tgz",
+    "example": "(cd example && yarn && yarn start)",
+    "clean": "rm -rf dist",
     "build": "yarn clean && tsc && yarn pack -f package.tgz",
     "test": "node node_modules/jest/bin/jest.js",
-    "prepublishOnly": "yarn test"
+    "prepublishOnly": "yarn build && yarn test"
   },
   "devDependencies": {
     "@testing-library/react": "14.0.0",

@@ -54,34 +54,42 @@ exports.log = log;
  */
 const processEntityChanges = (entities, changes, options) => {
     var _a, _b, _c;
-    const { merge = changes.entities, replace, remove } = changes;
-    if (!merge && !replace && !remove) {
-        return undefined;
-    }
     if (options.validateFunctionArguments) {
         // check for merge and entities both set
         if (changes.merge && changes.entities) {
-            throw new Error('Response merge and entities should not be both set');
+            throw new Error('Merge and entities should not be both set');
         }
-        // check for key intersection
-        const mergeKeys = merge && Object.values(merge);
-        const replaceKeys = replace && Object.keys(replace);
-        const removeKeys = remove && Object.keys(remove);
-        const keysSet = new Set(mergeKeys);
-        replaceKeys === null || replaceKeys === void 0 ? void 0 : replaceKeys.forEach((key) => keysSet.add(key));
-        removeKeys === null || removeKeys === void 0 ? void 0 : removeKeys.forEach((key) => keysSet.add(key));
-        const totalKeysInResponse = ((_a = mergeKeys === null || mergeKeys === void 0 ? void 0 : mergeKeys.length) !== null && _a !== void 0 ? _a : 0) + ((_b = replaceKeys === null || replaceKeys === void 0 ? void 0 : replaceKeys.length) !== null && _b !== void 0 ? _b : 0) + ((_c = removeKeys === null || removeKeys === void 0 ? void 0 : removeKeys.length) !== null && _c !== void 0 ? _c : 0);
-        if (totalKeysInResponse !== 0 && keysSet.size !== totalKeysInResponse) {
-            throw new Error('Merge, replace and remove entity ids should not intersect');
-        }
+    }
+    const { merge = changes.entities, replace, remove } = changes;
+    if (!merge && !replace && !remove) {
+        return undefined;
     }
     let result;
     for (const typename in entities) {
         const entitiesToMerge = merge === null || merge === void 0 ? void 0 : merge[typename];
         const entitiesToReplace = replace === null || replace === void 0 ? void 0 : replace[typename];
         const entitiesToRemove = remove === null || remove === void 0 ? void 0 : remove[typename];
-        if (!entitiesToMerge && !entitiesToReplace && !entitiesToRemove) {
+        if (!entitiesToMerge && !entitiesToReplace && !(entitiesToRemove === null || entitiesToRemove === void 0 ? void 0 : entitiesToRemove.length)) {
             continue;
+        }
+        // check for key intersection
+        if (options.validateFunctionArguments) {
+            const mergeIds = entitiesToMerge && Object.keys(entitiesToMerge);
+            const replaceIds = entitiesToReplace && Object.keys(entitiesToReplace);
+            const idsSet = new Set(mergeIds);
+            replaceIds === null || replaceIds === void 0 ? void 0 : replaceIds.forEach((id) => idsSet.add(id));
+            entitiesToRemove === null || entitiesToRemove === void 0 ? void 0 : entitiesToRemove.forEach((id) => idsSet.add(String(id))); // String() because Object.keys always returns strings
+            const totalKeysInResponse = ((_a = mergeIds === null || mergeIds === void 0 ? void 0 : mergeIds.length) !== null && _a !== void 0 ? _a : 0) + ((_b = replaceIds === null || replaceIds === void 0 ? void 0 : replaceIds.length) !== null && _b !== void 0 ? _b : 0) + ((_c = entitiesToRemove === null || entitiesToRemove === void 0 ? void 0 : entitiesToRemove.length) !== null && _c !== void 0 ? _c : 0);
+            if (totalKeysInResponse !== 0 && idsSet.size !== totalKeysInResponse) {
+                throw new Error('Merge, replace and remove changes have intersections for: ' + typename);
+            }
+            console.log('[VALIDATe]', {
+                totalKeysInResponse,
+                idsSet,
+                mergeIds,
+                replaceIds,
+                entitiesToRemove,
+            });
         }
         const newEntities = Object.assign({}, entities[typename]);
         // remove
