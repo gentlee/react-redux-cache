@@ -1,6 +1,6 @@
 import { Cache, QueryCacheOptions, QueryCachePolicy, QueryMutationState, Typenames, UseQueryOptions } from './types';
-export declare const QUERY_CACHE_OPTIONS_BY_POLICY: Record<QueryCachePolicy, QueryCacheOptions>;
-export declare const DEFAULT_QUERY_CACHE_OPTIONS: {
+export declare const queryCacheOptionsByPolicy: Record<QueryCachePolicy, QueryCacheOptions>;
+export declare const defaultQueryCacheOptions: {
     readonly policy: "cache-first";
     readonly cacheQueryState: true;
     readonly cacheEntities: true;

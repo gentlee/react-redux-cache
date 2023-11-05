@@ -7,16 +7,14 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "example": "yarn build && (cd example && yarn && yarn start)",
+    "example": "yarn build && (cd example && yarn cache clean && yarn add ../package.tgz && yarn start)",
     "clean": "rm -rf dist package.tgz",
     "build": "yarn clean && tsc && yarn pack -f package.tgz",
-    "test": "yarn build && node node_modules/jest/bin/jest.js",
+    "test": "node node_modules/jest/bin/jest.js",
     "prepublishOnly": "yarn test"
   },
-  "files": [
-    "dist/*"
-  ],
   "devDependencies": {
+    "@testing-library/react": "14.0.0",
     "@types/jest": "29.5.1",
     "@types/node": "20.1.2",
     "@types/redux-logger": "3.0.9",
@@ -43,8 +41,11 @@
     "react-redux": "^4",
     "redux": "^4"
   },
-  "dependencies": {
-    "redux-persist": "6.0.0"
+  "files": [
+    "dist/*"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
   },
   "keywords": [
     "react",

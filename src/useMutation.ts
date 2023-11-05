@@ -3,9 +3,9 @@ import {useDispatch, useSelector} from 'react-redux'
 
 import {setMutationStateAndEntities} from './reducer'
 import {Cache, MutationCacheOptions, QueryMutationState, Typenames} from './types'
-import {defaultEndpointState, log, useAssertValueNotChanged} from './utilsAndConstants'
+import {defaultQueryMutationState, log, useAssertValueNotChanged} from './utilsAndConstants'
 
-export const DEFAULT_MUTATION_CACHE_OPTIONS: MutationCacheOptions = {
+export const defaultMutationCacheOptions: MutationCacheOptions = {
   cacheMutationState: true,
   cacheEntities: true,
 }
@@ -22,7 +22,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
 
   const {
     mutation: mutationKey,
-    cacheOptions = cache.mutations[mutationKey].cacheOptions ?? DEFAULT_MUTATION_CACHE_OPTIONS,
+    cacheOptions = cache.mutations[mutationKey].cacheOptions ?? defaultMutationCacheOptions,
   } = options
 
   const dispatch = useDispatch()
@@ -65,7 +65,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
 
   // @ts-expect-error fix later
   const mutationState: QueryMutationState<R> =
-    useSelector(mutationStateSelector) ?? defaultEndpointState
+    useSelector(mutationStateSelector) ?? defaultQueryMutationState
 
   const mutate = useCallback(
     async (params: P) => {

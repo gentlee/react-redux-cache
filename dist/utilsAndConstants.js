@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.processEntityChanges = exports.log = exports.useAssertValueNotChanged = exports.useForceUpdate = exports.defaultGetParamsKey = exports.defaultEndpointState = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
+exports.processEntityChanges = exports.log = exports.useAssertValueNotChanged = exports.useForceUpdate = exports.defaultGetParamsKey = exports.defaultQueryMutationState = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
 const react_1 = require("react");
 const react_2 = require("react");
 exports.PACKAGE_SHORT_NAME = 'RRC';
@@ -13,8 +13,17 @@ exports.isDev = (() => {
         return process.env.NODE_ENV === 'development';
     }
 })();
-exports.defaultEndpointState = { loading: false };
-const defaultGetParamsKey = (params) => !params ? '' : JSON.stringify(params);
+exports.defaultQueryMutationState = { loading: false };
+const defaultGetParamsKey = (params) => {
+    switch (typeof params) {
+        case 'string':
+            return params;
+        case 'object':
+            return JSON.stringify(params);
+        default:
+            return String(params);
+    }
+};
 exports.defaultGetParamsKey = defaultGetParamsKey;
 const forceUpdateReducer = (i) => i + 1;
 /**
@@ -55,15 +64,15 @@ const processEntityChanges = (entities, changes, options) => {
             throw new Error('Response merge and entities should not be both set');
         }
         // check for key intersection
-        const mergeKeys = merge && Object.keys(merge);
+        const mergeKeys = merge && Object.values(merge);
         const replaceKeys = replace && Object.keys(replace);
         const removeKeys = remove && Object.keys(remove);
         const keysSet = new Set(mergeKeys);
         replaceKeys === null || replaceKeys === void 0 ? void 0 : replaceKeys.forEach((key) => keysSet.add(key));
         removeKeys === null || removeKeys === void 0 ? void 0 : removeKeys.forEach((key) => keysSet.add(key));
         const totalKeysInResponse = ((_a = mergeKeys === null || mergeKeys === void 0 ? void 0 : mergeKeys.length) !== null && _a !== void 0 ? _a : 0) + ((_b = replaceKeys === null || replaceKeys === void 0 ? void 0 : replaceKeys.length) !== null && _b !== void 0 ? _b : 0) + ((_c = removeKeys === null || removeKeys === void 0 ? void 0 : removeKeys.length) !== null && _c !== void 0 ? _c : 0);
-        if (keysSet.size !== totalKeysInResponse) {
-            throw new Error('Merge, replace and remove keys should not intersect');
+        if (totalKeysInResponse !== 0 && keysSet.size !== totalKeysInResponse) {
+            throw new Error('Merge, replace and remove entity ids should not intersect');
         }
     }
     let result;

@@ -9,30 +9,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.useQuery = exports.DEFAULT_QUERY_CACHE_OPTIONS = exports.QUERY_CACHE_OPTIONS_BY_POLICY = void 0;
+exports.useQuery = exports.defaultQueryCacheOptions = exports.queryCacheOptionsByPolicy = void 0;
 const react_1 = require("react");
 const react_redux_1 = require("react-redux");
 const reducer_1 = require("./reducer");
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const CACHE_FIRST_OPTIONS = {
+const cacheFirstOptions = {
     policy: 'cache-first',
     cacheQueryState: true,
     cacheEntities: true,
 };
-exports.QUERY_CACHE_OPTIONS_BY_POLICY = {
-    'cache-first': CACHE_FIRST_OPTIONS,
-    'cache-and-fetch': Object.assign(Object.assign({}, CACHE_FIRST_OPTIONS), { policy: 'cache-and-fetch' }),
+exports.queryCacheOptionsByPolicy = {
+    'cache-first': cacheFirstOptions,
+    'cache-and-fetch': Object.assign(Object.assign({}, cacheFirstOptions), { policy: 'cache-and-fetch' }),
 };
-exports.DEFAULT_QUERY_CACHE_OPTIONS = CACHE_FIRST_OPTIONS;
+exports.defaultQueryCacheOptions = cacheFirstOptions;
 const useQuery = (cache, options) => {
     var _a, _b, _c, _d;
     const getParamsKey = (_a = cache.queries[options.query].getParamsKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetParamsKey);
-    const { query: queryKey, skip, params: hookParams, cacheOptions: cacheOptionsOrPolicy = (_b = cache.queries[queryKey].cacheOptions) !== null && _b !== void 0 ? _b : exports.DEFAULT_QUERY_CACHE_OPTIONS, mergeResults = cache.queries[queryKey].mergeResults, getCacheKey = (_c = cache.queries[queryKey].getCacheKey) !== null && _c !== void 0 ? _c : getParamsKey, } = options;
+    const { query: queryKey, skip, params: hookParams, cacheOptions: cacheOptionsOrPolicy = (_b = cache.queries[queryKey].cacheOptions) !== null && _b !== void 0 ? _b : exports.defaultQueryCacheOptions, mergeResults = cache.queries[queryKey].mergeResults, getCacheKey = (_c = cache.queries[queryKey].getCacheKey) !== null && _c !== void 0 ? _c : getParamsKey, } = options;
     const hookParamsKey = getParamsKey(
     // @ts-expect-error fix later
     hookParams);
     const cacheOptions = typeof cacheOptionsOrPolicy === 'string'
-        ? exports.QUERY_CACHE_OPTIONS_BY_POLICY[cacheOptionsOrPolicy]
+        ? exports.queryCacheOptionsByPolicy[cacheOptionsOrPolicy]
         : cacheOptionsOrPolicy;
     const store = (0, react_redux_1.useStore)();
     // Check values that should be set once.
@@ -89,7 +89,7 @@ const useQuery = (cache, options) => {
         return queryState; // TODO proper type
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-    const queryStateFromSelector = (_d = (0, react_redux_1.useSelector)(queryStateSelector)) !== null && _d !== void 0 ? _d : utilsAndConstants_1.defaultEndpointState;
+    const queryStateFromSelector = (_d = (0, react_redux_1.useSelector)(queryStateSelector)) !== null && _d !== void 0 ? _d : utilsAndConstants_1.defaultQueryMutationState;
     const queryState = hasResultFromSelector
         ? (Object.assign(Object.assign({}, queryStateFromSelector), { result: resultFromSelector }))
         : queryStateFromSelector;

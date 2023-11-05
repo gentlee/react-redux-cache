@@ -11,11 +11,11 @@ export type OptionalPartial<T, K extends keyof T> = Partial<{[A in K]: Partial<T
 /** Entity changes to be merged to redux state. */
 export type EntityChanges<T extends Typenames> = {
   /** Entities that will be merged with existing. */
-  merge?: Partial<PartialEntitiesMap<T>>
+  merge?: PartialEntitiesMap<T>
   /** Entities that will replace existing. */
   replace?: Partial<EntitiesMap<T>>
-  /** Ids of entities that will be removed.  */
-  remove?: Partial<EntityIds<T>>
+  /** Ids of entities that will be removed. */
+  remove?: EntityIds<T>
 
   /** Alias for `merge` to support normalizr. */
   entities?: EntityChanges<T>['merge']
@@ -66,11 +66,11 @@ export type CacheOptions = {
   logsEnabled: boolean
 }
 
-export type PartialEntitiesMap<T extends Typenames> = {[K in keyof T]: Dict<Partial<T[K]>>}
+export type PartialEntitiesMap<T extends Typenames> = {[K in keyof T]?: Dict<Partial<T[K]>>}
 
-export type EntitiesMap<T extends Typenames> = {[K in keyof T]: Dict<T[K] | undefined>}
+export type EntitiesMap<T extends Typenames> = {[K in keyof T]: Dict<T[K]>}
 
-export type EntityIds<T extends Typenames> = {[K in keyof T]: Key[]}
+export type EntityIds<T extends Typenames> = {[K in keyof T]?: Key[]}
 
 // Query
 
@@ -100,7 +100,7 @@ export type QueryInfo<T extends Typenames, P, R, S> = {
   /**
    * Params key is used for determining if parameters were changed and fetch is needed.
    * Also used as cache key, of `getCacheKey` wasn't provided.
-   * Default implementation uses `JSON.stringify` of parameters.
+   * Default implementation uses `JSON.stringify` or `String()` depending on type.
    * */
   getParamsKey?: (params?: P) => Key
   /**

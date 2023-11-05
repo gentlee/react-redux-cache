@@ -14,10 +14,18 @@ export const isDev: boolean = (() => {
   }
 })()
 
-export const defaultEndpointState = {loading: false} as const
+export const defaultQueryMutationState = {loading: false} as const
 
-export const defaultGetParamsKey = <P = unknown>(params: P) =>
-  !params ? '' : JSON.stringify(params)
+export const defaultGetParamsKey = <P = unknown>(params: P): string => {
+  switch (typeof params) {
+    case 'string':
+      return params
+    case 'object':
+      return JSON.stringify(params)
+    default:
+      return String(params)
+  }
+}
 
 const forceUpdateReducer = (i: number) => i + 1
 
@@ -52,32 +60,17 @@ export const processEntityChanges = <T extends Typenames>(
   changes: EntityChanges<T>,
   options: CacheOptions
 ): EntitiesMap<T> | undefined => {
+  if (options.validateFunctionArguments) {
+    // check for merge and entities both set
+    if (changes.merge && changes.entities) {
+      throw new Error('Merge and entities should not be both set')
+    }
+  }
+
   const {merge = changes.entities, replace, remove} = changes
 
   if (!merge && !replace && !remove) {
     return undefined
-  }
-
-  if (options.validateFunctionArguments) {
-    // check for merge and entities both set
-    if (changes.merge && changes.entities) {
-      throw new Error('Response merge and entities should not be both set')
-    }
-
-    // check for key intersection
-    const mergeKeys = merge && Object.keys(merge)
-    const replaceKeys = replace && Object.keys(replace)
-    const removeKeys = remove && Object.keys(remove)
-
-    const keysSet = new Set(mergeKeys)
-    replaceKeys?.forEach((key) => keysSet.add(key))
-    removeKeys?.forEach((key) => keysSet.add(key))
-
-    const totalKeysInResponse =
-      (mergeKeys?.length ?? 0) + (replaceKeys?.length ?? 0) + (removeKeys?.length ?? 0)
-    if (keysSet.size !== totalKeysInResponse) {
-      throw new Error('Merge, replace and remove keys should not intersect')
-    }
   }
 
   let result: EntitiesMap<T> | undefined
@@ -87,8 +80,31 @@ export const processEntityChanges = <T extends Typenames>(
     const entitiesToReplace = replace?.[typename]
     const entitiesToRemove = remove?.[typename]
 
-    if (!entitiesToMerge && !entitiesToReplace && !entitiesToRemove) {
+    if (!entitiesToMerge && !entitiesToReplace && !entitiesToRemove?.length) {
       continue
+    }
+
+    // check for key intersection
+    if (options.validateFunctionArguments) {
+      const mergeIds = entitiesToMerge && Object.keys(entitiesToMerge)
+      const replaceIds = entitiesToReplace && Object.keys(entitiesToReplace)
+
+      const idsSet = new Set<string>(mergeIds)
+      replaceIds?.forEach((id) => idsSet.add(id))
+      entitiesToRemove?.forEach((id) => idsSet.add(String(id))) // String() because Object.keys always returns strings
+
+      const totalKeysInResponse =
+        (mergeIds?.length ?? 0) + (replaceIds?.length ?? 0) + (entitiesToRemove?.length ?? 0)
+      if (totalKeysInResponse !== 0 && idsSet.size !== totalKeysInResponse) {
+        throw new Error('Merge, replace and remove changes have intersections for: ' + typename)
+      }
+      console.log('[VALIDATe]', {
+        totalKeysInResponse,
+        idsSet,
+        mergeIds,
+        replaceIds,
+        entitiesToRemove,
+      })
     }
 
     const newEntities = {...entities[typename]}

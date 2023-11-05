@@ -9,18 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.useMutation = exports.DEFAULT_MUTATION_CACHE_OPTIONS = void 0;
+exports.useMutation = exports.defaultMutationCacheOptions = void 0;
 const react_1 = require("react");
 const react_redux_1 = require("react-redux");
 const reducer_1 = require("./reducer");
 const utilsAndConstants_1 = require("./utilsAndConstants");
-exports.DEFAULT_MUTATION_CACHE_OPTIONS = {
+exports.defaultMutationCacheOptions = {
     cacheMutationState: true,
     cacheEntities: true,
 };
 const useMutation = (cache, options) => {
     var _a, _b;
-    const { mutation: mutationKey, cacheOptions = (_a = cache.mutations[mutationKey].cacheOptions) !== null && _a !== void 0 ? _a : exports.DEFAULT_MUTATION_CACHE_OPTIONS, } = options;
+    const { mutation: mutationKey, cacheOptions = (_a = cache.mutations[mutationKey].cacheOptions) !== null && _a !== void 0 ? _a : exports.defaultMutationCacheOptions, } = options;
     const dispatch = (0, react_redux_1.useDispatch)();
     cache.options.logsEnabled &&
         (0, utilsAndConstants_1.log)('useMutation', {
@@ -54,7 +54,7 @@ const useMutation = (cache, options) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     // @ts-expect-error fix later
-    const mutationState = (_b = (0, react_redux_1.useSelector)(mutationStateSelector)) !== null && _b !== void 0 ? _b : utilsAndConstants_1.defaultEndpointState;
+    const mutationState = (_b = (0, react_redux_1.useSelector)(mutationStateSelector)) !== null && _b !== void 0 ? _b : utilsAndConstants_1.defaultQueryMutationState;
     const mutate = (0, react_1.useCallback)((params) => __awaiter(void 0, void 0, void 0, function* () {
         cache.options.logsEnabled &&
             (0, utilsAndConstants_1.log)('mutate', {

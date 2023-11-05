@@ -5,7 +5,6 @@ import {Link} from 'react-router-dom'
 
 import logo from '../logo.svg'
 import {entitiesByTypenameSelector, useQuery} from '../redux/cache'
-import {store} from '../redux/store'
 
 export const RootScreen = () => {
   const [{result: usersResult, loading, error}, fetch] = useQuery({
@@ -51,8 +50,7 @@ export const RootScreen = () => {
         })}
         <button
           onClick={() => {
-            const lastLoadedPage: number =
-              store.getState().queries.getUsers?.['all-pages'].result?.page ?? 0
+            const lastLoadedPage: number = usersResult?.page ?? 0
             fetch({page: lastLoadedPage + 1})
           }}
         >

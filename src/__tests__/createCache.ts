@@ -1,4 +1,4 @@
-import {createCache} from '..'
+import {createCache} from '../createCache'
 
 test('createCache returns correct result', () => {
   // assign

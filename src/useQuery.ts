@@ -13,28 +13,28 @@ import {
   UseQueryOptions,
 } from './types'
 import {
-  defaultEndpointState,
   defaultGetParamsKey,
+  defaultQueryMutationState,
   log,
   useAssertValueNotChanged,
   useForceUpdate,
 } from './utilsAndConstants'
 
-const CACHE_FIRST_OPTIONS = {
+const cacheFirstOptions = {
   policy: 'cache-first',
   cacheQueryState: true,
   cacheEntities: true,
 } as const satisfies QueryCacheOptions
 
-export const QUERY_CACHE_OPTIONS_BY_POLICY: Record<QueryCachePolicy, QueryCacheOptions> = {
-  'cache-first': CACHE_FIRST_OPTIONS,
+export const queryCacheOptionsByPolicy: Record<QueryCachePolicy, QueryCacheOptions> = {
+  'cache-first': cacheFirstOptions,
   'cache-and-fetch': {
-    ...CACHE_FIRST_OPTIONS,
+    ...cacheFirstOptions,
     policy: 'cache-and-fetch',
   },
 } as const
 
-export const DEFAULT_QUERY_CACHE_OPTIONS = CACHE_FIRST_OPTIONS
+export const defaultQueryCacheOptions = cacheFirstOptions
 
 type RefState<P, R> = {
   params: P
@@ -59,7 +59,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
     skip,
     params: hookParams,
     cacheOptions: cacheOptionsOrPolicy = cache.queries[queryKey].cacheOptions ??
-      DEFAULT_QUERY_CACHE_OPTIONS,
+      defaultQueryCacheOptions,
     mergeResults = cache.queries[queryKey].mergeResults,
     getCacheKey = cache.queries[queryKey].getCacheKey ?? getParamsKey,
   } = options
@@ -71,7 +71,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
 
   const cacheOptions =
     typeof cacheOptionsOrPolicy === 'string'
-      ? QUERY_CACHE_OPTIONS_BY_POLICY[cacheOptionsOrPolicy]
+      ? queryCacheOptionsByPolicy[cacheOptionsOrPolicy]
       : cacheOptionsOrPolicy
 
   const store = useStore()
@@ -144,7 +144,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
   }, [])
 
   const queryStateFromSelector =
-    useSelector(queryStateSelector) ?? (defaultEndpointState as QueryMutationState<R>)
+    useSelector(queryStateSelector) ?? (defaultQueryMutationState as QueryMutationState<R>)
   const queryState = hasResultFromSelector
     ? ({
         ...queryStateFromSelector,

@@ -46,7 +46,7 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
     >
   ): typeof initialState => {
     switch (action.type) {
-      case '@RRQN/SET_QUERY_STATE_AND_ENTITIES': {
+      case '@RRC/SET_QUERY_STATE_AND_ENTITIES': {
         const {queryKey, queryCacheKey, state: queryState, entityChagnes} = action
 
         const newEntities =
@@ -71,7 +71,7 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
           },
         }
       }
-      case '@RRQN/SET_MUTATION_STATE_AND_ENTITIES': {
+      case '@RRC/SET_MUTATION_STATE_AND_ENTITIES': {
         const {mutationKey, state: mutationState, entityChagnes} = action
 
         const newEntities =
@@ -93,7 +93,7 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
           },
         }
       }
-      case '@RRQN/MERGE_ENTITY_CHANGES': {
+      case '@RRC/MERGE_ENTITY_CHANGES': {
         const {changes} = action
 
         const newEntities = processEntityChanges(state.entities, changes, cacheOptions)
