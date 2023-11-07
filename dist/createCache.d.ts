@@ -5,7 +5,7 @@ import { useQuery } from './useQuery';
 /**
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
  */
-export declare const createCache: <T extends Typenames, QP, QR, MP, MR>(cache: OptionalPartial<Cache<T, QP, QR, MP, MR>, "options">) => {
+export declare const createCache: <T extends Typenames, QP, QR, MP, MR>(cache: OptionalPartial<Cache<T, QP, QR, MP, MR>, "queries" | "mutations" | "options">) => {
     cache: Cache<T, QP, QR, MP, MR>;
     /** Reducer of the cache, should be added to redux store. */
     reducer: (state: {

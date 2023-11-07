@@ -10,15 +10,17 @@ const utilsAndConstants_1 = require("./utilsAndConstants");
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
  */
 const createCache = (cache) => {
-    var _a, _b, _c, _d;
-    var _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f;
+    var _g, _h, _j;
     // @ts-expect-error hot
     const hotReloadEnabled = Boolean(module === null || module === void 0 ? void 0 : module.hot);
     // provide all optional fields
     (_a = cache.options) !== null && _a !== void 0 ? _a : (cache.options = {});
-    (_b = (_e = cache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_e.logsEnabled = false);
-    (_c = (_f = cache.options).validateFunctionArguments) !== null && _c !== void 0 ? _c : (_f.validateFunctionArguments = utilsAndConstants_1.isDev);
-    (_d = (_g = cache.options).validateHookArguments) !== null && _d !== void 0 ? _d : (_g.validateHookArguments = utilsAndConstants_1.isDev && !hotReloadEnabled);
+    (_b = (_g = cache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_g.logsEnabled = false);
+    (_c = (_h = cache.options).validateFunctionArguments) !== null && _c !== void 0 ? _c : (_h.validateFunctionArguments = utilsAndConstants_1.isDev);
+    (_d = (_j = cache.options).validateHookArguments) !== null && _d !== void 0 ? _d : (_j.validateHookArguments = utilsAndConstants_1.isDev && !hotReloadEnabled);
+    (_e = cache.queries) !== null && _e !== void 0 ? _e : (cache.queries = {});
+    (_f = cache.mutations) !== null && _f !== void 0 ? _f : (cache.mutations = {});
     const nonPartialCache = cache;
     // make selectors
     const entitiesSelector = (state) => {

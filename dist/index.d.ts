@@ -3,4 +3,4 @@ export type { ReduxCacheState } from './reducer';
 export * from './types';
 export { defaultMutationCacheOptions } from './useMutation';
 export { defaultQueryCacheOptions, queryCacheOptionsByPolicy } from './useQuery';
-export { defaultGetParamsKey, defaultQueryMutationState, processEntityChanges, } from './utilsAndConstants';
+export { defaultCacheOptions, defaultGetParamsKey, defaultQueryMutationState, processEntityChanges, } from './utilsAndConstants';

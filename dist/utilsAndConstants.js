@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.processEntityChanges = exports.log = exports.useAssertValueNotChanged = exports.useForceUpdate = exports.defaultGetParamsKey = exports.defaultQueryMutationState = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
+exports.processEntityChanges = exports.log = exports.useAssertValueNotChanged = exports.useForceUpdate = exports.defaultGetParamsKey = exports.defaultQueryMutationState = exports.defaultCacheOptions = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
 const react_1 = require("react");
 const react_2 = require("react");
 exports.PACKAGE_SHORT_NAME = 'RRC';
@@ -13,6 +13,11 @@ exports.isDev = (() => {
         return process.env.NODE_ENV === 'development';
     }
 })();
+exports.defaultCacheOptions = {
+    logsEnabled: false,
+    validateFunctionArguments: true,
+    validateHookArguments: true,
+};
 exports.defaultQueryMutationState = { loading: false };
 const defaultGetParamsKey = (params) => {
     switch (typeof params) {
@@ -83,13 +88,6 @@ const processEntityChanges = (entities, changes, options) => {
             if (totalKeysInResponse !== 0 && idsSet.size !== totalKeysInResponse) {
                 throw new Error('Merge, replace and remove changes have intersections for: ' + typename);
             }
-            console.log('[VALIDATe]', {
-                totalKeysInResponse,
-                idsSet,
-                mergeIds,
-                replaceIds,
-                entitiesToRemove,
-            });
         }
         const newEntities = Object.assign({}, entities[typename]);
         // remove
