@@ -8,7 +8,6 @@
     "lint-fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
   },
   "dependencies": {
-    "normalizr": "3.6.2",
     "react": "18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "8.0.5",

@@ -1,14 +1,23 @@
 import './App.css'
 
+import React from 'react'
 import {Provider} from 'react-redux'
 import {BrowserRouter, Route, Routes} from 'react-router-dom'
 import {PersistGate} from 'redux-persist/integration/react'
 
-import {PERSIST_ENABLED, persistor, store} from './redux/store'
-import {RootScreen} from './screens/RootScreen'
-import {UserScreen} from './screens/UserScreen'
+import {createReduxStore} from '../test-utils/redux/store'
+import {RootScreen} from './RootScreen'
+import {UserScreen} from './UserScreen'
 
-const App = () => {
+export const App = ({
+  persistEnabled = false,
+  reduxLoggerEnabled = false,
+}: {
+  persistEnabled?: boolean
+  reduxLoggerEnabled?: boolean
+}) => {
+  const {store, persistor} = createReduxStore(persistEnabled, reduxLoggerEnabled)
+
   const router = (
     <BrowserRouter>
       <Routes>
@@ -21,7 +30,7 @@ const App = () => {
 
   return (
     <Provider store={store}>
-      {PERSIST_ENABLED ? (
+      {persistEnabled ? (
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         <PersistGate loading={null} persistor={persistor!}>
           {router}
@@ -32,5 +41,3 @@ const App = () => {
     </Provider>
   )
 }
-
-export default App

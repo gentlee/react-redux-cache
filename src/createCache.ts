@@ -15,7 +15,7 @@ import {isDev} from './utilsAndConstants'
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
  */
 export const createCache = <T extends Typenames, QP, QR, MP, MR>(
-  cache: OptionalPartial<Cache<T, QP, QR, MP, MR>, 'options'>
+  cache: OptionalPartial<Cache<T, QP, QR, MP, MR>, 'options' | 'queries' | 'mutations'>
 ) => {
   // @ts-expect-error hot
   const hotReloadEnabled = Boolean(module?.hot)
@@ -26,6 +26,8 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
   cache.options.logsEnabled ??= false
   cache.options.validateFunctionArguments ??= isDev
   cache.options.validateHookArguments ??= isDev && !hotReloadEnabled
+  cache.queries ??= {} as Cache<T, QP, QR, MP, MR>['queries']
+  cache.mutations ??= {} as Cache<T, QP, QR, MP, MR>['mutations']
 
   const nonPartialCache = cache as Cache<T, QP, QR, MP, MR>
 

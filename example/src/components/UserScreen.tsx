@@ -1,7 +1,7 @@
+import React from 'react'
 import {useParams} from 'react-router-dom'
 
-import logo from '../logo.svg'
-import {useMutation, useQuery, useSelectEntityById} from '../redux/cache'
+import {useMutation, useQuery, useSelectEntityById} from '../test-utils/redux/cache'
 
 export const UserScreen = () => {
   const {id} = useParams()
@@ -17,9 +17,9 @@ export const UserScreen = () => {
   })
 
   const user = useSelectEntityById(userId, 'users')
-  const bank = useSelectEntityById(user?.bank, 'banks')
+  const bank = useSelectEntityById(user?.bankId, 'banks')
 
-  console.log('[UserScreen]', {
+  console.debug('[UserScreen]', {
     result: userId,
     loading,
     error,
@@ -30,7 +30,7 @@ export const UserScreen = () => {
   if (loading) {
     return (
       <div className="App">
-        <p>Loading</p>
+        <p id="loading">loading</p>
       </div>
     )
   }
@@ -38,8 +38,8 @@ export const UserScreen = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
         <button
+          id="update-user"
           className="User-screen-update-user-button"
           onClick={() => {
             user &&
@@ -49,9 +49,15 @@ export const UserScreen = () => {
               })
           }}
         >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
-        <p>{'Result: ' + JSON.stringify(userId)}</p>
-        <p>{'User: ' + JSON.stringify(user)}</p>
-        <p>{'Bank: ' + JSON.stringify(bank)}</p>
+        <p>
+          getUser result: <span id="result">{JSON.stringify(userId)}</span>
+        </p>
+        <p>
+          user: <span id="user">{JSON.stringify(user)}</span>
+        </p>
+        <p>
+          bank: <span id="bank">{JSON.stringify(bank)}</span>
+        </p>
       </header>
     </div>
   )

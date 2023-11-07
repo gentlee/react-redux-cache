@@ -14,6 +14,12 @@ export const isDev: boolean = (() => {
   }
 })()
 
+export const defaultCacheOptions = {
+  logsEnabled: false,
+  validateFunctionArguments: true,
+  validateHookArguments: true,
+}
+
 export const defaultQueryMutationState = {loading: false} as const
 
 export const defaultGetParamsKey = <P = unknown>(params: P): string => {
@@ -98,13 +104,6 @@ export const processEntityChanges = <T extends Typenames>(
       if (totalKeysInResponse !== 0 && idsSet.size !== totalKeysInResponse) {
         throw new Error('Merge, replace and remove changes have intersections for: ' + typename)
       }
-      console.log('[VALIDATe]', {
-        totalKeysInResponse,
-        idsSet,
-        mergeIds,
-        replaceIds,
-        entitiesToRemove,
-      })
     }
 
     const newEntities = {...entities[typename]}

@@ -1,8 +1,6 @@
 import {createCache} from '../createCache'
 
 test('createCache returns correct result', () => {
-  // assign
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cacheStateSelector = (state: any) => state
   const typenames = {
@@ -19,8 +17,6 @@ test('createCache returns correct result', () => {
   const updateUser = async (id: number) => ({
     result: id,
   })
-
-  // act
 
   const {cache, reducer, actions, selectors, hooks} = createCache({
     cacheStateSelector,
@@ -39,8 +35,6 @@ test('createCache returns correct result', () => {
       },
     },
   })
-
-  // assert
 
   expect(cache).toStrictEqual({
     cacheStateSelector,

@@ -1,19 +1,20 @@
+import {generateTestBank, generateTestEntitiesMap, generateTestUser} from '../test-utils/api/utils'
+import {TestTypenames} from '../test-utils/redux/cache'
 import {EntityChanges} from '../types'
-import {EntitiesMap} from '../types'
-import {processEntityChanges} from '../utilsAndConstants'
+import {defaultCacheOptions, processEntityChanges} from '../utilsAndConstants'
 
-test('processEntityChanges should add new entities', () => {
+test('add new entities', () => {
   const entitiesMap = generateTestEntitiesMap(0)
   const changes: EntityChanges<TestTypenames> = {
     merge: generateTestEntitiesMap(2),
   }
 
-  const result = processEntityChanges(entitiesMap, changes, testOptions)
+  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
 
   expect(result).toEqual(generateTestEntitiesMap(2))
 })
 
-test('processEntityChanges should remove entities', () => {
+test('remove entities', () => {
   const entitiesMap = generateTestEntitiesMap(2)
   const changes: EntityChanges<TestTypenames> = {
     remove: {
@@ -22,7 +23,7 @@ test('processEntityChanges should remove entities', () => {
     },
   }
 
-  const result = processEntityChanges(entitiesMap, changes, testOptions)
+  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
 
   expect(result).toEqual({
     users: {
@@ -34,7 +35,7 @@ test('processEntityChanges should remove entities', () => {
   })
 })
 
-test('processEntityChanges should update entities', () => {
+test('update entities', () => {
   const entitiesMap = generateTestEntitiesMap(2)
   const changes: EntityChanges<TestTypenames> = {
     merge: {
@@ -51,7 +52,7 @@ test('processEntityChanges should update entities', () => {
     },
   }
 
-  const result = processEntityChanges(entitiesMap, changes, testOptions)
+  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
 
   expect(result).toEqual({
     users: {
@@ -65,7 +66,7 @@ test('processEntityChanges should update entities', () => {
   })
 })
 
-test('processEntityChanges should replace entities', () => {
+test('replace entities', () => {
   const entitiesMap = generateTestEntitiesMap(2)
   const changes: EntityChanges<TestTypenames> = {
     replace: {
@@ -78,7 +79,7 @@ test('processEntityChanges should replace entities', () => {
     },
   }
 
-  const result = processEntityChanges(entitiesMap, changes, testOptions)
+  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
 
   expect(result).toEqual({
     users: {
@@ -92,7 +93,7 @@ test('processEntityChanges should replace entities', () => {
   })
 })
 
-test('processEntityChanges should add, remove, update and replace entities', () => {
+test('add, remove, update and replace entities', () => {
   const entitiesMap = generateTestEntitiesMap(3)
   const changes: EntityChanges<TestTypenames> = {
     merge: {
@@ -118,7 +119,7 @@ test('processEntityChanges should add, remove, update and replace entities', () 
     },
   }
 
-  const result = processEntityChanges(entitiesMap, changes, testOptions)
+  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
 
   expect(result).toEqual({
     users: {
@@ -133,7 +134,7 @@ test('processEntityChanges should add, remove, update and replace entities', () 
   })
 })
 
-test('processEntityChanges should return undefined with empty arguments', () => {
+test('return undefined with empty arguments', () => {
   const entitiesMap = generateTestEntitiesMap(1)
   const changes: EntityChanges<TestTypenames> = {}
   const changes2: EntityChanges<TestTypenames> = {
@@ -148,16 +149,16 @@ test('processEntityChanges should return undefined with empty arguments', () => 
     },
   }
 
-  const result = processEntityChanges(entitiesMap, changes, testOptions)
-  const result2 = processEntityChanges(entitiesMap, changes2, testOptions)
-  const result3 = processEntityChanges(entitiesMap, changes3, testOptions)
+  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
+  const result2 = processEntityChanges(entitiesMap, changes2, defaultCacheOptions)
+  const result3 = processEntityChanges(entitiesMap, changes3, defaultCacheOptions)
 
   expect(result).toEqual(undefined)
   expect(result2).toEqual(undefined)
   expect(result3).toEqual(undefined)
 })
 
-test('processEntityChanges should throw error if merge and entities both set', () => {
+test('throw error if merge and entities both set', () => {
   const entitiesMap = generateTestEntitiesMap(1)
   const changes: EntityChanges<TestTypenames> = {
     merge: {
@@ -173,11 +174,11 @@ test('processEntityChanges should throw error if merge and entities both set', (
   }
 
   expect(() => {
-    processEntityChanges(entitiesMap, changes, testOptions)
+    processEntityChanges(entitiesMap, changes, defaultCacheOptions)
   }).toThrowError('Merge and entities should not be both set')
 })
 
-test('processEntityChanges should throw error if merge, replace or remove have intersections', () => {
+test('throw error if merge, replace or remove have intersections', () => {
   const entitiesMap = generateTestEntitiesMap(1)
   const changes: EntityChanges<TestTypenames> = {
     merge: {
@@ -203,74 +204,7 @@ test('processEntityChanges should throw error if merge, replace or remove have i
 
   ;[changes, changes2, changes3].forEach((changes) => {
     expect(() => {
-      processEntityChanges(entitiesMap, changes, testOptions)
+      processEntityChanges(entitiesMap, changes, defaultCacheOptions)
     }).toThrowError('Merge, replace and remove changes have intersections for: users')
   })
 })
-
-// types
-
-export type User = {
-  id: number
-  bankId: string
-  name?: string
-}
-
-export type Bank = {
-  id: string
-  name: string
-}
-
-export type TestTypenames = {
-  users: User
-  banks: Bank
-}
-
-// constants
-
-const testOptions = {
-  logsEnabled: false,
-  validateFunctionArguments: true,
-  validateHookArguments: true,
-}
-
-// utils
-
-export const generateTestUser = (id: number, full = true, nameSuffix = ''): User => {
-  const user: User = {
-    id,
-    bankId: String(id),
-  }
-  if (full) {
-    user.name = `User ${id}` + nameSuffix
-  }
-  return user
-}
-
-export const generateTestBank = (id: string, nameSuffix = ''): Bank => {
-  return {
-    id,
-    name: 'Bank ' + id + nameSuffix,
-  }
-}
-
-export const generateTestEntitiesMap = (size: number, full = true): EntitiesMap<TestTypenames> => {
-  const users = Array.from({length: size}, (_, i) => generateTestUser(i + 1, full))
-  const banks = Array.from({length: size}, (_, i) => generateTestBank(String(i + 1)))
-
-  return {
-    users: mapFromArray(users, 'id'),
-    banks: mapFromArray(banks, 'id'),
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapFromArray = <T extends Record<string, any>, K extends keyof T>(
-  array: T[],
-  key: K
-): Record<string, T> => {
-  return array.reduce((acc, item) => {
-    acc[item[key]] = item
-    return acc
-  }, {} as Record<string, T>)
-}

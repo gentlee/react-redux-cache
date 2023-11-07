@@ -4,6 +4,7 @@ export * from './types'
 export {defaultMutationCacheOptions} from './useMutation'
 export {defaultQueryCacheOptions, queryCacheOptionsByPolicy} from './useQuery'
 export {
+  defaultCacheOptions,
   defaultGetParamsKey,
   defaultQueryMutationState,
   processEntityChanges,
@@ -12,10 +13,11 @@ export {
 // Backlog
 
 // ! high
-// package.json exports
 // cover with tests
 
 // ! medium
+// type extractors from cache
+// custom useStore
 // return back deserialize selector?
 // resultSelector - return also boolean that result is full enough
 // selector for entities by typename

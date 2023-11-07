@@ -1,10 +1,8 @@
-import '../App.css'
-
+import React from 'react'
 import {useSelector} from 'react-redux'
 import {Link} from 'react-router-dom'
 
-import logo from '../logo.svg'
-import {entitiesByTypenameSelector, useQuery} from '../redux/cache'
+import {entitiesByTypenameSelector, useQuery} from '../test-utils/redux/cache'
 
 export const RootScreen = () => {
   const [{result: usersResult, loading, error}, fetch] = useQuery({
@@ -16,7 +14,7 @@ export const RootScreen = () => {
 
   const usersMap = useSelector(entitiesByTypenameSelector('users'))
 
-  console.log('[RootScreen]', {
+  console.debug('[RootScreen]', {
     usersResult,
     loading,
     error,
@@ -25,7 +23,7 @@ export const RootScreen = () => {
   if (loading && !usersResult) {
     return (
       <div className="App">
-        <p>Loading</p>
+        <p id="loading">loading</p>
       </div>
     )
   }
@@ -33,28 +31,38 @@ export const RootScreen = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>{'getUsers result: ' + JSON.stringify(usersResult)}</p>
         <p>
-          {'getUsers denormalized: ' + JSON.stringify(usersResult?.array.map((id) => usersMap[id]))}
+          getUsers result: '<span id="result">{JSON.stringify(usersResult)}</span>
         </p>
-        <Link className={'App-link'} to={'/home'}>
-          Home
+        <p>
+          denormalized:{' '}
+          <span id="denormalized">
+            {JSON.stringify(usersResult?.items.map((id) => usersMap[id]))}
+          </span>
+        </p>
+        <Link id="home-link" className={'App-link'} to={'/home'}>
+          home
         </Link>
-        {usersResult?.array.map((userId: number) => {
+        {usersResult?.items.map((userId: number) => {
           return (
-            <Link key={userId} className={'App-link'} to={'/user/' + userId}>
-              {'User id: ' + userId}
+            <Link
+              id={'user-link-' + userId}
+              key={userId}
+              className={'App-link'}
+              to={'/user/' + userId}
+            >
+              {'user ' + userId}
             </Link>
           )
         })}
         <button
+          id="load-next-page"
           onClick={() => {
             const lastLoadedPage: number = usersResult?.page ?? 0
             fetch({page: lastLoadedPage + 1})
           }}
         >
-          Load next page
+          load next page
         </button>
       </header>
     </div>

@@ -1,10 +1,11 @@
-import {createCache} from 'react-redux-cache'
-
-import {getUser} from '../api/getUser'
-import {getUsers} from '../api/getUsers'
-import {removeUser} from '../api/removeUser'
+import {createCache} from '../../createCache'
+import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
 import {Bank, User} from '../api/types'
-import {updateUser} from '../api/updateUser'
+
+export type TestTypenames = {
+  users: User
+  banks: Bank
+}
 
 export const {
   cache,
@@ -14,9 +15,6 @@ export const {
   hooks: {useMutation, useQuery, useSelectEntityById},
 } = createCache({
   cacheStateSelector: (state) => state,
-  options: {
-    logsEnabled: false,
-  },
   typenames: {
     users: {} as User,
     banks: {} as Bank,
@@ -33,7 +31,7 @@ export const {
         }
         return {
           ...newResult,
-          array: [...oldResult.array, ...newResult.array],
+          items: [...oldResult.items, ...newResult.items],
         }
       },
     },

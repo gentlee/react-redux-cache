@@ -22,12 +22,5 @@
   },
   "include": [
     "src",
-    "../src/__tests__",
-    "../src/index.ts",
-    "../src/reducer.ts",
-    "../src/types.ts",
-    "../src/useMutation.ts",
-    "../src/useQuery.ts",
-    "../src/utilsAndConstants.ts"
   ]
 }
