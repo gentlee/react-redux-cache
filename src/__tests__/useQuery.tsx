@@ -1,46 +1,38 @@
-/**
- * @jest-environment jsdom
- */
-jest.useFakeTimers()
-global.console.debug = jest.fn()
-
-afterEach(() => {
-  getUsers.mockClear()
-})
-
-import '@testing-library/jest-dom'
-
-import {act, render, screen} from '@testing-library/react'
+import {act, render as renderImpl, screen} from '@testing-library/react'
 import React from 'react'
 import {Provider} from 'react-redux'
 
-import {getUser, getUsers} from '../test-utils/api/mocks'
-import {generateTestEntitiesMap} from '../test-utils/api/utils'
-import {advanceApiTimeout} from '../test-utils/common'
-import {setQueryStateAndEntities, useQuery} from '../test-utils/redux/cache'
-import {createReduxStore} from '../test-utils/redux/store'
+import {getUser, getUsers} from '../../testing/api/mocks'
+import {generateTestEntitiesMap} from '../../testing/api/utils'
+import {advanceApiTimeout, advanceHalfApiTimeout} from '../../testing/common'
+import {setQueryStateAndEntities, useQuery} from '../../testing/redux/cache'
+import {createReduxStore} from '../../testing/redux/store'
 import {defaultQueryMutationState} from '../utilsAndConstants'
+
+let store: ReturnType<typeof createReduxStore>['store']
+let rerender: ReturnType<typeof renderImpl>['rerender']
+beforeEach(() => {
+  store = createReduxStore(false, false).store
+
+  // always use rerender instead of render
+  rerender = renderImpl(<div />).rerender
+})
+
+afterEach(() => {
+  getUsers.mockClear()
+  getUser.mockClear()
+})
 
 // tests
 
 test('fetch if no cache', async () => {
-  const store = createStore()
-
-  render(
-    <Provider store={store}>
-      <TestUseQueryComponent
-        options={{
-          query: 'getUsers',
-          params: {page: 1},
-        }}
-      />
-    </Provider>
-  )
+  render({
+    query: 'getUsers',
+    params: {page: 1},
+  })
 
   const loadingElementWhileLoading = getLoadingElement()
-
   await act(advanceApiTimeout)
-
   const resultText = await getDataText()
 
   expect(loadingElementWhileLoading).toBeTruthy()
@@ -50,7 +42,6 @@ test('fetch if no cache', async () => {
 })
 
 const setCacheAndMountAndCheckNoRefetch = async () => {
-  const store = createStore()
   store.dispatch(
     setQueryStateAndEntities(
       'getUsers',
@@ -66,74 +57,49 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
     )
   )
 
-  const {rerender} = render(
-    <Provider store={store}>
-      <TestUseQueryComponent
-        options={{
-          query: 'getUsers',
-          params: {page: 1},
-        }}
-      />
-    </Provider>
-  )
-
+  render({
+    query: 'getUsers',
+    params: {page: 1},
+  })
   const resultText = await getDataText()
-
   await act(advanceApiTimeout)
-
   const resultTextAfterTimeout = await getDataText()
 
   expect(resultText).toBe(JSON.stringify({items: [0, 1, 2], page: 1}))
   expect(resultTextAfterTimeout).toBe(resultText)
   expect(getUsers).toBeCalledTimes(0)
   expect(store.getState()).toStrictEqual(getUsersOnePageState)
-
-  return {store, rerender}
 }
 
 test('no fetch if has cache', setCacheAndMountAndCheckNoRefetch)
 
-test('refetch on params change', async () => {
-  const store = createStore()
-
-  const {rerender} = render(
-    <Provider store={store}>
-      <TestUseQueryComponent
-        options={{
-          query: 'getUser',
-          params: 0,
-        }}
-      />
-    </Provider>
-  )
-
+test('refetch on params change without cancelling current loading query', async () => {
+  render({
+    query: 'getUser',
+    params: 0,
+  })
   await act(advanceApiTimeout)
-
   const firstUserResultJSON = await getDataText()
-
-  rerender(
-    <Provider store={store}>
-      <TestUseQueryComponent
-        options={{
-          query: 'getUser',
-          params: 1,
-        }}
-      />
-    </Provider>
-  )
-
+  render({
+    query: 'getUser',
+    params: 1,
+  })
   const loadingElement = getLoadingElement()
-
+  render({
+    query: 'getUser',
+    params: 2,
+  })
+  const secondLoadingElement = getLoadingElement()
   await act(advanceApiTimeout)
+  const latestUserResultJSON = await getDataText()
 
-  const secondUserResultJSON = await getDataText()
-
-  expect(firstUserResultJSON).toBe(JSON.stringify(0))
-  expect(secondUserResultJSON).toBe(JSON.stringify(1))
   expect(loadingElement).toBeTruthy()
-  expect(getUser).toBeCalledTimes(2)
+  expect(secondLoadingElement).toBeTruthy()
+  expect(firstUserResultJSON).toBe(JSON.stringify(0))
+  expect(latestUserResultJSON).toBe(JSON.stringify(2))
+  expect(getUser).toBeCalledTimes(3)
   expect(store.getState()).toStrictEqual({
-    entities: generateTestEntitiesMap(2),
+    entities: generateTestEntitiesMap(3),
     queries: {
       getUser: {
         0: {
@@ -144,6 +110,10 @@ test('refetch on params change', async () => {
           ...defaultQueryMutationState,
           result: 1,
         },
+        2: {
+          ...defaultQueryMutationState,
+          result: 2,
+        },
       },
       getUsers: {},
     },
@@ -152,23 +122,14 @@ test('refetch on params change', async () => {
 })
 
 test('no refetch on params change with custom cache key', async () => {
-  const {store, rerender} = await setCacheAndMountAndCheckNoRefetch()
+  await setCacheAndMountAndCheckNoRefetch()
 
-  rerender(
-    <Provider store={store}>
-      <TestUseQueryComponent
-        options={{
-          query: 'getUsers',
-          params: {page: 2},
-        }}
-      />
-    </Provider>
-  )
-
+  render({
+    query: 'getUsers',
+    params: {page: 2},
+  })
   const resultText = await getDataText()
-
   await act(advanceApiTimeout)
-
   const resultTextAfterTimeout = await getDataText()
 
   expect(resultText).toBe(JSON.stringify({items: [0, 1, 2], page: 1}))
@@ -177,9 +138,52 @@ test('no refetch on params change with custom cache key', async () => {
   expect(store.getState()).toStrictEqual(getUsersOnePageState)
 })
 
-// refetch on params change when loading?
+test('no fetch when skip, without cancelling current request when setting to true', async () => {
+  render({
+    query: 'getUser',
+    skip: true,
+    params: 0,
+  })
+  await act(advanceHalfApiTimeout)
+  const dataText1 = await getDataText()
+  render({
+    query: 'getUser',
+    skip: true,
+    params: 1,
+  })
+  await act(advanceHalfApiTimeout)
+  const dataText2 = await getDataText()
+  render({
+    query: 'getUser',
+    params: 2,
+  })
+  await act(advanceHalfApiTimeout)
+  const loading3 = getLoadingElement()
+  render({
+    query: 'getUser',
+    skip: true,
+    params: 2,
+  })
+  await act(advanceHalfApiTimeout)
+  const dataText4 = await getDataText()
+  render({
+    query: 'getUser',
+    params: 3,
+  })
+  const loading5 = getLoadingElement()
+  await act(advanceApiTimeout)
+  const dataText5 = await getDataText()
+
+  expect(getUser).toBeCalledTimes(2)
+  expect(dataText1).toBe('')
+  expect(dataText2).toBe('')
+  expect(loading3).toBeTruthy()
+  expect(dataText4).toBe(JSON.stringify(2))
+  expect(loading5).toBeTruthy()
+  expect(dataText5).toBe(JSON.stringify(3))
+})
+
 // refresh manually while loading?
-// skip
 // resultSelector
 // fetch next page
 
@@ -193,8 +197,12 @@ const TestUseQueryComponent = ({options}: {options: Parameters<typeof useQuery>[
 
 // utils
 
-const createStore = () => {
-  return createReduxStore(false, false).store
+const render = (options: Parameters<typeof useQuery>[0]) => {
+  return rerender(
+    <Provider store={store}>
+      <TestUseQueryComponent options={options} />
+    </Provider>
+  )
 }
 
 const getLoadingElement = () => screen.getByTestId('loading')

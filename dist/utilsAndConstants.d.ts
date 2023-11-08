@@ -9,6 +9,7 @@ export declare const defaultCacheOptions: {
 };
 export declare const defaultQueryMutationState: {
     readonly loading: false;
+    readonly error: undefined;
 };
 export declare const defaultGetParamsKey: <P = unknown>(params: P) => string;
 /**

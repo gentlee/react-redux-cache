@@ -10,7 +10,7 @@
     "example": "(cd example && yarn && yarn start)",
     "clean": "rm -rf dist",
     "build": "yarn clean && tsc && yarn pack -f package.tgz",
-    "test": "node node_modules/jest/bin/jest.js",
+    "test": "node node_modules/jest/bin/jest.js --env=jsdom",
     "prepublishOnly": "yarn build && yarn test"
   },
   "devDependencies": {

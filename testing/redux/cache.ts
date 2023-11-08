@@ -1,4 +1,4 @@
-import {createCache} from '../../createCache'
+import {createCache} from '../../src/createCache'
 import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
 import {Bank, User} from '../api/types'
 
@@ -15,6 +15,9 @@ export const {
   hooks: {useMutation, useQuery, useSelectEntityById},
 } = createCache({
   cacheStateSelector: (state) => state,
+  options: {
+    logsEnabled: true,
+  },
   typenames: {
     users: {} as User,
     banks: {} as Bank,

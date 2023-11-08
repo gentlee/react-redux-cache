@@ -18,7 +18,7 @@ exports.defaultCacheOptions = {
     validateFunctionArguments: true,
     validateHookArguments: true,
 };
-exports.defaultQueryMutationState = { loading: false };
+exports.defaultQueryMutationState = { loading: false, error: undefined };
 const defaultGetParamsKey = (params) => {
     switch (typeof params) {
         case 'string':

@@ -1,9 +1,7 @@
-import {generateTestBank, generateTestEntitiesMap, generateTestUser} from '../test-utils/api/utils'
-import {TestTypenames} from '../test-utils/redux/cache'
+import {generateTestBank, generateTestEntitiesMap, generateTestUser} from '../../testing/api/utils'
+import {TestTypenames} from '../../testing/redux/cache'
 import {EntityChanges} from '../types'
 import {defaultCacheOptions, processEntityChanges} from '../utilsAndConstants'
-
-global.console.debug = jest.fn()
 
 test('add new entities', () => {
   const entitiesMap = generateTestEntitiesMap(0)
