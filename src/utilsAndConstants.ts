@@ -20,7 +20,7 @@ export const defaultCacheOptions = {
   validateHookArguments: true,
 }
 
-export const defaultQueryMutationState = {loading: false} as const
+export const defaultQueryMutationState = {loading: false, error: undefined} as const
 
 export const defaultGetParamsKey = <P = unknown>(params: P): string => {
   switch (typeof params) {

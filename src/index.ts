@@ -38,6 +38,7 @@ export {
 // proper types, remove as, any, todo
 
 // ! low
+// remove defaultState and keep values undefined?
 // add params to the state?
 // cancellation to queries
 // if mutation & query alrady loading - make options: last, throttle, debounce, parallel?

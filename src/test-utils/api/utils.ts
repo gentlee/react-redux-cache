@@ -21,8 +21,8 @@ export const generateTestBank = (id: string, nameSuffix = ''): Bank => {
 }
 
 export const generateTestEntitiesMap = (size: number, full = true): EntitiesMap<TestTypenames> => {
-  const users = Array.from({length: size}, (_, i) => generateTestUser(i + 1, full))
-  const banks = Array.from({length: size}, (_, i) => generateTestBank(String(i + 1)))
+  const users = Array.from({length: size}, (_, i) => generateTestUser(i, full))
+  const banks = Array.from({length: size}, (_, i) => generateTestBank(String(i)))
 
   return {
     users: mapFromArray(users, 'id'),

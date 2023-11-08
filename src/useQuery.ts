@@ -129,19 +129,23 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
     stateRef.current.resultSelector && useSelector(stateRef.current.resultSelector)
   const hasResultFromSelector = resultFromSelector !== undefined
 
-  const queryStateSelector = useCallback((state: unknown) => {
-    cache.options.logsEnabled &&
-      log('queryStateSelector', {
-        state,
-        queryKey,
-        cacheKey: stateRef.current.cacheKey,
-        cacheState: cache.cacheStateSelector(state),
-      })
-    const queryState =
-      cache.cacheStateSelector(state).queries[queryKey as keyof QR][stateRef.current.cacheKey]
-    return queryState as QueryMutationState<R> | undefined // TODO proper type
+  const queryStateSelector = useCallback(
+    (state: unknown) => {
+      cache.options.logsEnabled &&
+        log('queryStateSelector', {
+          state,
+          queryKey,
+          cacheKey: stateRef.current.cacheKey,
+          cacheState: cache.cacheStateSelector(state),
+        })
+      const queryState =
+        cache.cacheStateSelector(state).queries[queryKey as keyof QR][stateRef.current.cacheKey]
+      return queryState as QueryMutationState<R> | undefined // TODO proper type
+    },
+    // cacheKey needed only to re-evaluate queryStateSelector later
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    [stateRef.current.cacheKey]
+  )
 
   const queryStateFromSelector =
     useSelector(queryStateSelector) ?? (defaultQueryMutationState as QueryMutationState<R>)
@@ -259,6 +263,14 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [fetchImpl, getCacheKey]
   )
+
+  cache.options.logsEnabled &&
+    console.debug('[useQuery]', {
+      state: stateRef.current,
+      options,
+      resultFromSelector,
+      queryState,
+    })
 
   return [queryState, fetch] as const
 }

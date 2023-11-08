@@ -3,6 +3,8 @@ import {TestTypenames} from '../test-utils/redux/cache'
 import {EntityChanges} from '../types'
 import {defaultCacheOptions, processEntityChanges} from '../utilsAndConstants'
 
+global.console.debug = jest.fn()
+
 test('add new entities', () => {
   const entitiesMap = generateTestEntitiesMap(0)
   const changes: EntityChanges<TestTypenames> = {
@@ -18,8 +20,8 @@ test('remove entities', () => {
   const entitiesMap = generateTestEntitiesMap(2)
   const changes: EntityChanges<TestTypenames> = {
     remove: {
-      users: [1],
-      banks: ['1'],
+      users: [0],
+      banks: ['0'],
     },
   }
 
@@ -27,10 +29,10 @@ test('remove entities', () => {
 
   expect(result).toEqual({
     users: {
-      2: generateTestUser(2),
+      1: generateTestUser(1),
     },
     banks: {
-      2: generateTestBank('2'),
+      1: generateTestBank('1'),
     },
   })
 })
@@ -56,12 +58,12 @@ test('update entities', () => {
 
   expect(result).toEqual({
     users: {
+      0: generateTestUser(0),
       1: generateTestUser(1, true, ' updated'),
-      2: generateTestUser(2),
     },
     banks: {
+      0: generateTestBank('0'),
       1: generateTestBank('1', ' updated'),
-      2: generateTestBank('2'),
     },
   })
 })
@@ -83,12 +85,12 @@ test('replace entities', () => {
 
   expect(result).toEqual({
     users: {
+      0: generateTestUser(0),
       1: generateTestUser(1, false),
-      2: generateTestUser(2),
     },
     banks: {
+      0: generateTestBank('0'),
       1: generateTestBank('1', ' replaced'),
-      2: generateTestBank('2'),
     },
   })
 })
@@ -98,24 +100,24 @@ test('add, remove, update and replace entities', () => {
   const changes: EntityChanges<TestTypenames> = {
     merge: {
       users: {
-        2: generateTestUser(2, true, ' updated'),
+        1: generateTestUser(1, true, ' updated'),
       },
       banks: {
-        2: generateTestBank('2', ' updated'),
-        4: generateTestBank('4'),
+        1: generateTestBank('1', ' updated'),
+        3: generateTestBank('3'),
       },
     },
     replace: {
       users: {
-        3: generateTestUser(3, false),
+        2: generateTestUser(2, false),
       },
       banks: {
-        3: generateTestBank('3', ' replaced'),
+        2: generateTestBank('2', ' replaced'),
       },
     },
     remove: {
-      users: [1],
-      banks: ['1'],
+      users: [0],
+      banks: ['0'],
     },
   }
 
@@ -123,13 +125,13 @@ test('add, remove, update and replace entities', () => {
 
   expect(result).toEqual({
     users: {
-      2: generateTestUser(2, true, ' updated'),
-      3: generateTestUser(3, false),
+      1: generateTestUser(1, true, ' updated'),
+      2: generateTestUser(2, false),
     },
     banks: {
-      2: generateTestBank('2', ' updated'),
-      3: generateTestBank('3', ' replaced'),
-      4: generateTestBank('4'),
+      1: generateTestBank('1', ' updated'),
+      2: generateTestBank('2', ' replaced'),
+      3: generateTestBank('3'),
     },
   })
 })
@@ -163,12 +165,12 @@ test('throw error if merge and entities both set', () => {
   const changes: EntityChanges<TestTypenames> = {
     merge: {
       users: {
-        1: generateTestUser(1),
+        0: generateTestUser(0),
       },
     },
     entities: {
       users: {
-        2: generateTestUser(2),
+        1: generateTestUser(1),
       },
     },
   }
@@ -182,23 +184,23 @@ test('throw error if merge, replace or remove have intersections', () => {
   const entitiesMap = generateTestEntitiesMap(1)
   const changes: EntityChanges<TestTypenames> = {
     merge: {
-      users: {1: generateTestUser(1)},
+      users: {0: generateTestUser(0)},
     },
     replace: {
-      users: {1: generateTestUser(1)},
+      users: {0: generateTestUser(0)},
     },
   }
   const changes2: EntityChanges<TestTypenames> = {
     merge: {
-      users: {1: generateTestUser(1)},
+      users: {0: generateTestUser(0)},
     },
-    remove: {users: [1]},
+    remove: {users: [0]},
   }
   const changes3: EntityChanges<TestTypenames> = {
     merge: generateTestEntitiesMap(2),
     replace: generateTestEntitiesMap(2),
     remove: {
-      banks: [1],
+      banks: [0],
     },
   }
 
