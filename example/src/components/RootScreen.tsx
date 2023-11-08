@@ -2,7 +2,7 @@ import React from 'react'
 import {useSelector} from 'react-redux'
 import {Link} from 'react-router-dom'
 
-import {entitiesByTypenameSelector, useQuery} from '../test-utils/redux/cache'
+import {entitiesByTypenameSelector, useQuery} from '../utils/redux/cache'
 
 export const RootScreen = () => {
   const [{result: usersResult, loading, error}, fetch] = useQuery({
