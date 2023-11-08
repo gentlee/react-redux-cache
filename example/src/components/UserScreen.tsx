@@ -5,12 +5,15 @@ import {useMutation, useQuery, useSelectEntityById} from '../utils/redux/cache'
 
 export const UserScreen = () => {
   const {id: userIdParam} = useParams()
+
   const [userId, setUserId] = useState(Number(userIdParam))
+  const [skip, setSkip] = useState(false)
 
   const [{result, loading, error}] = useQuery({
     query: 'getUser',
     cacheOptions: 'cache-first',
     params: userId,
+    skip,
   })
 
   const [updateUser, {loading: updatingUser}] = useMutation({
@@ -28,6 +31,7 @@ export const UserScreen = () => {
     bank,
     userId,
     userIdParam,
+    skip,
   })
 
   if (loading) {
@@ -51,28 +55,30 @@ export const UserScreen = () => {
                 name: user.name + ' *',
               })
           }}
-        >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
+        >{`updat${updatingUser ? 'ing' : 'e'} user name`}</button>
         <button
           id="next-user"
           className="User-screen-update-user-button"
           onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            setUserId((prev) => prev! + 1)
+            setUserId(userId + 1)
           }}
         >
-          Next user
+          next user
         </button>
         <button
           id="prev-user"
           className="User-screen-update-user-button"
           disabled={userId === 0}
           onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            setUserId((prev) => prev! - 1)
+            setUserId(userId - 1)
           }}
         >
-          Previous user
+          previous user
         </button>
+        <div>
+          <input id="skip" type="checkbox" checked={skip} onChange={() => setSkip(!skip)} />
+          <label> skip</label>
+        </div>
         <p>
           getUser result: <span id="result">{JSON.stringify(result)}</span>
         </p>
