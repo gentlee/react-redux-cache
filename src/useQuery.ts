@@ -44,8 +44,6 @@ type RefState<P, R> = {
   resultSelector?: (state: unknown) => R | undefined
 }
 
-const defaultRefState = {}
-
 export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
   cache: Cache<T, QP, QR, MP, MR>,
   options: UseQueryOptions<T, QP, QR, MP, MR, QK>
@@ -102,7 +100,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
 
   // Keeps most of local state.
   // Reference because state is changed not only by changing hook arguments, but also by calling fetch, and it should be done synchronously.
-  const stateRef = useRef(defaultRefState as unknown as RefState<P, R>)
+  const stateRef = useRef({} as unknown as RefState<P, R>)
 
   useMemo(() => {
     if (stateRef.current.paramsKey === hookParamsKey) {
