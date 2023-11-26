@@ -60,9 +60,9 @@ export const {
 //   result: 0,
 // })
 
-const state = reducer({} as ReturnType<typeof reducer>, null)
-state.entities.banks.a
-state.queries.getUser.a.result
-state.queries.getUsers.a.result
-state.mutations.removeUser.result
-state.mutations.updateUser.result
+// const state = reducer({} as ReturnType<typeof reducer>, null)
+// state.entities.banks.a
+// state.queries.getUser.a.result
+// state.queries.getUsers.a.result
+// state.mutations.removeUser.result
+// state.mutations.updateUser.result

@@ -62,7 +62,7 @@ export declare const createCache: <T extends Typenames, QP, QR, MP, MR>(cache: O
             query: <QK_1 extends keyof QP | keyof QR>(options: QueryOptions<T, QP, QR, MP, MR, QK_1>) => Promise<void | import("./types").QueryResult<QK_1 extends infer T_1 ? T_1 extends QK_1 ? T_1 extends keyof QP & keyof QR ? QR[T_1] : never : never : never>>;
         };
         /** Fetches query when params change and subscribes to query state. */
-        useQuery: <QK_2 extends keyof QP | keyof QR>(options: import("./types").UseQueryOptions<T, QP, QR, MP, MR, QK_2>) => readonly [import("./types").QueryMutationState<QR[keyof QR]>, () => Promise<void | import("./types").QueryResult<QK_2 extends infer T_2 ? T_2 extends QK_2 ? T_2 extends keyof QP & keyof QR ? QR[T_2] : never : never : never>>];
+        useQuery: <QK_2 extends keyof QP | keyof QR>(options: import("./types").UseQueryOptions<T, QP, QR, MP, MR, QK_2>) => readonly [import("./types").QueryMutationState<QK_2 extends keyof QP & keyof QR ? QR[QK_2] : never>, () => Promise<void | import("./types").QueryResult<QK_2 extends infer T_2 ? T_2 extends QK_2 ? T_2 extends keyof QP & keyof QR ? QR[T_2] : never : never : never>>];
         /** Subscribes to provided mutation state and provides mutate function. */
         useMutation: <MK_1 extends keyof MP | keyof MR>(options: {
             /**

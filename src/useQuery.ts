@@ -121,7 +121,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
   const queryStateFromSelector =
     useSelector((state: unknown) => {
       const queryState = cacheStateSelector(state).queries[queryKey as keyof QR][cacheKey]
-      return queryState
+      return queryState as QueryMutationState<R> | undefined // TODO proper type
     }) ?? (defaultQueryMutationState as QueryMutationState<R>)
 
   const queryState = hasResultFromSelector
