@@ -12,7 +12,7 @@ export const {
   reducer,
   actions: {setQueryStateAndEntities, setMutationStateAndEntities, mergeEntityChanges},
   selectors: {entitiesSelector, entitiesByTypenameSelector},
-  hooks: {useMutation, useQuery, useSelectEntityById},
+  hooks: {useClient, useMutation, useQuery, useSelectEntityById},
 } = createCache({
   cacheStateSelector: (state) => state,
   options: {
@@ -42,6 +42,9 @@ export const {
       query: getUser,
       resultSelector: (state, id) => state.entities.users[id]?.id,
     },
+    getUserNoSelector: {
+      query: getUser,
+    },
   },
   mutations: {
     updateUser: {
@@ -57,9 +60,9 @@ export const {
 //   result: 0,
 // })
 
-// const state = reducer({} as ReturnType<typeof reducer>, null)
-// state.entities.banks.a
-// state.queries.getUser.a.result
-// state.queries.getUsers.a.result
-// state.mutations.removeUser.result
-// state.mutations.updateUser.result
+const state = reducer({} as ReturnType<typeof reducer>, null)
+state.entities.banks.a
+state.queries.getUser.a.result
+state.queries.getUsers.a.result
+state.mutations.removeUser.result
+state.mutations.updateUser.result

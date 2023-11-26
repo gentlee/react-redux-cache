@@ -79,7 +79,7 @@ export type Query<T extends Typenames, P, R> = (params: P) => Promise<QueryRespo
 export type QueryInfo<T extends Typenames, P, R, S> = {
   query: Query<T, P, R>
   /**
-   * Cache policy string or cache options object.
+   * Cache policy string or cache options object. After cache created, all strings are converted to objects.
    * Default is { policy: 'cache-first', cacheQueryState: true, cacheEntities: true }
    * @param cache-first for each params key fetch is not called if cache exists.
    * @param cache-and-fetch for each params key result is taken from cache and fetch is called.
@@ -144,6 +144,17 @@ export type QueryResponse<T extends Typenames, R> = EntityChanges<T> & {
   /** Normalized result of a query. */
   result: R
 }
+
+export type QueryResult<R> = {
+  error?: unknown
+  cancelled?: true
+  result?: R
+}
+
+export type QueryOptions<T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)> = Omit<
+  UseQueryOptions<T, QP, QR, MP, MR, QK>,
+  'skip'
+>
 
 // Mutation
 

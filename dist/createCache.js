@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCache = void 0;
+const react_1 = require("react");
 const react_redux_1 = require("react-redux");
+const query_1 = require("./query");
 const reducer_1 = require("./reducer");
 const useMutation_1 = require("./useMutation");
 const useQuery_1 = require("./useQuery");
@@ -15,12 +17,18 @@ const createCache = (cache) => {
     // @ts-expect-error hot
     const hotReloadEnabled = Boolean(module === null || module === void 0 ? void 0 : module.hot);
     // provide all optional fields
+    // and transform cacheOptions from QueryCachePolicy to QueryCacheOptions
     (_a = cache.options) !== null && _a !== void 0 ? _a : (cache.options = {});
     (_b = (_g = cache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_g.logsEnabled = false);
     (_c = (_h = cache.options).validateFunctionArguments) !== null && _c !== void 0 ? _c : (_h.validateFunctionArguments = utilsAndConstants_1.isDev);
     (_d = (_j = cache.options).validateHookArguments) !== null && _d !== void 0 ? _d : (_j.validateHookArguments = utilsAndConstants_1.isDev && !hotReloadEnabled);
     (_e = cache.queries) !== null && _e !== void 0 ? _e : (cache.queries = {});
     (_f = cache.mutations) !== null && _f !== void 0 ? _f : (cache.mutations = {});
+    for (const queryInfo of Object.values(cache.queries)) {
+        if (typeof queryInfo.cacheOptions === 'string') {
+            queryInfo.cacheOptions = useQuery_1.queryCacheOptionsByPolicy[queryInfo.cacheOptions];
+        }
+    }
     const nonPartialCache = cache;
     // make selectors
     const entitiesSelector = (state) => {
@@ -49,6 +57,30 @@ const createCache = (cache) => {
             },
         },
         hooks: {
+            useClient: () => {
+                const store = (0, react_redux_1.useStore)();
+                return (0, react_1.useMemo)(() => {
+                    const client = {
+                        query: (options) => {
+                            var _a, _b;
+                            const { query: queryKey, params, 
+                            // TODO can be memoized for all query keys while creating cache
+                            cacheOptions: cacheOptionsOrPolicy = Object.assign(Object.assign({}, ((_a = nonPartialCache.queries[queryKey].cacheOptions) !== null && _a !== void 0 ? _a : useQuery_1.defaultQueryCacheOptions)), { policy: 'cache-and-fetch' }), getCacheKey = nonPartialCache.queries[queryKey].getCacheKey, } = options;
+                            const cacheOptions = typeof cacheOptionsOrPolicy === 'string'
+                                ? useQuery_1.queryCacheOptionsByPolicy[cacheOptionsOrPolicy]
+                                : cacheOptionsOrPolicy;
+                            const getParamsKey = (_b = nonPartialCache.queries[queryKey].getParamsKey) !== null && _b !== void 0 ? _b : (utilsAndConstants_1.defaultGetParamsKey);
+                            const cacheKey = getCacheKey
+                                ? // @ts-expect-error fix later
+                                    getCacheKey(params)
+                                : // @ts-expect-error fix later
+                                    getParamsKey(params);
+                            return (0, query_1.query)('query', true, store, nonPartialCache, queryKey, cacheKey, cacheOptions, params);
+                        },
+                    };
+                    return client;
+                }, [store]);
+            },
             /** Fetches query when params change and subscribes to query state. */
             useQuery: (options) => (0, useQuery_1.useQuery)(nonPartialCache, options),
             /** Subscribes to provided mutation state and provides mutate function. */

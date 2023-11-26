@@ -5,4 +5,4 @@ export declare const defaultQueryCacheOptions: {
     readonly cacheQueryState: true;
     readonly cacheEntities: true;
 };
-export declare const useQuery: <T extends Typenames, QP, QR, MP, MR, QK extends keyof QP | keyof QR>(cache: Cache<T, QP, QR, MP, MR>, options: UseQueryOptions<T, QP, QR, MP, MR, QK>) => readonly [QueryMutationState<QK extends keyof QP & keyof QR ? QR[QK] : never>, (params?: (QK extends keyof QP & keyof QR ? QP[QK] : never) | undefined) => Promise<void>];
+export declare const useQuery: <T extends Typenames, QP, QR, MP, MR, QK extends keyof QP | keyof QR>(cache: Cache<T, QP, QR, MP, MR>, options: UseQueryOptions<T, QP, QR, MP, MR, QK>) => readonly [QueryMutationState<QR[keyof QR]>, () => Promise<void | import("./types").QueryResult<QK extends infer T_1 ? T_1 extends QK ? T_1 extends keyof QP & keyof QR ? QR[T_1] : never : never : never>>];

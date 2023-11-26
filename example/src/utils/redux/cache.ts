@@ -13,7 +13,7 @@ export const {
   reducer,
   actions: {setQueryStateAndEntities, setMutationStateAndEntities, mergeEntityChanges},
   selectors: {entitiesSelector, entitiesByTypenameSelector},
-  hooks: {useMutation, useQuery, useSelectEntityById},
+  hooks: {useClient, useMutation, useQuery, useSelectEntityById},
 } = createCache({
   cacheStateSelector: (state) => state,
   typenames: {

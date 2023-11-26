@@ -31,6 +31,8 @@ Object.defineProperty(exports, "processEntityChanges", { enumerable: true, get: 
 // Backlog
 // ! high
 // cover with tests
+// support changing query key?
+// make cache fields readonly
 // ! medium
 // type extractors from cache
 // custom useStore
@@ -65,4 +67,4 @@ Object.defineProperty(exports, "processEntityChanges", { enumerable: true, get: 
 // QueryInfo.defaultOptions
 // set options in refresh/mutate functions
 // multiple reducers instead of 1?
-// don't cache result if resultSelector set?
+// don't cache result if resultSelector set? throw error if mergeResult set with resultSelector?

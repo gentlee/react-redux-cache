@@ -2,10 +2,12 @@ import React from 'react'
 import {useSelector} from 'react-redux'
 import {Link} from 'react-router-dom'
 
-import {entitiesByTypenameSelector, useQuery} from '../utils/redux/cache'
+import {entitiesByTypenameSelector, useClient, useQuery} from '../utils/redux/cache'
 
 export const RootScreen = () => {
-  const [{result: usersResult, loading, error}, fetch] = useQuery({
+  const {query} = useClient()
+
+  const [{result: usersResult, loading, error}] = useQuery({
     query: 'getUsers',
     params: {
       page: 1,
@@ -59,7 +61,10 @@ export const RootScreen = () => {
           id="load-next-page"
           onClick={() => {
             const lastLoadedPage: number = usersResult?.page ?? 0
-            fetch({page: lastLoadedPage + 1})
+            query({
+              query: 'getUsers',
+              params: {page: lastLoadedPage + 1},
+            })
           }}
         >
           load next page

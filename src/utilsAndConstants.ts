@@ -1,5 +1,4 @@
 import {useMemo, useRef} from 'react'
-import {useReducer} from 'react'
 
 import {CacheOptions, EntitiesMap, EntityChanges, Typenames} from './types'
 
@@ -33,15 +32,6 @@ export const defaultGetParamsKey = <P = unknown>(params: P): string => {
   }
 }
 
-const forceUpdateReducer = (i: number) => i + 1
-
-/**
- * @returns function to force update a function component.
- */
-export const useForceUpdate = () => {
-  return useReducer(forceUpdateReducer, 0)[1]
-}
-
 export const useAssertValueNotChanged = (name: string, value: unknown) => {
   const firstMountRef = useRef(false)
   useMemo(() => {
@@ -53,7 +43,7 @@ export const useAssertValueNotChanged = (name: string, value: unknown) => {
   }, [value])
 }
 
-export const log = (tag: string, data: unknown) => {
+export const log = (tag: string, data?: unknown) => {
   console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
 }
 

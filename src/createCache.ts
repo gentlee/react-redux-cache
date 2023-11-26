@@ -1,15 +1,27 @@
-import {useSelector} from 'react-redux'
+import {useMemo} from 'react'
+import {useSelector, useStore} from 'react-redux'
 
+import {query} from './query'
 import {
   createCacheReducer,
   mergeEntityChanges,
   setMutationStateAndEntities,
   setQueryStateAndEntities,
 } from './reducer'
-import {Cache, CacheOptions, EntitiesMap, Key, OptionalPartial, Typenames} from './types'
+import {
+  Cache,
+  CacheOptions,
+  EntitiesMap,
+  Key,
+  OptionalPartial,
+  QueryCacheOptions,
+  QueryInfo,
+  QueryOptions,
+  Typenames,
+} from './types'
 import {useMutation} from './useMutation'
-import {useQuery} from './useQuery'
-import {isDev} from './utilsAndConstants'
+import {defaultQueryCacheOptions, queryCacheOptionsByPolicy, useQuery} from './useQuery'
+import {defaultGetParamsKey, isDev} from './utilsAndConstants'
 
 /**
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
@@ -21,6 +33,7 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
   const hotReloadEnabled = Boolean(module?.hot)
 
   // provide all optional fields
+  // and transform cacheOptions from QueryCachePolicy to QueryCacheOptions
 
   cache.options ??= {} as CacheOptions
   cache.options.logsEnabled ??= false
@@ -28,6 +41,17 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
   cache.options.validateHookArguments ??= isDev && !hotReloadEnabled
   cache.queries ??= {} as Cache<T, QP, QR, MP, MR>['queries']
   cache.mutations ??= {} as Cache<T, QP, QR, MP, MR>['mutations']
+
+  for (const queryInfo of Object.values(cache.queries) as QueryInfo<
+    T,
+    unknown,
+    unknown,
+    unknown
+  >[]) {
+    if (typeof queryInfo.cacheOptions === 'string') {
+      queryInfo.cacheOptions = queryCacheOptionsByPolicy[queryInfo.cacheOptions]
+    }
+  }
 
   const nonPartialCache = cache as Cache<T, QP, QR, MP, MR>
 
@@ -72,6 +96,54 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
       },
     },
     hooks: {
+      useClient: () => {
+        const store = useStore()
+        return useMemo(() => {
+          const client = {
+            query: <QK extends keyof (QP & QR)>(options: QueryOptions<T, QP, QR, MP, MR, QK>) => {
+              type P = QK extends keyof (QP | QR) ? QP[QK] : never
+
+              const {
+                query: queryKey,
+                params,
+                // TODO can be memoized for all query keys while creating cache
+                cacheOptions: cacheOptionsOrPolicy = {
+                  ...((nonPartialCache.queries[queryKey].cacheOptions as QueryCacheOptions) ??
+                    defaultQueryCacheOptions),
+                  policy: 'cache-and-fetch',
+                },
+                getCacheKey = nonPartialCache.queries[queryKey].getCacheKey,
+              } = options
+
+              const cacheOptions =
+                typeof cacheOptionsOrPolicy === 'string'
+                  ? queryCacheOptionsByPolicy[cacheOptionsOrPolicy]
+                  : cacheOptionsOrPolicy
+
+              const getParamsKey =
+                nonPartialCache.queries[queryKey].getParamsKey ?? defaultGetParamsKey<P>
+              const cacheKey = getCacheKey
+                ? // @ts-expect-error fix later
+                  getCacheKey(params)
+                : // @ts-expect-error fix later
+                  getParamsKey(params)
+
+              return query(
+                'query',
+                true,
+                store,
+                nonPartialCache,
+                queryKey,
+                cacheKey,
+                cacheOptions,
+                params
+              )
+            },
+          }
+          return client
+        }, [store])
+      },
+
       /** Fetches query when params change and subscribes to query state. */
       useQuery: <QK extends keyof (QP & QR)>(
         options: Parameters<typeof useQuery<T, QP, QR, MP, MR, QK>>[1]

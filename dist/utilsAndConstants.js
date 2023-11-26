@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.processEntityChanges = exports.log = exports.useAssertValueNotChanged = exports.useForceUpdate = exports.defaultGetParamsKey = exports.defaultQueryMutationState = exports.defaultCacheOptions = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
+exports.processEntityChanges = exports.log = exports.useAssertValueNotChanged = exports.defaultGetParamsKey = exports.defaultQueryMutationState = exports.defaultCacheOptions = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
 const react_1 = require("react");
-const react_2 = require("react");
 exports.PACKAGE_SHORT_NAME = 'RRC';
 exports.isDev = (() => {
     try {
@@ -30,14 +29,6 @@ const defaultGetParamsKey = (params) => {
     }
 };
 exports.defaultGetParamsKey = defaultGetParamsKey;
-const forceUpdateReducer = (i) => i + 1;
-/**
- * @returns function to force update a function component.
- */
-const useForceUpdate = () => {
-    return (0, react_2.useReducer)(forceUpdateReducer, 0)[1];
-};
-exports.useForceUpdate = useForceUpdate;
 const useAssertValueNotChanged = (name, value) => {
     const firstMountRef = (0, react_1.useRef)(false);
     (0, react_1.useMemo)(() => {
