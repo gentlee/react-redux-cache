@@ -13,9 +13,9 @@ export {
 // Backlog
 
 // ! high
+// mutate
 // cover with tests
-// support changing query key?
-// make cache fields readonly
+// suport persist (no loading etc)
 
 // ! medium
 // type extractors from cache
@@ -40,6 +40,8 @@ export {
 // proper types, remove as, any, todo
 
 // ! low
+// make types readonly
+// support changing query key?
 // remove defaultState and keep values undefined?
 // add params to the state?
 // cancellation to queries

@@ -96,6 +96,7 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
       },
     },
     hooks: {
+      /** Returns client object with query function */
       useClient: () => {
         const store = useStore()
         return useMemo(() => {

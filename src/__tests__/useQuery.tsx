@@ -7,7 +7,7 @@ import {generateTestEntitiesMap} from '../../testing/api/utils'
 import {advanceApiTimeout, advanceHalfApiTimeout} from '../../testing/common'
 import {setQueryStateAndEntities, useClient, useQuery} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
-import {defaultQueryMutationState} from '../utilsAndConstants'
+import {defaultGetParamsKey, defaultQueryMutationState} from '../utilsAndConstants'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let client: {query: any}
@@ -38,7 +38,7 @@ test('fetch if no cache', async () => {
 
   const loadingElementWhileLoading = getLoadingElement()
   await act(advanceApiTimeout)
-  const resultText = getDataText()
+  const resultText = getResultText()
 
   expect(loadingElementWhileLoading).toBeTruthy()
   expect(resultText).toBe(JSON.stringify({items: [0, 1, 2], page: 1}))
@@ -66,9 +66,9 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
     query: 'getUsers',
     params: {page: 1},
   })
-  const resultText = getDataText()
+  const resultText = getResultText()
   await act(advanceApiTimeout)
-  const resultTextAfterTimeout = getDataText()
+  const resultTextAfterTimeout = getResultText()
 
   expect(resultText).toBe(JSON.stringify({items: [0, 1, 2], page: 1}))
   expect(resultTextAfterTimeout).toBe(resultText)
@@ -76,7 +76,7 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
   expect(store.getState()).toStrictEqual(getUsersOnePageState)
 }
 
-test('no fetch if has cache', setCacheAndMountAndCheckNoRefetch)
+test('no fetch on mount if has cache', setCacheAndMountAndCheckNoRefetch)
 
 test('loads three pages sequentially', async () => {
   await setCacheAndMountAndCheckNoRefetch()
@@ -89,7 +89,8 @@ test('loads three pages sequentially', async () => {
       },
     })
   })
-  const loadingElementPage2 = await findLoadingElement()
+  await act(advanceHalfApiTimeout)
+  const loadingElementPage2 = getLoadingElement()
   await act(advanceApiTimeout)
   act(() => {
     client.query({
@@ -99,9 +100,10 @@ test('loads three pages sequentially', async () => {
       },
     })
   })
-  const loadingElementPage3 = await findLoadingElement()
-  await act(advanceApiTimeout)
-  const resultText = getDataText()
+  await act(advanceHalfApiTimeout)
+  const loadingElementPage3 = getLoadingElement()
+  await act(advanceHalfApiTimeout)
+  const resultText = getResultText()
 
   expect(loadingElementPage2).toBeTruthy()
   expect(loadingElementPage3).toBeTruthy()
@@ -117,7 +119,7 @@ test.each(['getUser', 'getUserNoSelector'] as const)(
       params: 0,
     })
     await act(advanceApiTimeout)
-    const firstUserResultJSON = getDataText()
+    const firstUserResultJSON = getResultText()
     render({
       query,
       params: 1,
@@ -129,7 +131,7 @@ test.each(['getUser', 'getUserNoSelector'] as const)(
     })
     const secondLoadingElement = getLoadingElement()
     await act(advanceApiTimeout)
-    const latestUserResultJSON = getDataText()
+    const latestUserResultJSON = getResultText()
 
     expect(loadingElement).toBeTruthy()
     expect(secondLoadingElement).toBeTruthy()
@@ -171,14 +173,67 @@ test('no refetch on params change with custom cache key', async () => {
     query: 'getUsers',
     params: {page: 2},
   })
-  const resultText = getDataText()
+  const resultText = getResultText()
   await act(advanceApiTimeout)
-  const resultTextAfterTimeout = getDataText()
+  const resultTextAfterTimeout = getResultText()
 
   expect(resultText).toBe(JSON.stringify({items: [0, 1, 2], page: 1}))
   expect(resultTextAfterTimeout).toBe(resultText)
   expect(getUsers).toBeCalledTimes(0)
   expect(store.getState()).toStrictEqual(getUsersOnePageState)
+})
+
+test.each([
+  {query: 'getUser', result: undefined},
+  {query: 'getUserNoSelector', result: 1},
+] as const)('fetch on mount having cache with cache-and-fetch policy', async ({query, result}) => {
+  store.dispatch(
+    setQueryStateAndEntities(
+      query,
+      defaultGetParamsKey(1),
+      {
+        result,
+      },
+      {
+        merge: generateTestEntitiesMap(1),
+      }
+    )
+  )
+
+  render({
+    query,
+    cacheOptions: 'cache-and-fetch',
+    params: 1,
+  })
+
+  const loadingElementWhileLoading = getLoadingElement()
+  await act(advanceApiTimeout)
+  const resultText = getResultText()
+
+  expect(loadingElementWhileLoading).toBeTruthy()
+  expect(resultText).toBe('1')
+  expect(getUser).toBeCalledTimes(1)
+})
+
+test('fetch after params change with custom cache key if cache-and-fetch policy', async () => {
+  render({
+    query: 'getUsers',
+    cacheOptions: 'cache-and-fetch',
+    params: {page: 1},
+  })
+  await act(advanceApiTimeout)
+  render({
+    query: 'getUsers',
+    cacheOptions: 'cache-and-fetch',
+    params: {page: 2},
+  })
+  const loadingElementWhileLoading = getLoadingElement()
+  await act(advanceApiTimeout)
+  const resultText = getResultText()
+
+  expect(loadingElementWhileLoading).toBeTruthy()
+  expect(resultText).toBe(JSON.stringify({items: [0, 1, 2, 3, 4, 5], page: 2}))
+  expect(getUsers).toBeCalledTimes(2)
 })
 
 test.each(['getUser', 'getUserNoSelector'] as const)(
@@ -190,14 +245,14 @@ test.each(['getUser', 'getUserNoSelector'] as const)(
       params: 0,
     })
     await act(advanceHalfApiTimeout)
-    const dataText1 = getDataText()
+    const dataText1 = getResultText()
     render({
       query,
       skip: true,
       params: 1,
     })
     await act(advanceHalfApiTimeout)
-    const dataText2 = getDataText()
+    const dataText2 = getResultText()
     render({
       query,
       params: 2,
@@ -210,20 +265,20 @@ test.each(['getUser', 'getUserNoSelector'] as const)(
       params: 2,
     })
     await act(advanceHalfApiTimeout)
-    const dataText4 = getDataText()
+    const dataText4 = getResultText()
     render({
       query,
       params: 3,
     })
     const loading5 = getLoadingElement()
     await act(advanceApiTimeout)
-    const dataText5 = getDataText()
+    const dataText5 = getResultText()
     render({
       query,
       skip: true,
       params: 2,
     })
-    const dataText6 = getDataText()
+    const dataText6 = getResultText()
 
     expect(getUser).toBeCalledTimes(2)
     expect(dataText1).toBe('')
@@ -268,30 +323,27 @@ test.each([
   })
 
   await act(advanceHalfApiTimeout)
-  await act(() => refetch())
+  const loadingElement = getLoadingElement()
+  await act(() => {
+    refetch()
+  })
   await act(advanceHalfApiTimeout)
+  const data = getResultText()
 
-  const data = getDataText()
-
+  expect(loadingElement).toBeTruthy()
   expect(data).toBe(JSON.stringify(0))
   expect(getUser).toBeCalledTimes(1)
   expect(store.getState()).toStrictEqual({
     entities: generateTestEntitiesMap(1),
     queries: {
-      // @ts-ignore
       getUser: {},
       getUsers: {},
-      // @ts-ignore
       getUserNoSelector: {},
       ...state,
     },
     mutations: {},
   })
 })
-
-// fetch next page
-// refresh pagination manually while loading next page?
-// fetch policies
 
 // components
 
@@ -301,7 +353,11 @@ const TestUseQueryComponent = ({options}: {options: Parameters<typeof useQuery>[
   const [{result, loading}, refetchImpl] = useQuery(options)
   refetch = refetchImpl
 
-  return loading ? <p data-testid="loading" /> : <p data-testid="data">{JSON.stringify(result)}</p>
+  return loading ? (
+    <p data-testid="loading" />
+  ) : (
+    <p data-testid="result">{JSON.stringify(result)}</p>
+  )
 }
 
 // utils
@@ -316,9 +372,7 @@ const render = (options: Parameters<typeof useQuery>[0]) => {
 
 const getLoadingElement = () => screen.getByTestId('loading')
 
-const findLoadingElement = () => screen.findByTestId('loading')
-
-const getDataText = () => screen.getByTestId('data').innerHTML
+const getResultText = () => screen.getByTestId('result').innerHTML
 
 const getUsersOnePageState = {
   entities: generateTestEntitiesMap(3),

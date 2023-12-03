@@ -158,5 +158,10 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
       queryState,
     })
 
-  return [queryState, fetch] as const
+  return [
+    /** Query state */
+    queryState,
+    /** Refetch query with the same parameters */
+    fetch,
+  ] as const
 }
