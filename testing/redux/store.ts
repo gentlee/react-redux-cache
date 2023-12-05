@@ -1,10 +1,15 @@
-import {applyMiddleware, createStore} from 'redux'
+import {applyMiddleware, createStore, Middleware} from 'redux'
 import {persistReducer, persistStore} from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
-import {reducer} from './cache'
+import {logEvent} from '../api/utils'
+import {cache, reducer} from './cache'
 
-export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean) => {
+export const createReduxStore = (
+  persistEnabled: boolean,
+  eventLogEnabled: boolean,
+  consoleLoggerEnabled = cache.options.logsEnabled
+) => {
   const rootReducer = persistEnabled
     ? reducer
     : (persistReducer(
@@ -15,13 +20,19 @@ export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean
         reducer
       ) as typeof reducer)
 
-  const store = createStore(
-    rootReducer,
-    loggerEnabled
-      ? // eslint-disable-next-line @typescript-eslint/no-var-requires
-        applyMiddleware(require('redux-logger').default)
-      : undefined
-  )
+  const middlewares: Middleware[] = []
+  if (consoleLoggerEnabled) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    middlewares.push(require('redux-logger').default)
+  }
+  if (eventLogEnabled) {
+    middlewares.push(() => (next) => (action) => {
+      logEvent(action.type)
+      return next(action)
+    })
+  }
+
+  const store = createStore(rootReducer, applyMiddleware(...middlewares))
 
   const persistor = persistEnabled ? persistStore(store) : undefined
 

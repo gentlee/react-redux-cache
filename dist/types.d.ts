@@ -133,6 +133,11 @@ export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
     /** Normalized result of a mutation. */
     result?: R;
 };
+export type MutationResult<R> = {
+    error?: unknown;
+    aborted?: true;
+    result?: R;
+};
 export type QueryMutationState<R> = {
     /** `true` when query or mutation is currently in progress. */
     loading: boolean;

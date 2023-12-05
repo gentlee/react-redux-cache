@@ -25,7 +25,7 @@ export const query = async <T extends Typenames, QP, QR, MP, MR, QK extends keyo
 
   if (queryStateOnStart?.loading) {
     logsEnabled &&
-      log(`${logTag} cancel: already loading`, {
+      log(`${logTag} cancelled: already loading`, {
         queryStateOnStart,
         params,
         cacheKey,

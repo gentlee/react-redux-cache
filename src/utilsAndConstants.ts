@@ -119,11 +119,12 @@ export const processEntityChanges = <T extends Typenames>(
     result[typename] = newEntities
   }
 
-  log('processEntityChanges', {
-    entities,
-    changes,
-    result,
-  })
+  options.logsEnabled &&
+    log('processEntityChanges', {
+      entities,
+      changes,
+      result,
+    })
 
   return result
 }

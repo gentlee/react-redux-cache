@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.useMutation = exports.defaultMutationCacheOptions = void 0;
 const react_1 = require("react");
 const react_redux_1 = require("react-redux");
+const mutate_1 = require("./mutate");
 const reducer_1 = require("./reducer");
 const utilsAndConstants_1 = require("./utilsAndConstants");
 exports.defaultMutationCacheOptions = {
@@ -21,11 +22,6 @@ exports.defaultMutationCacheOptions = {
 const useMutation = (cache, options) => {
     var _a, _b;
     const { mutation: mutationKey, cacheOptions = (_a = cache.mutations[mutationKey].cacheOptions) !== null && _a !== void 0 ? _a : exports.defaultMutationCacheOptions, } = options;
-    const dispatch = (0, react_redux_1.useDispatch)();
-    cache.options.logsEnabled &&
-        (0, utilsAndConstants_1.log)('useMutation', {
-            cacheOptions,
-        });
     // Check values that should be set once.
     // Can be removed from deps.
     cache.options.validateHookArguments &&
@@ -43,73 +39,47 @@ const useMutation = (cache, options) => {
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 .forEach((args) => (0, utilsAndConstants_1.useAssertValueNotChanged)(...args));
         })();
-    const abortControllerRef = (0, react_1.useRef)();
-    const mutationStateSelector = (0, react_1.useCallback)((state) => {
-        cache.options.logsEnabled &&
-            (0, utilsAndConstants_1.log)('mutationStateSelector', {
-                state,
-                cacheState: cache.cacheStateSelector(state),
-            });
-        return cache.cacheStateSelector(state).mutations[mutationKey];
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const store = (0, react_redux_1.useStore)();
+    // Using single useMemo for performance reasons
+    const [mutationStateSelector, mutate, abort] = (0, react_1.useMemo)(() => {
+        return [
+            // mutationStateSelector
+            (state) => {
+                cache.options.logsEnabled &&
+                    (0, utilsAndConstants_1.log)('mutationStateSelector', {
+                        state,
+                        cacheState: cache.cacheStateSelector(state),
+                    });
+                return cache.cacheStateSelector(state).mutations[mutationKey];
+            },
+            // mutate
+            (params) => __awaiter(void 0, void 0, void 0, function* () {
+                yield (0, mutate_1.mutate)('useMutation.mutate', false, store, cache, mutationKey, cacheOptions, params);
+            }),
+            // abort
+            () => {
+                const abortController = (0, mutate_1.getAbortController)(store, mutationKey);
+                if (abortController === undefined || abortController.signal.aborted) {
+                    return false;
+                }
+                abortController.abort();
+                cacheOptions.cacheMutationState &&
+                    store.dispatch((0, reducer_1.setMutationStateAndEntities)(mutationKey, {
+                        loading: false,
+                    }));
+                return true;
+            },
+        ];
+    }, 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [store, cacheOptions.cacheEntities, cacheOptions.cacheMutationState]);
     // @ts-expect-error fix later
     const mutationState = (_b = (0, react_redux_1.useSelector)(mutationStateSelector)) !== null && _b !== void 0 ? _b : utilsAndConstants_1.defaultQueryMutationState;
-    const mutate = (0, react_1.useCallback)((params) => __awaiter(void 0, void 0, void 0, function* () {
-        cache.options.logsEnabled &&
-            (0, utilsAndConstants_1.log)('mutate', {
-                mutationKey,
-                params,
-                abortController: abortControllerRef.current,
-            });
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort();
-        }
-        else {
-            cacheOptions.cacheMutationState &&
-                dispatch((0, reducer_1.setMutationStateAndEntities)(mutationKey, { loading: true }));
-        }
-        const abortController = new AbortController();
-        abortControllerRef.current = abortController;
-        let response;
-        let error;
-        const fetchFn = cache.mutations[mutationKey].mutation;
-        try {
-            response = yield fetchFn(
-            // @ts-expect-error fix later
-            params, abortController.signal);
-        }
-        catch (e) {
-            error = e;
-        }
-        cache.options.logsEnabled &&
-            (0, utilsAndConstants_1.log)('mutate finished', {
-                response,
-                error,
-                aborted: abortController.signal.aborted,
-            });
-        if (abortController.signal.aborted) {
-            return;
-        }
-        abortControllerRef.current = undefined;
-        if (response) {
-            dispatch((0, reducer_1.setMutationStateAndEntities)(mutationKey, cacheOptions.cacheMutationState
-                ? {
-                    error: undefined,
-                    loading: false,
-                    result: response.result,
-                }
-                : undefined, cacheOptions.cacheEntities ? response : undefined));
-        }
-        else if (error && cacheOptions.cacheMutationState) {
-            dispatch((0, reducer_1.setMutationStateAndEntities)(mutationKey, {
-                error: error,
-                loading: false,
-            }));
-        }
-    }), 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []);
-    return [mutate, mutationState, abortControllerRef.current];
+    cache.options.logsEnabled &&
+        (0, utilsAndConstants_1.log)('useMutation', {
+            options,
+            mutationState,
+        });
+    return [mutate, mutationState, abort];
 };
 exports.useMutation = useMutation;

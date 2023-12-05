@@ -98,11 +98,12 @@ const processEntityChanges = (entities, changes, options) => {
         result !== null && result !== void 0 ? result : (result = Object.assign({}, entities));
         result[typename] = newEntities;
     }
-    (0, exports.log)('processEntityChanges', {
-        entities,
-        changes,
-        result,
-    });
+    options.logsEnabled &&
+        (0, exports.log)('processEntityChanges', {
+            entities,
+            changes,
+            result,
+        });
     return result;
 };
 exports.processEntityChanges = processEntityChanges;

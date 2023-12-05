@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useMemo} from 'react'
 import {useSelector, useStore} from 'react-redux'
 
-import {query} from './query'
+import {query as queryImpl} from './query'
 import {
   Cache,
   QueryCacheOptions,
@@ -90,21 +90,21 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
   )
 
   const [cacheKey, resultSelector] = useMemo(() => {
-    const cacheKeyImpl = getCacheKey
-      ? // @ts-expect-error fix types later
-        getCacheKey(params)
-      : paramsKey
-
-    const resultSelectorImpl =
+    return [
+      // cacheKey
+      getCacheKey
+        ? // @ts-expect-error fix types later
+          getCacheKey(params)
+        : paramsKey,
+      // resultSelector
       cacheResultSelector &&
-      ((state: unknown) =>
-        cacheResultSelector(
-          cacheStateSelector(state),
-          // @ts-expect-error fix types later
-          params
-        ))
-
-    return [cacheKeyImpl, resultSelectorImpl]
+        ((state: unknown) =>
+          cacheResultSelector(
+            cacheStateSelector(state),
+            // @ts-expect-error fix types later
+            params
+          )),
+    ]
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramsKey])
 
@@ -112,11 +112,16 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
   const resultFromSelector = (resultSelector && useSelector(resultSelector)) as R | undefined
   const hasResultFromSelector = resultFromSelector !== undefined
 
-  const cacheOptionsKey = `${cacheOptions.policy}${cacheOptions.cacheEntities}${cacheOptions.cacheQueryState}` // Allows to not memoize cache options
-  const fetch = useCallback(() => {
-    return query('useQuery.fetch', false, store, cache, queryKey, cacheKey, cacheOptions, params)
+  const fetch = useCallback(async () => {
+    await queryImpl('useQuery.fetch', false, store, cache, queryKey, cacheKey, cacheOptions, params)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cacheKey, paramsKey, cacheOptionsKey]) // TODO put args to ref and make empty deps?
+  }, [
+    cacheKey,
+    paramsKey,
+    cacheOptions.policy,
+    cacheOptions.cacheEntities,
+    cacheOptions.cacheQueryState,
+  ])
 
   const queryStateFromSelector =
     useSelector((state: unknown) => {

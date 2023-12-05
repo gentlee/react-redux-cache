@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCache = void 0;
 const react_1 = require("react");
 const react_redux_1 = require("react-redux");
+const mutate_1 = require("./mutate");
 const query_1 = require("./query");
 const reducer_1 = require("./reducer");
 const useMutation_1 = require("./useMutation");
@@ -57,6 +58,7 @@ const createCache = (cache) => {
             },
         },
         hooks: {
+            /** Returns client object with query function */
             useClient: () => {
                 const store = (0, react_redux_1.useStore)();
                 return (0, react_1.useMemo)(() => {
@@ -76,6 +78,10 @@ const createCache = (cache) => {
                                 : // @ts-expect-error fix later
                                     getParamsKey(params);
                             return (0, query_1.query)('query', true, store, nonPartialCache, queryKey, cacheKey, cacheOptions, params);
+                        },
+                        mutate: (options) => {
+                            var _a;
+                            return (0, mutate_1.mutate)('mutate', true, store, nonPartialCache, options.mutation, (_a = options.cacheOptions) !== null && _a !== void 0 ? _a : useMutation_1.defaultMutationCacheOptions, options.params);
                         },
                     };
                     return client;

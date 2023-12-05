@@ -1,6 +1,7 @@
-import {useCallback, useRef} from 'react'
-import {useDispatch, useSelector} from 'react-redux'
+import {useMemo} from 'react'
+import {useSelector, useStore} from 'react-redux'
 
+import {getAbortController, mutate as mutateImpl} from './mutate'
 import {setMutationStateAndEntities} from './reducer'
 import {Cache, MutationCacheOptions, QueryMutationState, Typenames} from './types'
 import {defaultQueryMutationState, log, useAssertValueNotChanged} from './utilsAndConstants'
@@ -25,13 +26,6 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
     cacheOptions = cache.mutations[mutationKey].cacheOptions ?? defaultMutationCacheOptions,
   } = options
 
-  const dispatch = useDispatch()
-
-  cache.options.logsEnabled &&
-    log('useMutation', {
-      cacheOptions,
-    })
-
   // Check values that should be set once.
   // Can be removed from deps.
   cache.options.validateHookArguments &&
@@ -51,94 +45,63 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
         .forEach((args) => useAssertValueNotChanged(...args))
     })()
 
-  const abortControllerRef = useRef<AbortController>()
+  const store = useStore()
 
-  const mutationStateSelector = useCallback((state: unknown) => {
-    cache.options.logsEnabled &&
-      log('mutationStateSelector', {
-        state,
-        cacheState: cache.cacheStateSelector(state),
-      })
-    return cache.cacheStateSelector(state).mutations[mutationKey as keyof MR]
+  // Using single useMemo for performance reasons
+  const [mutationStateSelector, mutate, abort] = useMemo(
+    () => {
+      return [
+        // mutationStateSelector
+        (state: unknown) => {
+          cache.options.logsEnabled &&
+            log('mutationStateSelector', {
+              state,
+              cacheState: cache.cacheStateSelector(state),
+            })
+          return cache.cacheStateSelector(state).mutations[mutationKey as keyof MR]
+        },
+        // mutate
+        async (params: P) => {
+          await mutateImpl(
+            'useMutation.mutate',
+            false,
+            store,
+            cache,
+            mutationKey,
+            cacheOptions,
+            params
+          )
+        },
+        // abort
+        () => {
+          const abortController = getAbortController(store, mutationKey)
+          if (abortController === undefined || abortController.signal.aborted) {
+            return false
+          }
+          abortController.abort()
+          cacheOptions.cacheMutationState &&
+            store.dispatch(
+              setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
+                loading: false,
+              })
+            )
+          return true
+        },
+      ]
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    [store, cacheOptions.cacheEntities, cacheOptions.cacheMutationState]
+  )
 
   // @ts-expect-error fix later
   const mutationState: QueryMutationState<R> =
     useSelector(mutationStateSelector) ?? defaultQueryMutationState
 
-  const mutate = useCallback(
-    async (params: P) => {
-      cache.options.logsEnabled &&
-        log('mutate', {
-          mutationKey,
-          params,
-          abortController: abortControllerRef.current,
-        })
+  cache.options.logsEnabled &&
+    log('useMutation', {
+      options,
+      mutationState,
+    })
 
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
-      } else {
-        cacheOptions.cacheMutationState &&
-          dispatch(
-            setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {loading: true})
-          )
-      }
-      const abortController = new AbortController()
-      abortControllerRef.current = abortController
-
-      let response
-      let error
-      const fetchFn = cache.mutations[mutationKey].mutation
-      try {
-        response = await fetchFn(
-          // @ts-expect-error fix later
-          params,
-          abortController.signal
-        )
-      } catch (e) {
-        error = e
-      }
-
-      cache.options.logsEnabled &&
-        log('mutate finished', {
-          response,
-          error,
-          aborted: abortController.signal.aborted,
-        })
-
-      if (abortController.signal.aborted) {
-        return
-      }
-
-      abortControllerRef.current = undefined
-
-      if (response) {
-        dispatch(
-          setMutationStateAndEntities(
-            mutationKey as keyof MR,
-            cacheOptions.cacheMutationState
-              ? {
-                  error: undefined,
-                  loading: false,
-                  result: response.result,
-                }
-              : undefined,
-            cacheOptions.cacheEntities ? response : undefined
-          )
-        )
-      } else if (error && cacheOptions.cacheMutationState) {
-        dispatch(
-          setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
-            error: error as Error,
-            loading: false,
-          })
-        )
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  )
-
-  return [mutate, mutationState, abortControllerRef.current] as const
+  return [mutate, mutationState, abort] as const
 }

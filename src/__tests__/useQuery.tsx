@@ -3,7 +3,7 @@ import React from 'react'
 import {Provider} from 'react-redux'
 
 import {getUser, getUsers} from '../../testing/api/mocks'
-import {generateTestEntitiesMap} from '../../testing/api/utils'
+import {emptyState, generateTestEntitiesMap} from '../../testing/api/utils'
 import {advanceApiTimeout, advanceHalfApiTimeout} from '../../testing/common'
 import {setQueryStateAndEntities, useClient, useQuery} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
@@ -17,7 +17,7 @@ let refetch: any
 let store: ReturnType<typeof createReduxStore>['store']
 let rerender: ReturnType<typeof renderImpl>['rerender']
 beforeEach(() => {
-  store = createReduxStore(false, true).store
+  store = createReduxStore(false, false).store
 
   // always use rerender instead of render
   ;({rerender} = renderImpl(<div />))
@@ -141,9 +141,7 @@ test.each(['getUser', 'getUserNoSelector'] as const)(
     expect(store.getState()).toStrictEqual({
       entities: generateTestEntitiesMap(3),
       queries: {
-        getUser: {},
-        getUsers: {},
-        getUserNoSelector: {},
+        ...emptyState.queries,
         ...{
           [query]: {
             0: {
@@ -336,9 +334,7 @@ test.each([
   expect(store.getState()).toStrictEqual({
     entities: generateTestEntitiesMap(1),
     queries: {
-      getUser: {},
-      getUsers: {},
-      getUserNoSelector: {},
+      ...emptyState.queries,
       ...state,
     },
     mutations: {},
@@ -377,6 +373,7 @@ const getResultText = () => screen.getByTestId('result').innerHTML
 const getUsersOnePageState = {
   entities: generateTestEntitiesMap(3),
   queries: {
+    ...emptyState.queries,
     getUsers: {
       'all-pages': {
         result: {
@@ -387,8 +384,6 @@ const getUsersOnePageState = {
         error: undefined,
       },
     },
-    getUser: {},
-    getUserNoSelector: {},
   },
   mutations: {},
 }

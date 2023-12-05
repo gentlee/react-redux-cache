@@ -179,6 +179,12 @@ export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
   result?: R
 }
 
+export type MutationResult<R> = {
+  error?: unknown
+  aborted?: true
+  result?: R
+}
+
 // Query & Mutation
 
 export type QueryMutationState<R> = {

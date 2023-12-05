@@ -16,7 +16,7 @@ export const {
 } = createCache({
   cacheStateSelector: (state) => state,
   options: {
-    logsEnabled: true,
+    logsEnabled: false,
   },
   typenames: {
     users: {} as User,

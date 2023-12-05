@@ -30,9 +30,9 @@ Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, 
 Object.defineProperty(exports, "processEntityChanges", { enumerable: true, get: function () { return utilsAndConstants_1.processEntityChanges; } });
 // Backlog
 // ! high
+// mutate
 // cover with tests
-// support changing query key?
-// make cache fields readonly
+// suport persist (no loading etc)
 // ! medium
 // type extractors from cache
 // custom useStore
@@ -55,6 +55,8 @@ Object.defineProperty(exports, "processEntityChanges", { enumerable: true, get: 
 // make error type generic
 // proper types, remove as, any, todo
 // ! low
+// make types readonly
+// support changing query key?
 // remove defaultState and keep values undefined?
 // add params to the state?
 // cancellation to queries

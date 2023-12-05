@@ -21,7 +21,7 @@ const query = (logTag, returnResult, store, cache, queryKey, cacheKey, cacheOpti
     const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey][cacheKey];
     if (queryStateOnStart === null || queryStateOnStart === void 0 ? void 0 : queryStateOnStart.loading) {
         logsEnabled &&
-            (0, utilsAndConstants_1.log)(`${logTag} cancel: already loading`, {
+            (0, utilsAndConstants_1.log)(`${logTag} cancelled: already loading`, {
                 queryStateOnStart,
                 params,
                 cacheKey,

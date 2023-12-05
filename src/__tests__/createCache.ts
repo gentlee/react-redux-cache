@@ -77,4 +77,5 @@ test('createCache returns correct result', () => {
   expect(hooks.useQuery).toBeDefined()
   expect(hooks.useMutation).toBeDefined()
   expect(hooks.useSelectEntityById).toBeDefined()
+  expect(hooks.useClient).toBeDefined()
 })

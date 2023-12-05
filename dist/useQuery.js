@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useQuery = exports.defaultQueryCacheOptions = exports.queryCacheOptionsByPolicy = void 0;
 const react_1 = require("react");
@@ -51,25 +60,33 @@ const useQuery = (cache, options) => {
     // @ts-expect-error fix later
     params);
     const [cacheKey, resultSelector] = (0, react_1.useMemo)(() => {
-        const cacheKeyImpl = getCacheKey
-            ? // @ts-expect-error fix types later
-                getCacheKey(params)
-            : paramsKey;
-        const resultSelectorImpl = cacheResultSelector &&
-            ((state) => cacheResultSelector(cacheStateSelector(state), 
-            // @ts-expect-error fix types later
-            params));
-        return [cacheKeyImpl, resultSelectorImpl];
+        return [
+            // cacheKey
+            getCacheKey
+                ? // @ts-expect-error fix types later
+                    getCacheKey(params)
+                : paramsKey,
+            // resultSelector
+            cacheResultSelector &&
+                ((state) => cacheResultSelector(cacheStateSelector(state), 
+                // @ts-expect-error fix types later
+                params)),
+        ];
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [paramsKey]);
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const resultFromSelector = (resultSelector && (0, react_redux_1.useSelector)(resultSelector));
     const hasResultFromSelector = resultFromSelector !== undefined;
-    const cacheOptionsKey = `${cacheOptions.policy}${cacheOptions.cacheEntities}${cacheOptions.cacheQueryState}`; // Allows to not memoize cache options
-    const fetch = (0, react_1.useCallback)(() => {
-        return (0, query_1.query)('useQuery.fetch', false, store, cache, queryKey, cacheKey, cacheOptions, params);
+    const fetch = (0, react_1.useCallback)(() => __awaiter(void 0, void 0, void 0, function* () {
+        yield (0, query_1.query)('useQuery.fetch', false, store, cache, queryKey, cacheKey, cacheOptions, params);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cacheKey, paramsKey, cacheOptionsKey]); // TODO put args to ref and make empty deps?
+    }), [
+        cacheKey,
+        paramsKey,
+        cacheOptions.policy,
+        cacheOptions.cacheEntities,
+        cacheOptions.cacheQueryState,
+    ]);
     const queryStateFromSelector = (_c = (0, react_redux_1.useSelector)((state) => {
         const queryState = cacheStateSelector(state).queries[queryKey][cacheKey];
         return queryState; // TODO proper type
@@ -101,6 +118,11 @@ const useQuery = (cache, options) => {
             resultFromSelector,
             queryState,
         });
-    return [queryState, fetch];
+    return [
+        /** Query state */
+        queryState,
+        /** Refetch query with the same parameters */
+        fetch,
+    ];
 };
 exports.useQuery = useQuery;

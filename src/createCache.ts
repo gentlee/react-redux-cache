@@ -1,7 +1,8 @@
 import {useMemo} from 'react'
 import {useSelector, useStore} from 'react-redux'
 
-import {query} from './query'
+import {mutate as mutateImpl} from './mutate'
+import {query as queryImpl} from './query'
 import {
   createCacheReducer,
   mergeEntityChanges,
@@ -13,13 +14,16 @@ import {
   CacheOptions,
   EntitiesMap,
   Key,
+  MutationCacheOptions,
+  MutationResult,
   OptionalPartial,
   QueryCacheOptions,
   QueryInfo,
   QueryOptions,
+  QueryResult,
   Typenames,
 } from './types'
-import {useMutation} from './useMutation'
+import {defaultMutationCacheOptions, useMutation} from './useMutation'
 import {defaultQueryCacheOptions, queryCacheOptionsByPolicy, useQuery} from './useQuery'
 import {defaultGetParamsKey, isDev} from './utilsAndConstants'
 
@@ -103,6 +107,7 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
           const client = {
             query: <QK extends keyof (QP & QR)>(options: QueryOptions<T, QP, QR, MP, MR, QK>) => {
               type P = QK extends keyof (QP | QR) ? QP[QK] : never
+              type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
               const {
                 query: queryKey,
@@ -129,7 +134,7 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
                 : // @ts-expect-error fix later
                   getParamsKey(params)
 
-              return query(
+              return queryImpl(
                 'query',
                 true,
                 store,
@@ -138,7 +143,24 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
                 cacheKey,
                 cacheOptions,
                 params
-              )
+              ) as Promise<QueryResult<R>>
+            },
+            mutate: <MK extends keyof (MP & MR)>(options: {
+              mutation: MK
+              params: MK extends keyof (MP | MR) ? MP[MK] : never
+              cacheOptions?: MutationCacheOptions
+            }) => {
+              type R = MK extends keyof (MP | MR) ? MR[MK] : never
+
+              return mutateImpl(
+                'mutate',
+                true,
+                store,
+                nonPartialCache,
+                options.mutation,
+                options.cacheOptions ?? defaultMutationCacheOptions,
+                options.params
+              ) as Promise<MutationResult<R>>
             },
           }
           return client
