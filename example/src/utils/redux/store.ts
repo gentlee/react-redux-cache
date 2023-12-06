@@ -5,15 +5,23 @@ import storage from 'redux-persist/lib/storage'
 import {reducer} from './cache'
 
 export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean) => {
+  function stringifyReplacer(key: string, value: unknown) {
+    return key === 'loading' || key === 'error' ? undefined : value
+  }
+
   const rootReducer = persistEnabled
-    ? reducer
-    : (persistReducer(
+    ? (persistReducer(
         {
-          key: 'root',
+          key: 'cache',
           storage,
+          whitelist: ['entities', 'queries'],
+          throttle: 1000,
+          // @ts-expect-error wrong type
+          serialize: (value: unknown) => JSON.stringify(value, stringifyReplacer),
         },
         reducer
       ) as typeof reducer)
+    : reducer
 
   const store = createStore(
     rootReducer,

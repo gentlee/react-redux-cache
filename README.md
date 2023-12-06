@@ -17,6 +17,7 @@ Usage example can be found in `example/` folder and run by `npm run example` com
    - [api.ts](https://github.com/gentlee/react-redux-cache#apits) 
  - [Usage](https://github.com/gentlee/react-redux-cache#usage)
  - [Advanced](https://github.com/gentlee/react-redux-cache#advanced)
+   - [redux-persist](https://github.com/gentlee/react-redux-cache#redux-persist)
 
 ### Installation
 `react` and `redux` are peer dependencies.
@@ -116,4 +117,24 @@ export const UserScreen = () => {
 ```
 
 ### Advanced
-To be done...
+#### redux-persist
+
+Here is a simple `redux-persist` configuration:
+
+```typescript
+// removes `loading` and `error` from persisted state
+function stringifyReplacer(key: string, value: unknown) {
+  return key === 'loading' || key === 'error' ? undefined : value
+}
+
+const persistedReducer = persistReducer(
+  {
+    key: 'cache',
+    storage,
+    whitelist: ['entities', 'queries'], // mutations are ignored
+    throttle: 1000, // ms
+    serialize: (value: unknown) => JSON.stringify(value, stringifyReplacer),
+  },
+  reducer
+)
+```
