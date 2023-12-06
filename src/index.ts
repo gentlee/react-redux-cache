@@ -13,11 +13,10 @@ export {
 // Backlog
 
 // ! high
-// mutate
 // cover with tests
-// suport persist (no loading etc)
 
 // ! medium
+// allow multiple mutation with sam keys?
 // type extractors from cache
 // custom useStore
 // return back deserialize selector?
