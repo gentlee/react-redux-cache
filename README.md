@@ -1,6 +1,6 @@
 # react-redux-cache
 
-**Powerful** yet **lightweight** data fetching and caching library that supports **normalization** unlike `react-query` and `rtk-query`, while having similar interface. Built on top of `redux`, fully typed and written on Typescript. Can be considered as `ApolloClient` for API other than `GraphQL`.
+**Powerful** yet **lightweight** data fetching and caching library that supports **normalization** unlike `react-query` and `rtk-query`, while having similar but very simple interface. Built on top of `redux`, fully typed and written on Typescript. Can be considered as `ApolloClient` for protocols other than `GraphQL`.
 
 **Normalization** is the best way to keep the state of the app **consistent** between different views, reduces the number of fetches and allows to show cached data when navigating, which greatly improves **user experience**.
 
@@ -136,6 +136,72 @@ export const UserScreen = () => {
 ```
 
 ### Advanced
+
+#### Pagination
+
+Here is an example of `getUsers` query configuration with pagination support. You can check full implementation in `/example` folder.
+
+```typescript
+// createCache
+
+...
+} = createCache({
+  ...
+  queries: {
+    getUsers: {
+      query: getUsers,
+      getCacheKey: () => 'all-pages', // single cache key is used for all pages
+      mergeResults: (oldResult, {result: newResult}) => {
+        if (!oldResult || newResult.page === 1) {
+          return newResult
+        }
+        if (newResult.page === oldResult.page + 1) {
+          return {
+            ...newResult,
+            items: [...oldResult.items, ...newResult.items],
+          }
+        }
+        return oldResult
+      },
+    },
+  },
+  ...
+})
+
+// Component
+
+export const GetUsersScreen = () => {
+  const {query} = useClient()
+
+  const [{result: usersResult, loading, error}, refetch] = useQuery({
+    query: 'getUsers',
+    params: 1 // page
+  })
+
+  const onLoadNextPage = () => {
+    const lastLoadedPage = usersResult?.page ?? 0
+    query({
+      query: 'getUsers',
+      params: lastLoadedPage + 1,
+    })
+  }
+
+  const renderUser = (userId: number) => (
+    <UserRow key={userId} userId={userId}>
+  )
+
+  ...
+
+  return (
+    <div>
+      {usersResult?.items.map(renderUser)}
+      <button onClick={refetch}>Refresh</button>
+      <button onClick={onLoadNextPage}>Load next page</button>
+    </div>
+  )
+}
+
+```
 
 #### redux-persist
 

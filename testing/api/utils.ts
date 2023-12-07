@@ -20,7 +20,7 @@ export const clearEventLog = () => (eventLog.length = 0)
 
 // mocks
 
-export const emptyState = createReduxStore(false, false).store.getState()
+export const emptyState = createReduxStore(false).getState()
 
 export const generateTestUser = (id: number, full = true, nameSuffix = ''): User => {
   const user: User = {

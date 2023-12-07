@@ -3,7 +3,13 @@ import React from 'react'
 import {Provider} from 'react-redux'
 
 import {getUser, getUsers} from '../../testing/api/mocks'
-import {emptyState, generateTestEntitiesMap} from '../../testing/api/utils'
+import {
+  assertEventLog,
+  clearEventLog,
+  emptyState,
+  generateTestEntitiesMap,
+  logEvent,
+} from '../../testing/api/utils'
 import {advanceApiTimeout, advanceHalfApiTimeout} from '../../testing/common'
 import {setQueryStateAndEntities, useClient, useQuery} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
@@ -14,10 +20,10 @@ let client: {query: any}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let refetch: any
 
-let store: ReturnType<typeof createReduxStore>['store']
+let store: ReturnType<typeof createReduxStore>
 let rerender: ReturnType<typeof renderImpl>['rerender']
 beforeEach(() => {
-  store = createReduxStore(false, false).store
+  store = createReduxStore(false)
 
   // always use rerender instead of render
   ;({rerender} = renderImpl(<div />))
@@ -80,35 +86,32 @@ test('no fetch on mount if has cache', setCacheAndMountAndCheckNoRefetch)
 
 test('loads three pages sequentially', async () => {
   await setCacheAndMountAndCheckNoRefetch()
+  clearEventLog() // TODO remove after prev updated
 
   act(() => {
     client.query({
       query: 'getUsers',
-      params: {
-        page: 2,
-      },
+      params: {page: 2},
     })
   })
-  await act(advanceHalfApiTimeout)
-  const loadingElementPage2 = getLoadingElement()
   await act(advanceApiTimeout)
   act(() => {
     client.query({
       query: 'getUsers',
-      params: {
-        page: 3,
-      },
+      params: {page: 3},
     })
   })
-  await act(advanceHalfApiTimeout)
-  const loadingElementPage3 = getLoadingElement()
-  await act(advanceHalfApiTimeout)
-  const resultText = getResultText()
+  await act(advanceApiTimeout)
 
-  expect(loadingElementPage2).toBeTruthy()
-  expect(loadingElementPage3).toBeTruthy()
-  expect(resultText).toBe(JSON.stringify({items: [0, 1, 2, 3, 4, 5, 6, 7, 8], page: 3}))
   expect(getUsers).toBeCalledTimes(2)
+  assertEventLog([
+    'Loading',
+    'Merge results: next page',
+    'Result: ' + JSON.stringify({items: [0, 1, 2, 3, 4, 5], page: 2}),
+    'Loading',
+    'Merge results: next page',
+    'Result: ' + JSON.stringify({items: [0, 1, 2, 3, 4, 5, 6, 7, 8], page: 3}),
+  ])
 })
 
 test.each(['getUser', 'getUserNoSelector'] as const)(
@@ -349,6 +352,9 @@ const TestUseQueryComponent = ({options}: {options: Parameters<typeof useQuery>[
   const [{result, loading}, refetchImpl] = useQuery(options)
   refetch = refetchImpl
 
+  logEvent(loading ? 'Loading' : 'Result: ' + JSON.stringify(result))
+
+  // TODO remove
   return loading ? (
     <p data-testid="loading" />
   ) : (

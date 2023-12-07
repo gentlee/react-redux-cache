@@ -30,10 +30,13 @@ export const {
         if (!oldResult || newResult.page === 1) {
           return newResult
         }
-        return {
-          ...newResult,
-          items: [...oldResult.items, ...newResult.items],
+        if (newResult.page === oldResult.page + 1) {
+          return {
+            ...newResult,
+            items: [...oldResult.items, ...newResult.items],
+          }
         }
+        return oldResult
       },
     },
     getUser: {

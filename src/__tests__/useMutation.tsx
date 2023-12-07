@@ -14,12 +14,12 @@ import {useMutation} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
 import {defaultQueryMutationState} from '../utilsAndConstants'
 
-let store: ReturnType<typeof createReduxStore>['store']
+let store: ReturnType<typeof createReduxStore>
 let updateUser: ReturnType<typeof useMutation<'updateUser'>>[0]
 let abort: () => void
 
 beforeEach(() => {
-  store = createReduxStore(false, true).store
+  store = createReduxStore(true)
 })
 
 test('should be able to abort started mutation', async () => {

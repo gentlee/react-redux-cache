@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import {useParams} from 'react-router-dom'
 
-import {useMutation, useQuery, useSelectEntityById} from '../utils/redux/cache'
+import {useMutation, useQuery, useSelectEntityById} from '../redux/cache'
 
 export const UserScreen = () => {
   const {id: userIdParam} = useParams()

@@ -1,6 +1,5 @@
-import {apiTimeout} from '../common'
 import {User} from './types'
-import {generateTestBank, generateTestUser} from './utils'
+import {apiTimeout, generateTestBank, generateTestUser} from './utils'
 
 export const getUser = async (id: number) => {
   await apiTimeout()

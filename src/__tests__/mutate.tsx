@@ -15,11 +15,11 @@ import {useClient} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
 import {defaultQueryMutationState} from '../utilsAndConstants'
 
-let store: ReturnType<typeof createReduxStore>['store']
+let store: ReturnType<typeof createReduxStore>
 let mutate: ReturnType<typeof useClient>['mutate']
 
 beforeEach(() => {
-  store = createReduxStore(false, true).store
+  store = createReduxStore(true)
 })
 
 test('should update mutation state and return result', async () => {

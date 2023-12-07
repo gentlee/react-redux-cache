@@ -5,7 +5,7 @@ import {Provider} from 'react-redux'
 import {BrowserRouter, Route, Routes} from 'react-router-dom'
 import {PersistGate} from 'redux-persist/integration/react'
 
-import {createReduxStore} from '../utils/redux/store'
+import {createReduxStore} from '../redux/store'
 import {RootScreen} from './RootScreen'
 import {UserScreen} from './UserScreen'
 

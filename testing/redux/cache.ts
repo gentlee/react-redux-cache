@@ -1,6 +1,7 @@
 import {createCache} from '../../src/createCache'
 import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
 import {Bank, User} from '../api/types'
+import {logEvent} from '../api/utils'
 
 export type TestTypenames = {
   users: User
@@ -28,17 +29,22 @@ export const {
   queries: {
     getUsers: {
       query: getUsers,
-      cacheOptions: 'cache-first',
       getParamsKey: (params) => params?.page ?? 0,
       getCacheKey: () => 'all-pages',
       mergeResults: (oldResult, {result: newResult}) => {
         if (!oldResult || newResult.page === 1) {
+          logEvent('Merge results: first page')
           return newResult
         }
-        return {
-          ...newResult,
-          items: [...oldResult.items, ...newResult.items],
+        if (newResult.page === oldResult.page + 1) {
+          logEvent('Merge results: next page')
+          return {
+            ...newResult,
+            items: [...oldResult.items, ...newResult.items],
+          }
         }
+        logEvent('Merge results: cancelled')
+        return oldResult
       },
     },
     getUser: {

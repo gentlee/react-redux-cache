@@ -3,6 +3,12 @@ import {EntitiesMap} from 'react-redux-cache'
 import {TestTypenames} from '../redux/cache'
 import {Bank, User} from './types'
 
+export const API_TIMEOUT = 1000
+
+const timeout = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+export const apiTimeout = () => timeout(API_TIMEOUT)
+
 export const generateTestUser = (id: number, full = true, nameSuffix = ''): User => {
   const user: User = {
     id,
