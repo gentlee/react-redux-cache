@@ -113,6 +113,7 @@ export const UserScreen = () => {
   const {id} = useParams()
 
   // useQuery connects to redux state and if user with that id is already cached, fetch won't happen (with default cachePolicy 'cache-first')
+  // Infers all types from created cache, telling here that params and result are of type `number`.
   const [{result: userId, loading, error}] = useQuery({
     query: 'getUser',
     params: Number(id),
