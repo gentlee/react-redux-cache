@@ -93,7 +93,7 @@
   "exclude": [
     "**/__tests__",
     "**/*.test.ts",
-    "testing",
+    "src/testing",
     "example",
     "dist"
   ]

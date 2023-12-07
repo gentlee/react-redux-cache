@@ -1,5 +1,5 @@
-import {generateTestBank, generateTestEntitiesMap, generateTestUser} from '../../testing/api/utils'
-import {applyEntityChanges, TestTypenames} from '../../testing/redux/cache'
+import {generateTestBank, generateTestEntitiesMap, generateTestUser} from '../testing/api/utils'
+import {applyEntityChanges, TestTypenames} from '../testing/redux/cache'
 import {EntityChanges} from '../types'
 
 test('add new entities', () => {

@@ -2,17 +2,17 @@ import {act, render as renderImpl, screen} from '@testing-library/react'
 import React from 'react'
 import {Provider} from 'react-redux'
 
-import {getUser, getUsers} from '../../testing/api/mocks'
+import {getUser, getUsers} from '../testing/api/mocks'
 import {
   assertEventLog,
   clearEventLog,
   emptyState,
   generateTestEntitiesMap,
   logEvent,
-} from '../../testing/api/utils'
-import {advanceApiTimeout, advanceHalfApiTimeout} from '../../testing/common'
-import {setQueryStateAndEntities, useClient, useQuery} from '../../testing/redux/cache'
-import {createReduxStore} from '../../testing/redux/store'
+} from '../testing/api/utils'
+import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/common'
+import {setQueryStateAndEntities, useClient, useQuery} from '../testing/redux/cache'
+import {createReduxStore} from '../testing/redux/store'
 import {defaultGetParamsKey, defaultQueryMutationState} from '../utilsAndConstants'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

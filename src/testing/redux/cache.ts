@@ -1,4 +1,4 @@
-import {createCache} from '../../src/createCache'
+import {createCache} from '../../createCache'
 import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
 import {Bank, User} from '../api/types'
 import {logEvent} from '../api/utils'
