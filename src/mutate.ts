@@ -4,11 +4,6 @@ import {setMutationStateAndEntities} from './reducer'
 import {Cache, Key, MutationCacheOptions, MutationResult, Typenames} from './types'
 import {log} from './utilsAndConstants'
 
-export const abortControllers = new WeakMap<Store, Record<Key, AbortController>>()
-
-export const getAbortController = (store: Store, mutationKey: Key) =>
-  abortControllers.get(store)?.[mutationKey]
-
 export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends keyof (MP & MR)>(
   logTag: string,
   returnResult: boolean,
@@ -16,7 +11,8 @@ export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends key
   cache: Cache<T, QP, QR, MP, MR>,
   mutationKey: MK,
   cacheOptions: MutationCacheOptions,
-  params: MK extends keyof (MP | MR) ? MP[MK] : never
+  params: MK extends keyof (MP | MR) ? MP[MK] : never,
+  abortControllers: WeakMap<Store, Record<Key, AbortController>>
 ): Promise<void | MutationResult<MK extends keyof (MP | MR) ? MR[MK] : never>> => {
   let abortControllersOfStore = abortControllers.get(store)
   if (abortControllersOfStore === undefined) {

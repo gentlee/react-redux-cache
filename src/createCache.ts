@@ -1,5 +1,6 @@
 import {useMemo} from 'react'
 import {useSelector, useStore} from 'react-redux'
+import {Store} from 'redux'
 
 import {mutate as mutateImpl} from './mutate'
 import {query as queryImpl} from './query'
@@ -36,6 +37,8 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
   // @ts-expect-error hot
   const hotReloadEnabled = Boolean(module?.hot)
 
+  const abortControllers = new WeakMap<Store, Record<Key, AbortController>>()
+
   // provide all optional fields
   // and transform cacheOptions from QueryCachePolicy to QueryCacheOptions
 
@@ -45,6 +48,8 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
   cache.options.validateHookArguments ??= isDev && !hotReloadEnabled
   cache.queries ??= {} as Cache<T, QP, QR, MP, MR>['queries']
   cache.mutations ??= {} as Cache<T, QP, QR, MP, MR>['mutations']
+  // @ts-expect-error for testing
+  cache.abortControllers = abortControllers
 
   for (const queryInfo of Object.values(cache.queries) as QueryInfo<
     T,
@@ -159,7 +164,8 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
                 nonPartialCache,
                 options.mutation,
                 options.cacheOptions ?? defaultMutationCacheOptions,
-                options.params
+                options.params,
+                abortControllers
               ) as Promise<MutationResult<R>>
             },
           }
@@ -175,7 +181,7 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
       /** Subscribes to provided mutation state and provides mutate function. */
       useMutation: <MK extends keyof (MP & MR)>(
         options: Parameters<typeof useMutation<T, MP, MR, MK>>[1]
-      ) => useMutation(nonPartialCache, options),
+      ) => useMutation(nonPartialCache, options, abortControllers),
 
       /** Selects entity by id and subscribes to the changes. */
       useSelectEntityById: <K extends keyof T>(

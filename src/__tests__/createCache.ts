@@ -39,6 +39,7 @@ test('createCache returns correct result', () => {
   })
 
   expect(cache).toStrictEqual({
+    abortControllers: new WeakMap(),
     cacheStateSelector,
     options: {
       logsEnabled: false,

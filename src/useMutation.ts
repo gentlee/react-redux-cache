@@ -1,9 +1,10 @@
 import {useMemo} from 'react'
 import {useSelector, useStore} from 'react-redux'
+import {Store} from 'redux'
 
-import {getAbortController, mutate as mutateImpl} from './mutate'
+import {mutate as mutateImpl} from './mutate'
 import {setMutationStateAndEntities} from './reducer'
-import {Cache, MutationCacheOptions, QueryMutationState, Typenames} from './types'
+import {Cache, Key, MutationCacheOptions, QueryMutationState, Typenames} from './types'
 import {defaultQueryMutationState, log, useAssertValueNotChanged} from './utilsAndConstants'
 
 export const defaultMutationCacheOptions: MutationCacheOptions = {
@@ -16,7 +17,8 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
   options: {
     mutation: MK
     cacheOptions?: MutationCacheOptions
-  }
+  },
+  abortControllers: WeakMap<Store, Record<Key, AbortController>>
 ) => {
   type P = MK extends keyof (MP | MR) ? MP[MK] : never
   type R = MK extends keyof (MP | MR) ? MP[MK] : never
@@ -69,12 +71,13 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
             cache,
             mutationKey,
             cacheOptions,
-            params
+            params,
+            abortControllers
           )
         },
         // abort
         () => {
-          const abortController = getAbortController(store, mutationKey)
+          const abortController = abortControllers.get(store)?.[mutationKey]
           if (abortController === undefined || abortController.signal.aborted) {
             return false
           }
