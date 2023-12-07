@@ -1,10 +1,10 @@
 # react-redux-cache
 
-**Powerful** yet **lightweight** data fetching and caching library that supports **normalization** unlike `react-query` and `rtk-query`, while having similar interface. Built on top of `redux`.
+**Powerful** yet **lightweight** data fetching and caching library that supports **normalization** unlike `react-query` and `rtk-query`, while having similar interface. Built on top of `redux`, fully typed and written on Typescript. Can be considered as `ApolloClient` for API other than `GraphQL`.
 
-**Normalization** is the only way to keep the state of the app **consistent** between different views, reduces the number of fetches and allows to show cached data when navigating, which greatly improves **user experience**.
+**Normalization** is the best way to keep the state of the app **consistent** between different views, reduces the number of fetches and allows to show cached data when navigating, which greatly improves **user experience**.
 
-Hooks, reducer, actions and selectors are fully typed and written on Typescript, so redux store will be properly typed and you will remain a **full control** of its state with ability to write custom selectors, actions and reducers to manage cached state.
+Remains **full control** of redux state with ability to write custom selectors, actions and reducers to manage cached state.
     
 Usage example can be found in `example/` folder and run by `npm run example` command from the root folder.
     
@@ -20,26 +20,29 @@ Usage example can be found in `example/` folder and run by `npm run example` com
    - [redux-persist](https://github.com/gentlee/react-redux-cache#redux-persist)
 
 ### Installation
-`react` and `redux` are peer dependencies.
+`react`, `redux` and `react-redux` are peer dependencies.
 ```sh
-npm add react-redux-cache react redux
+npm add react-redux-cache react redux react-redux
 ```
 ### Initialization
-Create reducer, hooks, actions and selectors with `createCache`.
-All queries and mutations should be passed while initializing the cache, for proper typing and later access by key.
-In this example we omit usage of actions and selectors.
+The only function that needs to be imported is `createCache`, which creates fully typed reducer, hooks, actions, selectors and utils to be used in the app.
+All typenames, queries and mutations should be passed while initializing the cache for proper typing.
 #### cache.ts
 ```typescript
 export const {
   reducer,
-  hooks: {useMutation, useQuery, useSelectEntityById},
+  hooks: {useClient, useMutation, useQuery, useSelectEntityById},
+  // Actions, selectors and utils may be not used at all
+  selectors: {entitiesSelector, entitiesByTypenameSelector},
+  actions: {setQueryStateAndEntities, setMutationStateAndEntities, mergeEntityChanges},
+  utils: {applyEntityChanges},
 } = createCache({
-  // This selector should select cache state from redux store state, based on the path to its reducer.
+  // This selector should return the cache state based on the path to its reducer.
   cacheStateSelector: (state) => state.cache,
-  // Typenames provide a mapping of all typenames to their entity types.
+  // Typenames provide a mapping of all typenames to their entity types, which is needed for normalization.
   // Empty objects with type casting can be used as values.
   typenames: {
-    users: {} as User,
+    users: {} as User, // here `users` entities will have type `User`
     banks: {} as Bank,
   },
   queries: {
@@ -54,6 +57,8 @@ export const {
 ```
 #### store.ts
 ```typescript
+// Create store as usual, passing the new cache reducer
+// under the key, previously used in cacheStateSelector
 const store = configureStore({
   reducer: {
     cache: reducer,
@@ -65,11 +70,16 @@ Query result should be of type `QueryResponse`, mutation result should be of typ
 For normalization `normalizr` package is used in this example, but any other tool can be used if query result is of proper type.
 Perfect implementation is when the backend already returns normalized data.
 ```typescript
+
+// Example of query with normalization (recommended)
+
 export const getUser = async (id: number) => {
   const result = await ...
   
   const normalizedResult: {
+     // result is id of the user
     result: number
+    // entities contain all normalized objects 
     entities: {
       users: Record<number, User>
       banks: Record<string, Bank>
@@ -78,6 +88,15 @@ export const getUser = async (id: number) => {
 
   return normalizedResult
 }
+
+// Example of query without normalization (not recommended)
+
+export const getBank = (id: string) => {
+  const result: Bank = ...
+  return {result} // result is bank object, no entities passed
+}
+
+// Example of mutation with normalization
 
 export const removeUser = async (id: number) => {
   await ...
@@ -93,8 +112,7 @@ export const removeUser = async (id: number) => {
 export const UserScreen = () => {
   const {id} = useParams()
 
-  // useQuery will infer all types from created cache,
-  // telling you that params and result here are of type `number`.
+  // useQuery connects to redux state and if user with that id is already cached, fetch won't happen (with default cachePolicy 'cache-first')
   const [{result: userId, loading, error}] = useQuery({
     query: 'getUser',
     params: Number(id),
@@ -104,7 +122,7 @@ export const UserScreen = () => {
     mutation: 'updateUser',
   })
 
-  // This selector is created by createCache and also returns proper types - User and Bank
+  // This selector is used for denormalization and returns entities with proper types - User and Bank
   const user = useSelectEntityById(userId, 'users')
   const bank = useSelectEntityById(user?.bankId, 'banks')
 
@@ -117,6 +135,7 @@ export const UserScreen = () => {
 ```
 
 ### Advanced
+
 #### redux-persist
 
 Here is a simple `redux-persist` configuration:
