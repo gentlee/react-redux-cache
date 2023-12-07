@@ -25,7 +25,7 @@ import {
 } from './types'
 import {defaultMutationCacheOptions, useMutation} from './useMutation'
 import {defaultQueryCacheOptions, queryCacheOptionsByPolicy, useQuery} from './useQuery'
-import {defaultGetParamsKey, isDev} from './utilsAndConstants'
+import {applyEntityChanges, defaultGetParamsKey, isDev} from './utilsAndConstants'
 
 /**
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
@@ -185,6 +185,14 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
         return useSelector((state) =>
           id == null ? undefined : nonPartialCache.cacheStateSelector(state).entities[typename][id]
         )
+      },
+    },
+    utils: {
+      applyEntityChanges: (
+        entities: Parameters<typeof applyEntityChanges<T>>[0],
+        changes: Parameters<typeof applyEntityChanges<T>>[1]
+      ) => {
+        return applyEntityChanges<T>(entities, changes, nonPartialCache.options)
       },
     },
   }

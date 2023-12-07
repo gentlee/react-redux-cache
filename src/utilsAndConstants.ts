@@ -13,12 +13,6 @@ export const isDev: boolean = (() => {
   }
 })()
 
-export const defaultCacheOptions = {
-  logsEnabled: false,
-  validateFunctionArguments: true,
-  validateHookArguments: true,
-}
-
 export const defaultQueryMutationState = {loading: false, error: undefined} as const
 
 export const defaultGetParamsKey = <P = unknown>(params: P): string => {
@@ -48,10 +42,10 @@ export const log = (tag: string, data?: unknown) => {
 }
 
 /**
- * Process changes to entities map.
- * @return `undefined` if nothing to change, otherwise processed entities map.
+ * Apply changes to the entities map.
+ * @return `undefined` if nothing to change, otherwise new entities map with applied changes.
  */
-export const processEntityChanges = <T extends Typenames>(
+export const applyEntityChanges = <T extends Typenames>(
   entities: EntitiesMap<T>,
   changes: EntityChanges<T>,
   options: CacheOptions
@@ -120,7 +114,7 @@ export const processEntityChanges = <T extends Typenames>(
   }
 
   options.logsEnabled &&
-    log('processEntityChanges', {
+    log('applyEntityChanges', {
       entities,
       changes,
       result,

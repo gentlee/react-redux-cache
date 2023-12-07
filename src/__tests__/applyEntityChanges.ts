@@ -1,7 +1,6 @@
 import {generateTestBank, generateTestEntitiesMap, generateTestUser} from '../../testing/api/utils'
-import {TestTypenames} from '../../testing/redux/cache'
+import {applyEntityChanges, TestTypenames} from '../../testing/redux/cache'
 import {EntityChanges} from '../types'
-import {defaultCacheOptions, processEntityChanges} from '../utilsAndConstants'
 
 test('add new entities', () => {
   const entitiesMap = generateTestEntitiesMap(0)
@@ -9,7 +8,7 @@ test('add new entities', () => {
     merge: generateTestEntitiesMap(2),
   }
 
-  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
+  const result = applyEntityChanges(entitiesMap, changes)
 
   expect(result).toEqual(generateTestEntitiesMap(2))
 })
@@ -23,7 +22,7 @@ test('remove entities', () => {
     },
   }
 
-  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
+  const result = applyEntityChanges(entitiesMap, changes)
 
   expect(result).toEqual({
     users: {
@@ -52,7 +51,7 @@ test('update entities', () => {
     },
   }
 
-  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
+  const result = applyEntityChanges(entitiesMap, changes)
 
   expect(result).toEqual({
     users: {
@@ -79,7 +78,7 @@ test('replace entities', () => {
     },
   }
 
-  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
+  const result = applyEntityChanges(entitiesMap, changes)
 
   expect(result).toEqual({
     users: {
@@ -119,7 +118,7 @@ test('add, remove, update and replace entities', () => {
     },
   }
 
-  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
+  const result = applyEntityChanges(entitiesMap, changes)
 
   expect(result).toEqual({
     users: {
@@ -149,9 +148,9 @@ test('return undefined with empty arguments', () => {
     },
   }
 
-  const result = processEntityChanges(entitiesMap, changes, defaultCacheOptions)
-  const result2 = processEntityChanges(entitiesMap, changes2, defaultCacheOptions)
-  const result3 = processEntityChanges(entitiesMap, changes3, defaultCacheOptions)
+  const result = applyEntityChanges(entitiesMap, changes)
+  const result2 = applyEntityChanges(entitiesMap, changes2)
+  const result3 = applyEntityChanges(entitiesMap, changes3)
 
   expect(result).toEqual(undefined)
   expect(result2).toEqual(undefined)
@@ -174,7 +173,7 @@ test('throw error if merge and entities both set', () => {
   }
 
   expect(() => {
-    processEntityChanges(entitiesMap, changes, defaultCacheOptions)
+    applyEntityChanges(entitiesMap, changes)
   }).toThrowError('Merge and entities should not be both set')
 })
 
@@ -204,7 +203,7 @@ test('throw error if merge, replace or remove have intersections', () => {
 
   ;[changes, changes2, changes3].forEach((changes) => {
     expect(() => {
-      processEntityChanges(entitiesMap, changes, defaultCacheOptions)
+      applyEntityChanges(entitiesMap, changes)
     }).toThrowError('Merge, replace and remove changes have intersections for: users')
   })
 })

@@ -22,6 +22,8 @@ test('createCache returns correct result', () => {
     cacheStateSelector,
     options: {
       logsEnabled: false,
+      validateFunctionArguments: true,
+      validateHookArguments: true,
     },
     typenames,
     queries: {
@@ -40,8 +42,8 @@ test('createCache returns correct result', () => {
     cacheStateSelector,
     options: {
       logsEnabled: false,
-      validateFunctionArguments: false,
-      validateHookArguments: false,
+      validateFunctionArguments: true,
+      validateHookArguments: true,
     },
     typenames,
     queries: {

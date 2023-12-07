@@ -13,10 +13,13 @@ export const {
   actions: {setQueryStateAndEntities, setMutationStateAndEntities, mergeEntityChanges},
   selectors: {entitiesSelector, entitiesByTypenameSelector},
   hooks: {useClient, useMutation, useQuery, useSelectEntityById},
+  utils: {applyEntityChanges},
 } = createCache({
   cacheStateSelector: (state) => state,
   options: {
     logsEnabled: false,
+    validateFunctionArguments: true,
+    validateHookArguments: true,
   },
   typenames: {
     users: {} as User,

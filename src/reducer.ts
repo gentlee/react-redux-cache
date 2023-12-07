@@ -1,5 +1,5 @@
 import {Cache, Dict, EntitiesMap, EntityChanges, Key, QueryMutationState, Typenames} from './types'
-import {log, PACKAGE_SHORT_NAME, processEntityChanges} from './utilsAndConstants'
+import {applyEntityChanges, log, PACKAGE_SHORT_NAME} from './utilsAndConstants'
 
 export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
   ReturnType<typeof createCacheReducer<T, QP, QR, MP, MR>>
@@ -50,7 +50,7 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
         const {queryKey, queryCacheKey, state: queryState, entityChagnes} = action
 
         const newEntities =
-          entityChagnes && processEntityChanges(state.entities, entityChagnes, cacheOptions)
+          entityChagnes && applyEntityChanges(state.entities, entityChagnes, cacheOptions)
 
         if (!queryState && !newEntities) {
           return state
@@ -75,7 +75,7 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
         const {mutationKey, state: mutationState, entityChagnes} = action
 
         const newEntities =
-          entityChagnes && processEntityChanges(state.entities, entityChagnes, cacheOptions)
+          entityChagnes && applyEntityChanges(state.entities, entityChagnes, cacheOptions)
 
         if (!mutationState && !newEntities) {
           return state
@@ -96,7 +96,7 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
       case '@RRC/MERGE_ENTITY_CHANGES': {
         const {changes} = action
 
-        const newEntities = processEntityChanges(state.entities, changes, cacheOptions)
+        const newEntities = applyEntityChanges(state.entities, changes, cacheOptions)
 
         return newEntities ? {...state, entities: newEntities} : state
       }
