@@ -17,7 +17,7 @@ Usage example can be found in `example/` folder and run by `npm run example` com
    - [api.ts](https://github.com/gentlee/react-redux-cache#apits) 
  - [Usage](https://github.com/gentlee/react-redux-cache#usage)
  - [Advanced](https://github.com/gentlee/react-redux-cache#advanced)
-   - [Infinite scroll pagination](https://github.com/gentlee/react-redux-cache#infinitescrollpagination)
+   - [Infinite scroll pagination](https://github.com/gentlee/react-redux-cache#infinite-scroll-pagination)
    - [redux-persist](https://github.com/gentlee/react-redux-cache#redux-persist)
 
 ### Installation
