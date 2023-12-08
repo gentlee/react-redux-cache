@@ -23,7 +23,6 @@ export const {
   queries: {
     getUsers: {
       query: getUsers,
-      cacheOptions: 'cache-first',
       getParamsKey: (params) => params?.page ?? 0,
       getCacheKey: () => 'all-pages',
       mergeResults: (oldResult, {result: newResult}) => {

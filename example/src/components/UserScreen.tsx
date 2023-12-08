@@ -11,7 +11,6 @@ export const UserScreen = () => {
 
   const [{result, loading, error}] = useQuery({
     query: 'getUser',
-    cacheOptions: 'cache-first',
     params: userId,
     skip,
   })
