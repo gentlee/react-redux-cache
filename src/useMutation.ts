@@ -4,29 +4,20 @@ import {Store} from 'redux'
 
 import {mutate as mutateImpl} from './mutate'
 import {setMutationStateAndEntities} from './reducer'
-import {Cache, Key, MutationCacheOptions, QueryMutationState, Typenames} from './types'
+import {Cache, Key, QueryMutationState, Typenames} from './types'
 import {defaultQueryMutationState, log, useAssertValueNotChanged} from './utilsAndConstants'
-
-export const defaultMutationCacheOptions: MutationCacheOptions = {
-  cacheMutationState: true,
-  cacheEntities: true,
-}
 
 export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & MR)>(
   cache: Cache<T, unknown, unknown, MP, MR>,
   options: {
     mutation: MK
-    cacheOptions?: MutationCacheOptions
   },
   abortControllers: WeakMap<Store, Record<Key, AbortController>>
 ) => {
   type P = MK extends keyof (MP | MR) ? MP[MK] : never
   type R = MK extends keyof (MP | MR) ? MP[MK] : never
 
-  const {
-    mutation: mutationKey,
-    cacheOptions = cache.mutations[mutationKey].cacheOptions ?? defaultMutationCacheOptions,
-  } = options
+  const {mutation: mutationKey} = options
 
   // Check values that should be set once.
   // Can be removed from deps.
@@ -39,8 +30,6 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
           ['cache.options.logsEnabled', cache.options.logsEnabled],
           ['cacheStateSelector', cache.cacheStateSelector],
           ['mutationKey', mutationKey],
-          ['cacheOptions.cacheEntities', cacheOptions.cacheEntities],
-          ['cacheOptions.cacheMutationState', cacheOptions.cacheMutationState],
         ] as [key: string, value: unknown][]
       )
         // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -70,7 +59,6 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
             store,
             cache,
             mutationKey,
-            cacheOptions,
             params,
             abortControllers
           )
@@ -82,18 +70,17 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
             return false
           }
           abortController.abort()
-          cacheOptions.cacheMutationState &&
-            store.dispatch(
-              setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
-                loading: false,
-              })
-            )
+          store.dispatch(
+            setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
+              loading: false,
+            })
+          )
           return true
         },
       ]
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [store, cacheOptions.cacheEntities, cacheOptions.cacheMutationState]
+    [store]
   )
 
   // @ts-expect-error fix later

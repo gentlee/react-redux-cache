@@ -2,36 +2,13 @@ import {useCallback, useEffect, useMemo} from 'react'
 import {useSelector, useStore} from 'react-redux'
 
 import {query as queryImpl} from './query'
-import {
-  Cache,
-  QueryCacheOptions,
-  QueryCachePolicy,
-  QueryMutationState,
-  Typenames,
-  UseQueryOptions,
-} from './types'
+import {Cache, QueryMutationState, Typenames, UseQueryOptions} from './types'
 import {
   defaultGetParamsKey,
   defaultQueryMutationState,
   log,
   useAssertValueNotChanged,
 } from './utilsAndConstants'
-
-const cacheFirstOptions = {
-  policy: 'cache-first',
-  cacheQueryState: true,
-  cacheEntities: true,
-} as const satisfies QueryCacheOptions
-
-export const queryCacheOptionsByPolicy: Record<QueryCachePolicy, QueryCacheOptions> = {
-  'cache-first': cacheFirstOptions,
-  'cache-and-fetch': {
-    ...cacheFirstOptions,
-    policy: 'cache-and-fetch',
-  },
-} as const
-
-export const defaultQueryCacheOptions = cacheFirstOptions
 
 export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
   cache: Cache<T, QP, QR, MP, MR>,
@@ -44,8 +21,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
     query: queryKey,
     skip,
     params,
-    cacheOptions: cacheOptionsOrPolicy = cache.queries[queryKey].cacheOptions ??
-      defaultQueryCacheOptions,
+    cachePolicy = cache.queries[queryKey].cachePolicy ?? 'cache-first',
     getCacheKey = cache.queries[queryKey].getCacheKey,
   } = options
 
@@ -53,11 +29,6 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
   const getParamsKey = cache.queries[queryKey].getParamsKey ?? defaultGetParamsKey<P>
   const cacheResultSelector = cache.queries[queryKey].resultSelector
   const cacheStateSelector = cache.cacheStateSelector
-
-  const cacheOptions =
-    typeof cacheOptionsOrPolicy === 'string'
-      ? queryCacheOptionsByPolicy[cacheOptionsOrPolicy]
-      : cacheOptionsOrPolicy
 
   const store = useStore()
 
@@ -70,8 +41,6 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
           ['cache', cache],
           ['cache.queries', cache.queries],
           ['cacheStateSelector', cache.cacheStateSelector],
-          ['cacheOptions.cacheEntities', cacheOptions.cacheEntities],
-          ['cacheOptions.cacheQueryState', cacheOptions.cacheQueryState],
           ['options.query', options.query],
           ['queryKey', queryKey],
           ['resultSelector', cache.queries[queryKey].resultSelector],
@@ -113,15 +82,9 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
   const hasResultFromSelector = resultFromSelector !== undefined
 
   const fetch = useCallback(async () => {
-    await queryImpl('useQuery.fetch', false, store, cache, queryKey, cacheKey, cacheOptions, params)
+    await queryImpl('useQuery.fetch', false, store, cache, queryKey, cacheKey, params)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    cacheKey,
-    paramsKey,
-    cacheOptions.policy,
-    cacheOptions.cacheEntities,
-    cacheOptions.cacheQueryState,
-  ])
+  }, [cacheKey, paramsKey])
 
   const queryStateFromSelector =
     useSelector((state: unknown) => {
@@ -141,18 +104,18 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
       logsEnabled && log('useQuery.useEffect skip fetch', {skip, paramsKey})
       return
     }
-    if (queryState.result != null && cacheOptions.policy === 'cache-first') {
+    if (queryState.result != null && cachePolicy === 'cache-first') {
       logsEnabled &&
         log('useQuery.useEffect don`t fetch due to cache policy', {
           result: queryState.result,
-          policy: cacheOptions.policy,
+          cachePolicy,
         })
       return
     }
 
     fetch()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramsKey, cacheOptions.policy, skip])
+  }, [paramsKey, cachePolicy, skip])
 
   logsEnabled &&
     log('useQuery', {

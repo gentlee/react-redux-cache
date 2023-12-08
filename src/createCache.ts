@@ -15,17 +15,14 @@ import {
   CacheOptions,
   EntitiesMap,
   Key,
-  MutationCacheOptions,
   MutationResult,
   OptionalPartial,
-  QueryCacheOptions,
-  QueryInfo,
   QueryOptions,
   QueryResult,
   Typenames,
 } from './types'
-import {defaultMutationCacheOptions, useMutation} from './useMutation'
-import {defaultQueryCacheOptions, queryCacheOptionsByPolicy, useQuery} from './useQuery'
+import {useMutation} from './useMutation'
+import {useQuery} from './useQuery'
 import {applyEntityChanges, defaultGetParamsKey, isDev} from './utilsAndConstants'
 
 /**
@@ -40,7 +37,6 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
   const abortControllers = new WeakMap<Store, Record<Key, AbortController>>()
 
   // provide all optional fields
-  // and transform cacheOptions from QueryCachePolicy to QueryCacheOptions
 
   cache.options ??= {} as CacheOptions
   cache.options.logsEnabled ??= false
@@ -50,17 +46,6 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
   cache.mutations ??= {} as Cache<T, QP, QR, MP, MR>['mutations']
   // @ts-expect-error for testing
   cache.abortControllers = abortControllers
-
-  for (const queryInfo of Object.values(cache.queries) as QueryInfo<
-    T,
-    unknown,
-    unknown,
-    unknown
-  >[]) {
-    if (typeof queryInfo.cacheOptions === 'string') {
-      queryInfo.cacheOptions = queryCacheOptionsByPolicy[queryInfo.cacheOptions]
-    }
-  }
 
   const nonPartialCache = cache as Cache<T, QP, QR, MP, MR>
 
@@ -114,30 +99,12 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
               type P = QK extends keyof (QP | QR) ? QP[QK] : never
               type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
-              const {
-                query: queryKey,
-                params,
-                // TODO can be memoized for all query keys while creating cache
-                cacheOptions: cacheOptionsOrPolicy = {
-                  ...((nonPartialCache.queries[queryKey].cacheOptions as QueryCacheOptions) ??
-                    defaultQueryCacheOptions),
-                  policy: 'cache-and-fetch',
-                },
-                getCacheKey = nonPartialCache.queries[queryKey].getCacheKey,
-              } = options
-
-              const cacheOptions =
-                typeof cacheOptionsOrPolicy === 'string'
-                  ? queryCacheOptionsByPolicy[cacheOptionsOrPolicy]
-                  : cacheOptionsOrPolicy
-
+              const {query: queryKey, params} = options
               const getParamsKey =
                 nonPartialCache.queries[queryKey].getParamsKey ?? defaultGetParamsKey<P>
-              const cacheKey = getCacheKey
-                ? // @ts-expect-error fix later
-                  getCacheKey(params)
-                : // @ts-expect-error fix later
-                  getParamsKey(params)
+              const getCacheKey = nonPartialCache.queries[queryKey].getCacheKey ?? getParamsKey
+              // @ts-expect-error fix later
+              const cacheKey = getCacheKey(params)
 
               return queryImpl(
                 'query',
@@ -146,14 +113,12 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
                 nonPartialCache,
                 queryKey,
                 cacheKey,
-                cacheOptions,
                 params
               ) as Promise<QueryResult<R>>
             },
             mutate: <MK extends keyof (MP & MR)>(options: {
               mutation: MK
               params: MK extends keyof (MP | MR) ? MP[MK] : never
-              cacheOptions?: MutationCacheOptions
             }) => {
               type R = MK extends keyof (MP | MR) ? MR[MK] : never
 
@@ -163,7 +128,6 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
                 store,
                 nonPartialCache,
                 options.mutation,
-                options.cacheOptions ?? defaultMutationCacheOptions,
                 options.params,
                 abortControllers
               ) as Promise<MutationResult<R>>

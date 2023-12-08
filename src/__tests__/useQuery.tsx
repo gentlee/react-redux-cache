@@ -171,7 +171,7 @@ test.each([
     )
   )
 
-  render({query, params: 0, cacheOptions: 'cache-and-fetch'})
+  render({query, params: 0, cachePolicy: 'cache-and-fetch'})
   await act(advanceApiTimeout)
   assertEventLog(['render: 0', 'render: loading', 'render: 0'])
 
@@ -181,7 +181,7 @@ test.each([
 test('fetch after params change with custom cache key if cache-and-fetch policy', async () => {
   render({
     query: 'getUsers',
-    cacheOptions: 'cache-and-fetch',
+    cachePolicy: 'cache-and-fetch',
     params: {page: 1},
   })
   await act(advanceApiTimeout)
@@ -194,7 +194,7 @@ test('fetch after params change with custom cache key if cache-and-fetch policy'
 
   render({
     query: 'getUsers',
-    cacheOptions: 'cache-and-fetch',
+    cachePolicy: 'cache-and-fetch',
     params: {page: 2},
   })
   await act(advanceApiTimeout)

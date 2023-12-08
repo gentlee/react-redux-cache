@@ -9,6 +9,7 @@
   "scripts": {
     "example": "(cd example && yarn && yarn start)",
     "clean": "rm -rf dist",
+    "lint": "yarn eslint src",
     "build": "yarn clean && tsc && yarn pack -f package.tgz",
     "test": "node node_modules/jest/bin/jest.js",
     "prepublishOnly": "yarn build && yarn test"

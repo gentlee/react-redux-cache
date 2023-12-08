@@ -1,7 +1,7 @@
 import {Store} from 'redux'
 
 import {setMutationStateAndEntities} from './reducer'
-import {Cache, Key, MutationCacheOptions, MutationResult, Typenames} from './types'
+import {Cache, Key, MutationResult, Typenames} from './types'
 import {log} from './utilsAndConstants'
 
 export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends keyof (MP & MR)>(
@@ -10,7 +10,6 @@ export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends key
   store: Store,
   cache: Cache<T, QP, QR, MP, MR>,
   mutationKey: MK,
-  cacheOptions: MutationCacheOptions,
   params: MK extends keyof (MP | MR) ? MP[MK] : never,
   abortControllers: WeakMap<Store, Record<Key, AbortController>>
 ): Promise<void | MutationResult<MK extends keyof (MP | MR) ? MR[MK] : never>> => {
@@ -33,13 +32,12 @@ export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends key
     if (abortController !== undefined) {
       abortController.abort()
     } else {
-      cacheOptions.cacheMutationState &&
-        store.dispatch(
-          setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
-            loading: true,
-            result: undefined,
-          })
-        )
+      store.dispatch(
+        setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
+          loading: true,
+          result: undefined,
+        })
+      )
     }
   }
 
@@ -73,14 +71,12 @@ export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends key
   delete abortControllersOfStore[mutationKey]
 
   if (error) {
-    if (cacheOptions.cacheMutationState) {
-      store.dispatch(
-        setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
-          error: error as Error,
-          loading: false,
-        })
-      )
-    }
+    store.dispatch(
+      setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
+        error: error as Error,
+        loading: false,
+      })
+    )
     return {error}
   }
 
@@ -88,15 +84,13 @@ export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends key
     store.dispatch(
       setMutationStateAndEntities(
         mutationKey as keyof MR,
-        cacheOptions.cacheMutationState
-          ? {
-              error: undefined,
-              loading: false,
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              result: response.result,
-            }
-          : undefined,
-        cacheOptions.cacheEntities ? response : undefined
+        {
+          error: undefined,
+          loading: false,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          result: response.result,
+        },
+        response
       )
     )
     // @ts-expect-error fix later
