@@ -9,31 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.useQuery = exports.defaultQueryCacheOptions = exports.queryCacheOptionsByPolicy = void 0;
+exports.useQuery = void 0;
 const react_1 = require("react");
 const react_redux_1 = require("react-redux");
 const query_1 = require("./query");
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const cacheFirstOptions = {
-    policy: 'cache-first',
-    cacheQueryState: true,
-    cacheEntities: true,
-};
-exports.queryCacheOptionsByPolicy = {
-    'cache-first': cacheFirstOptions,
-    'cache-and-fetch': Object.assign(Object.assign({}, cacheFirstOptions), { policy: 'cache-and-fetch' }),
-};
-exports.defaultQueryCacheOptions = cacheFirstOptions;
 const useQuery = (cache, options) => {
     var _a, _b, _c;
-    const { query: queryKey, skip, params, cacheOptions: cacheOptionsOrPolicy = (_a = cache.queries[queryKey].cacheOptions) !== null && _a !== void 0 ? _a : exports.defaultQueryCacheOptions, getCacheKey = cache.queries[queryKey].getCacheKey, } = options;
+    const { query: queryKey, skip, params, cachePolicy = (_a = cache.queries[queryKey].cachePolicy) !== null && _a !== void 0 ? _a : 'cache-first', getCacheKey = cache.queries[queryKey].getCacheKey, } = options;
     const logsEnabled = cache.options.logsEnabled;
     const getParamsKey = (_b = cache.queries[queryKey].getParamsKey) !== null && _b !== void 0 ? _b : (utilsAndConstants_1.defaultGetParamsKey);
     const cacheResultSelector = cache.queries[queryKey].resultSelector;
     const cacheStateSelector = cache.cacheStateSelector;
-    const cacheOptions = typeof cacheOptionsOrPolicy === 'string'
-        ? exports.queryCacheOptionsByPolicy[cacheOptionsOrPolicy]
-        : cacheOptionsOrPolicy;
     const store = (0, react_redux_1.useStore)();
     // Check values that should be set once.
     cache.options.validateHookArguments &&
@@ -44,8 +31,6 @@ const useQuery = (cache, options) => {
                 ['cache', cache],
                 ['cache.queries', cache.queries],
                 ['cacheStateSelector', cache.cacheStateSelector],
-                ['cacheOptions.cacheEntities', cacheOptions.cacheEntities],
-                ['cacheOptions.cacheQueryState', cacheOptions.cacheQueryState],
                 ['options.query', options.query],
                 ['queryKey', queryKey],
                 ['resultSelector', cache.queries[queryKey].resultSelector],
@@ -78,15 +63,9 @@ const useQuery = (cache, options) => {
     const resultFromSelector = (resultSelector && (0, react_redux_1.useSelector)(resultSelector));
     const hasResultFromSelector = resultFromSelector !== undefined;
     const fetch = (0, react_1.useCallback)(() => __awaiter(void 0, void 0, void 0, function* () {
-        yield (0, query_1.query)('useQuery.fetch', false, store, cache, queryKey, cacheKey, cacheOptions, params);
+        yield (0, query_1.query)('useQuery.fetch', false, store, cache, queryKey, cacheKey, params);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }), [
-        cacheKey,
-        paramsKey,
-        cacheOptions.policy,
-        cacheOptions.cacheEntities,
-        cacheOptions.cacheQueryState,
-    ]);
+    }), [cacheKey, paramsKey]);
     const queryStateFromSelector = (_c = (0, react_redux_1.useSelector)((state) => {
         const queryState = cacheStateSelector(state).queries[queryKey][cacheKey];
         return queryState; // TODO proper type
@@ -99,17 +78,17 @@ const useQuery = (cache, options) => {
             logsEnabled && (0, utilsAndConstants_1.log)('useQuery.useEffect skip fetch', { skip, paramsKey });
             return;
         }
-        if (queryState.result != null && cacheOptions.policy === 'cache-first') {
+        if (queryState.result != null && cachePolicy === 'cache-first') {
             logsEnabled &&
                 (0, utilsAndConstants_1.log)('useQuery.useEffect don`t fetch due to cache policy', {
                     result: queryState.result,
-                    policy: cacheOptions.policy,
+                    cachePolicy,
                 });
             return;
         }
         fetch();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [paramsKey, cacheOptions.policy, skip]);
+    }, [paramsKey, cachePolicy, skip]);
     logsEnabled &&
         (0, utilsAndConstants_1.log)('useQuery', {
             paramsKey,

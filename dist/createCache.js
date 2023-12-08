@@ -19,7 +19,6 @@ const createCache = (cache) => {
     const hotReloadEnabled = Boolean(module === null || module === void 0 ? void 0 : module.hot);
     const abortControllers = new WeakMap();
     // provide all optional fields
-    // and transform cacheOptions from QueryCachePolicy to QueryCacheOptions
     (_a = cache.options) !== null && _a !== void 0 ? _a : (cache.options = {});
     (_b = (_g = cache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_g.logsEnabled = false);
     (_c = (_h = cache.options).validateFunctionArguments) !== null && _c !== void 0 ? _c : (_h.validateFunctionArguments = utilsAndConstants_1.isDev);
@@ -28,11 +27,6 @@ const createCache = (cache) => {
     (_f = cache.mutations) !== null && _f !== void 0 ? _f : (cache.mutations = {});
     // @ts-expect-error for testing
     cache.abortControllers = abortControllers;
-    for (const queryInfo of Object.values(cache.queries)) {
-        if (typeof queryInfo.cacheOptions === 'string') {
-            queryInfo.cacheOptions = useQuery_1.queryCacheOptionsByPolicy[queryInfo.cacheOptions];
-        }
-    }
     const nonPartialCache = cache;
     // make selectors
     const entitiesSelector = (state) => {
@@ -68,23 +62,15 @@ const createCache = (cache) => {
                     const client = {
                         query: (options) => {
                             var _a, _b;
-                            const { query: queryKey, params, 
-                            // TODO can be memoized for all query keys while creating cache
-                            cacheOptions: cacheOptionsOrPolicy = Object.assign(Object.assign({}, ((_a = nonPartialCache.queries[queryKey].cacheOptions) !== null && _a !== void 0 ? _a : useQuery_1.defaultQueryCacheOptions)), { policy: 'cache-and-fetch' }), getCacheKey = nonPartialCache.queries[queryKey].getCacheKey, } = options;
-                            const cacheOptions = typeof cacheOptionsOrPolicy === 'string'
-                                ? useQuery_1.queryCacheOptionsByPolicy[cacheOptionsOrPolicy]
-                                : cacheOptionsOrPolicy;
-                            const getParamsKey = (_b = nonPartialCache.queries[queryKey].getParamsKey) !== null && _b !== void 0 ? _b : (utilsAndConstants_1.defaultGetParamsKey);
-                            const cacheKey = getCacheKey
-                                ? // @ts-expect-error fix later
-                                    getCacheKey(params)
-                                : // @ts-expect-error fix later
-                                    getParamsKey(params);
-                            return (0, query_1.query)('query', true, store, nonPartialCache, queryKey, cacheKey, cacheOptions, params);
+                            const { query: queryKey, params } = options;
+                            const getParamsKey = (_a = nonPartialCache.queries[queryKey].getParamsKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetParamsKey);
+                            const getCacheKey = (_b = nonPartialCache.queries[queryKey].getCacheKey) !== null && _b !== void 0 ? _b : getParamsKey;
+                            // @ts-expect-error fix later
+                            const cacheKey = getCacheKey(params);
+                            return (0, query_1.query)('query', true, store, nonPartialCache, queryKey, cacheKey, params);
                         },
                         mutate: (options) => {
-                            var _a;
-                            return (0, mutate_1.mutate)('mutate', true, store, nonPartialCache, options.mutation, (_a = options.cacheOptions) !== null && _a !== void 0 ? _a : useMutation_1.defaultMutationCacheOptions, options.params, abortControllers);
+                            return (0, mutate_1.mutate)('mutate', true, store, nonPartialCache, options.mutation, options.params, abortControllers);
                         },
                     };
                     return client;

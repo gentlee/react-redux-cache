@@ -60,12 +60,10 @@ export type Query<T extends Typenames, P, R> = (params: P) => Promise<QueryRespo
 export type QueryInfo<T extends Typenames, P, R, S> = {
     query: Query<T, P, R>;
     /**
-     * Cache policy string or cache options object. After cache created, all strings are converted to objects.
-     * Default is { policy: 'cache-first', cacheQueryState: true, cacheEntities: true }
-     * @param cache-first for each params key fetch is not called if cache exists.
-     * @param cache-and-fetch for each params key result is taken from cache and fetch is called.
+     * Cache policy.
+     * @default cache-first
      */
-    cacheOptions?: QueryCacheOptions | QueryCachePolicy;
+    cachePolicy?: QueryCachePolicy;
     /**
      * Selector for query result from redux state.
      * Can prevent hook from doing unnecessary fetches.
@@ -91,23 +89,12 @@ export type UseQueryOptions<T extends Typenames, QP, QR, MP, MR, QK extends keyo
     query: QK;
     params: QK extends keyof (QP | QR) ? QP[QK] : never;
     skip?: boolean;
-} & Pick<QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QP, QR, MP, MR>> : never, 'cacheOptions' | 'mergeResults' | 'getCacheKey'>;
+} & Pick<QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QP, QR, MP, MR>> : never, 'cachePolicy' | 'mergeResults' | 'getCacheKey'>;
 /**
  * @param cache-first for each params key fetch is not called if cache exists.
  * @param cache-and-fetch for each params key result is taken from cache and fetch is called.
  */
 export type QueryCachePolicy = 'cache-first' | 'cache-and-fetch';
-export type QueryCacheOptions = {
-    /**
-     * @param cache-first for each params key fetch is not called if cache exists.
-     * @param cache-and-fetch for each params key result is taken from cache and fetch is called.
-     */
-    policy: QueryCachePolicy;
-    /** If `false`, query state is not saved in the store. Default is `true`. */
-    cacheQueryState: boolean;
-    /** If `false`, entities from response are not saved to the store. Default is `true`. */
-    cacheEntities: boolean;
-};
 export type QueryResponse<T extends Typenames, R> = EntityChanges<T> & {
     /** Normalized result of a query. */
     result: R;
@@ -123,11 +110,6 @@ export type Mutation<T extends Typenames, P, R> = (params: P,
 abortSignal: AbortSignal) => Promise<MutationResponse<T, R>>;
 export type MutationInfo<T extends Typenames, P, R> = {
     mutation: Mutation<T, P, R>;
-    cacheOptions?: MutationCacheOptions;
-};
-export type MutationCacheOptions = Pick<QueryCacheOptions, 'cacheEntities'> & {
-    /** If `false`, mutation state is not saved in the store. Default is `true`. */
-    cacheMutationState: boolean;
 };
 export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
     /** Normalized result of a mutation. */

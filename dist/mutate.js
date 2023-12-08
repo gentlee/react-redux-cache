@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.mutate = void 0;
 const reducer_1 = require("./reducer");
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const mutate = (logTag, returnResult, store, cache, mutationKey, cacheOptions, params, abortControllers) => __awaiter(void 0, void 0, void 0, function* () {
+const mutate = (logTag, returnResult, store, cache, mutationKey, params, abortControllers) => __awaiter(void 0, void 0, void 0, function* () {
     let abortControllersOfStore = abortControllers.get(store);
     if (abortControllersOfStore === undefined) {
         abortControllersOfStore = {};
@@ -30,11 +30,10 @@ const mutate = (logTag, returnResult, store, cache, mutationKey, cacheOptions, p
             abortController.abort();
         }
         else {
-            cacheOptions.cacheMutationState &&
-                store.dispatch((0, reducer_1.setMutationStateAndEntities)(mutationKey, {
-                    loading: true,
-                    result: undefined,
-                }));
+            store.dispatch((0, reducer_1.setMutationStateAndEntities)(mutationKey, {
+                loading: true,
+                result: undefined,
+            }));
         }
     }
     const abortController = new AbortController();
@@ -61,23 +60,19 @@ const mutate = (logTag, returnResult, store, cache, mutationKey, cacheOptions, p
     }
     delete abortControllersOfStore[mutationKey];
     if (error) {
-        if (cacheOptions.cacheMutationState) {
-            store.dispatch((0, reducer_1.setMutationStateAndEntities)(mutationKey, {
-                error: error,
-                loading: false,
-            }));
-        }
+        store.dispatch((0, reducer_1.setMutationStateAndEntities)(mutationKey, {
+            error: error,
+            loading: false,
+        }));
         return { error };
     }
     if (response) {
-        store.dispatch((0, reducer_1.setMutationStateAndEntities)(mutationKey, cacheOptions.cacheMutationState
-            ? {
-                error: undefined,
-                loading: false,
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                result: response.result,
-            }
-            : undefined, cacheOptions.cacheEntities ? response : undefined));
+        store.dispatch((0, reducer_1.setMutationStateAndEntities)(mutationKey, {
+            error: undefined,
+            loading: false,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            result: response.result,
+        }, response));
         // @ts-expect-error fix later
         return returnResult ? { result: response.result } : undefined;
     }

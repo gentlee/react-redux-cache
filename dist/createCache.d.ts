@@ -1,5 +1,5 @@
 import { mergeEntityChanges, setMutationStateAndEntities, setQueryStateAndEntities } from './reducer';
-import { Cache, EntitiesMap, Key, MutationCacheOptions, MutationResult, OptionalPartial, QueryOptions, QueryResult, Typenames } from './types';
+import { Cache, EntitiesMap, Key, MutationResult, OptionalPartial, QueryOptions, QueryResult, Typenames } from './types';
 import { useMutation } from './useMutation';
 import { useQuery } from './useQuery';
 import { applyEntityChanges } from './utilsAndConstants';
@@ -65,7 +65,6 @@ export declare const createCache: <T extends Typenames, QP, QR, MP, MR>(cache: O
             mutate: <MK_1 extends keyof MP | keyof MR>(options: {
                 mutation: MK_1;
                 params: MK_1 extends keyof MP & keyof MR ? MP[MK_1] : never;
-                cacheOptions?: MutationCacheOptions | undefined;
             }) => Promise<MutationResult<MK_1 extends keyof MP & keyof MR ? MR[MK_1] : never>>;
         };
         /** Fetches query when params change and subscribes to query state. */
@@ -73,7 +72,6 @@ export declare const createCache: <T extends Typenames, QP, QR, MP, MR>(cache: O
         /** Subscribes to provided mutation state and provides mutate function. */
         useMutation: <MK_2 extends keyof MP | keyof MR>(options: {
             mutation: MK_2;
-            cacheOptions?: MutationCacheOptions | undefined;
         }) => readonly [(params: MK_2 extends keyof MP & keyof MR ? MP[MK_2] : never) => Promise<void>, import("./types").QueryMutationState<MK_2 extends keyof MP & keyof MR ? MP[MK_2] : never>, () => boolean];
         /** Selects entity by id and subscribes to the changes. */
         useSelectEntityById: <K_3 extends keyof T>(id: Key | null | undefined, typename: K_3) => T[K_3] | undefined;

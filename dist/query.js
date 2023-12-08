@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.query = void 0;
 const reducer_1 = require("./reducer");
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const query = (logTag, returnResult, store, cache, queryKey, cacheKey, cacheOptions, params) => __awaiter(void 0, void 0, void 0, function* () {
+const query = (logTag, returnResult, store, cache, queryKey, cacheKey, params) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const logsEnabled = cache.options.logsEnabled;
     const cacheStateSelector = cache.cacheStateSelector;
@@ -28,10 +28,9 @@ const query = (logTag, returnResult, store, cache, queryKey, cacheKey, cacheOpti
             });
         return returnResult ? { cancelled: true } : undefined;
     }
-    cacheOptions.cacheQueryState &&
-        store.dispatch((0, reducer_1.setQueryStateAndEntities)(queryKey, cacheKey, {
-            loading: true,
-        }));
+    store.dispatch((0, reducer_1.setQueryStateAndEntities)(queryKey, cacheKey, {
+        loading: true,
+    }));
     logsEnabled && (0, utilsAndConstants_1.log)(`${logTag} started`, { queryStateOnStart, params, cacheKey });
     let response;
     const fetchFn = cache.queries[queryKey].query;
@@ -47,20 +46,18 @@ const query = (logTag, returnResult, store, cache, queryKey, cacheKey, cacheOpti
         }));
         return returnResult ? { error } : undefined;
     }
-    const newState = cacheOptions.cacheQueryState
-        ? {
-            error: undefined,
-            loading: false,
-            result: cacheResultSelector
-                ? undefined
-                : mergeResults
-                    ? mergeResults(
-                    // @ts-expect-error fix later
-                    (_a = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _a === void 0 ? void 0 : _a.result, response, params)
-                    : response.result,
-        }
-        : undefined;
-    store.dispatch((0, reducer_1.setQueryStateAndEntities)(queryKey, cacheKey, newState, cacheOptions.cacheEntities ? response : undefined));
+    const newState = {
+        error: undefined,
+        loading: false,
+        result: cacheResultSelector
+            ? undefined
+            : mergeResults
+                ? mergeResults(
+                // @ts-expect-error fix later
+                (_a = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _a === void 0 ? void 0 : _a.result, response, params)
+                : response.result,
+    };
+    store.dispatch((0, reducer_1.setQueryStateAndEntities)(queryKey, cacheKey, newState, response));
     // @ts-expect-error fix types
     return returnResult
         ? {

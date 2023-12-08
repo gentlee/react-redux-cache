@@ -14,15 +14,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defaultQueryMutationState = exports.defaultGetParamsKey = exports.queryCacheOptionsByPolicy = exports.defaultQueryCacheOptions = exports.defaultMutationCacheOptions = exports.createCache = void 0;
+exports.defaultQueryMutationState = exports.defaultGetParamsKey = exports.createCache = void 0;
 var createCache_1 = require("./createCache");
 Object.defineProperty(exports, "createCache", { enumerable: true, get: function () { return createCache_1.createCache; } });
 __exportStar(require("./types"), exports);
-var useMutation_1 = require("./useMutation");
-Object.defineProperty(exports, "defaultMutationCacheOptions", { enumerable: true, get: function () { return useMutation_1.defaultMutationCacheOptions; } });
-var useQuery_1 = require("./useQuery");
-Object.defineProperty(exports, "defaultQueryCacheOptions", { enumerable: true, get: function () { return useQuery_1.defaultQueryCacheOptions; } });
-Object.defineProperty(exports, "queryCacheOptionsByPolicy", { enumerable: true, get: function () { return useQuery_1.queryCacheOptionsByPolicy; } });
 var utilsAndConstants_1 = require("./utilsAndConstants");
 Object.defineProperty(exports, "defaultGetParamsKey", { enumerable: true, get: function () { return utilsAndConstants_1.defaultGetParamsKey; } });
 Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, get: function () { return utilsAndConstants_1.defaultQueryMutationState; } });
