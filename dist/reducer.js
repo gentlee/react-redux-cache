@@ -28,7 +28,7 @@ const createCacheReducer = (typenames, queries, mutations, cacheOptions) => {
         switch (action.type) {
             case '@RRC/SET_QUERY_STATE_AND_ENTITIES': {
                 const { queryKey, queryCacheKey, state: queryState, entityChagnes } = action;
-                const newEntities = entityChagnes && (0, utilsAndConstants_1.processEntityChanges)(state.entities, entityChagnes, cacheOptions);
+                const newEntities = entityChagnes && (0, utilsAndConstants_1.applyEntityChanges)(state.entities, entityChagnes, cacheOptions);
                 if (!queryState && !newEntities) {
                     return state;
                 }
@@ -36,7 +36,7 @@ const createCacheReducer = (typenames, queries, mutations, cacheOptions) => {
             }
             case '@RRC/SET_MUTATION_STATE_AND_ENTITIES': {
                 const { mutationKey, state: mutationState, entityChagnes } = action;
-                const newEntities = entityChagnes && (0, utilsAndConstants_1.processEntityChanges)(state.entities, entityChagnes, cacheOptions);
+                const newEntities = entityChagnes && (0, utilsAndConstants_1.applyEntityChanges)(state.entities, entityChagnes, cacheOptions);
                 if (!mutationState && !newEntities) {
                     return state;
                 }
@@ -44,7 +44,7 @@ const createCacheReducer = (typenames, queries, mutations, cacheOptions) => {
             }
             case '@RRC/MERGE_ENTITY_CHANGES': {
                 const { changes } = action;
-                const newEntities = (0, utilsAndConstants_1.processEntityChanges)(state.entities, changes, cacheOptions);
+                const newEntities = (0, utilsAndConstants_1.applyEntityChanges)(state.entities, changes, cacheOptions);
                 return newEntities ? Object.assign(Object.assign({}, state), { entities: newEntities }) : state;
             }
         }

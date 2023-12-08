@@ -18,7 +18,7 @@ export const {
 } = createCache({
   cacheStateSelector: (state) => state,
   options: {
-    logsEnabled: false,
+    logsEnabled: true,
     validateFunctionArguments: true,
     validateHookArguments: true,
   },
@@ -33,17 +33,17 @@ export const {
       getCacheKey: () => 'all-pages',
       mergeResults: (oldResult, {result: newResult}) => {
         if (!oldResult || newResult.page === 1) {
-          logEvent('Merge results: first page')
+          logEvent('merge results: first page')
           return newResult
         }
         if (newResult.page === oldResult.page + 1) {
-          logEvent('Merge results: next page')
+          logEvent('merge results: next page')
           return {
             ...newResult,
             items: [...oldResult.items, ...newResult.items],
           }
         }
-        logEvent('Merge results: cancelled')
+        logEvent('merge results: cancelled')
         return oldResult
       },
     },

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.processEntityChanges = exports.log = exports.useAssertValueNotChanged = exports.defaultGetParamsKey = exports.defaultQueryMutationState = exports.defaultCacheOptions = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
+exports.applyEntityChanges = exports.log = exports.useAssertValueNotChanged = exports.defaultGetParamsKey = exports.defaultQueryMutationState = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
 const react_1 = require("react");
 exports.PACKAGE_SHORT_NAME = 'RRC';
 exports.isDev = (() => {
@@ -12,11 +12,6 @@ exports.isDev = (() => {
         return process.env.NODE_ENV === 'development';
     }
 })();
-exports.defaultCacheOptions = {
-    logsEnabled: false,
-    validateFunctionArguments: true,
-    validateHookArguments: true,
-};
 exports.defaultQueryMutationState = { loading: false, error: undefined };
 const defaultGetParamsKey = (params) => {
     switch (typeof params) {
@@ -45,10 +40,10 @@ const log = (tag, data) => {
 };
 exports.log = log;
 /**
- * Process changes to entities map.
- * @return `undefined` if nothing to change, otherwise processed entities map.
+ * Apply changes to the entities map.
+ * @return `undefined` if nothing to change, otherwise new entities map with applied changes.
  */
-const processEntityChanges = (entities, changes, options) => {
+const applyEntityChanges = (entities, changes, options) => {
     var _a, _b, _c;
     if (options.validateFunctionArguments) {
         // check for merge and entities both set
@@ -99,11 +94,11 @@ const processEntityChanges = (entities, changes, options) => {
         result[typename] = newEntities;
     }
     options.logsEnabled &&
-        (0, exports.log)('processEntityChanges', {
+        (0, exports.log)('applyEntityChanges', {
             entities,
             changes,
             result,
         });
     return result;
 };
-exports.processEntityChanges = processEntityChanges;
+exports.applyEntityChanges = applyEntityChanges;

@@ -2,6 +2,7 @@ import { mergeEntityChanges, setMutationStateAndEntities, setQueryStateAndEntiti
 import { Cache, EntitiesMap, Key, MutationCacheOptions, MutationResult, OptionalPartial, QueryOptions, QueryResult, Typenames } from './types';
 import { useMutation } from './useMutation';
 import { useQuery } from './useQuery';
+import { applyEntityChanges } from './utilsAndConstants';
 /**
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
  */
@@ -76,5 +77,8 @@ export declare const createCache: <T extends Typenames, QP, QR, MP, MR>(cache: O
         }) => readonly [(params: MK_2 extends keyof MP & keyof MR ? MP[MK_2] : never) => Promise<void>, import("./types").QueryMutationState<MK_2 extends keyof MP & keyof MR ? MP[MK_2] : never>, () => boolean];
         /** Selects entity by id and subscribes to the changes. */
         useSelectEntityById: <K_3 extends keyof T>(id: Key | null | undefined, typename: K_3) => T[K_3] | undefined;
+    };
+    utils: {
+        applyEntityChanges: (entities: EntitiesMap<T>, changes: import("./types").EntityChanges<T>) => EntitiesMap<T> | undefined;
     };
 };

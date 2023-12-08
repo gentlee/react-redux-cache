@@ -1,15 +1,9 @@
-import {act, render as renderImpl, screen} from '@testing-library/react'
+import {act, render as renderImpl} from '@testing-library/react'
 import React from 'react'
 import {Provider} from 'react-redux'
 
 import {getUser, getUsers} from '../testing/api/mocks'
-import {
-  assertEventLog,
-  clearEventLog,
-  emptyState,
-  generateTestEntitiesMap,
-  logEvent,
-} from '../testing/api/utils'
+import {assertEventLog, emptyState, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
 import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/common'
 import {setQueryStateAndEntities, useClient, useQuery} from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
@@ -37,17 +31,15 @@ afterEach(() => {
 // tests
 
 test('fetch if no cache', async () => {
-  render({
-    query: 'getUsers',
-    params: {page: 1},
-  })
-
-  const loadingElementWhileLoading = getLoadingElement()
+  render({query: 'getUsers', params: {page: 1}})
   await act(advanceApiTimeout)
-  const resultText = getResultText()
+  assertEventLog([
+    'render: undefined',
+    'render: loading',
+    'merge results: first page',
+    'render: ' + JSON.stringify({items: [0, 1, 2], page: 1}),
+  ])
 
-  expect(loadingElementWhileLoading).toBeTruthy()
-  expect(resultText).toBe(JSON.stringify({items: [0, 1, 2], page: 1}))
   expect(getUsers).toBeCalledTimes(1)
   expect(store.getState()).toStrictEqual(getUsersOnePageState)
 })
@@ -62,9 +54,7 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
         error: undefined,
         loading: false,
       },
-      {
-        merge: generateTestEntitiesMap(3),
-      }
+      {merge: generateTestEntitiesMap(3)}
     )
   )
 
@@ -72,12 +62,9 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
     query: 'getUsers',
     params: {page: 1},
   })
-  const resultText = getResultText()
   await act(advanceApiTimeout)
-  const resultTextAfterTimeout = getResultText()
+  assertEventLog(['render: ' + JSON.stringify({items: [0, 1, 2], page: 1})])
 
-  expect(resultText).toBe(JSON.stringify({items: [0, 1, 2], page: 1}))
-  expect(resultTextAfterTimeout).toBe(resultText)
   expect(getUsers).toBeCalledTimes(0)
   expect(store.getState()).toStrictEqual(getUsersOnePageState)
 }
@@ -86,7 +73,6 @@ test('no fetch on mount if has cache', setCacheAndMountAndCheckNoRefetch)
 
 test('loads three pages sequentially', async () => {
   await setCacheAndMountAndCheckNoRefetch()
-  clearEventLog() // TODO remove after prev updated
 
   act(() => {
     client.query({
@@ -95,6 +81,12 @@ test('loads three pages sequentially', async () => {
     })
   })
   await act(advanceApiTimeout)
+  assertEventLog([
+    'render: loading',
+    'merge results: next page',
+    'render: ' + JSON.stringify({items: [0, 1, 2, 3, 4, 5], page: 2}),
+  ])
+
   act(() => {
     client.query({
       query: 'getUsers',
@@ -102,46 +94,32 @@ test('loads three pages sequentially', async () => {
     })
   })
   await act(advanceApiTimeout)
+  assertEventLog([
+    'render: loading',
+    'merge results: next page',
+    'render: ' + JSON.stringify({items: [0, 1, 2, 3, 4, 5, 6, 7, 8], page: 3}),
+  ])
 
   expect(getUsers).toBeCalledTimes(2)
-  assertEventLog([
-    'Loading',
-    'Merge results: next page',
-    'Result: ' + JSON.stringify({items: [0, 1, 2, 3, 4, 5], page: 2}),
-    'Loading',
-    'Merge results: next page',
-    'Result: ' + JSON.stringify({items: [0, 1, 2, 3, 4, 5, 6, 7, 8], page: 3}),
-  ])
 })
 
 test.each(['getUser', 'getUserNoSelector'] as const)(
-  'refetch on params change without cancelling current loading query, resultSelector keeps result undefined',
+  'should not cancel current loading query on refetch with different params, resultSelector keeps result undefined',
   async (query) => {
-    render({
-      query,
-      params: 0,
-    })
+    render({query, params: 0})
     await act(advanceApiTimeout)
-    const firstUserResultJSON = getResultText()
-    render({
-      query,
-      params: 1,
-    })
-    const loadingElement = getLoadingElement()
-    render({
-      query,
-      params: 2,
-    })
-    const secondLoadingElement = getLoadingElement()
-    await act(advanceApiTimeout)
-    const latestUserResultJSON = getResultText()
+    assertEventLog(['render: undefined', 'render: loading', 'render: 0'])
 
-    expect(loadingElement).toBeTruthy()
-    expect(secondLoadingElement).toBeTruthy()
-    expect(firstUserResultJSON).toBe(JSON.stringify(0))
-    expect(latestUserResultJSON).toBe(JSON.stringify(2))
+    render({query, params: 1})
+    assertEventLog(['render: undefined', 'render: loading'])
+
+    render({query, params: 2})
+    await act(advanceApiTimeout)
+    assertEventLog(['render: undefined', 'render: loading', 'render: 2'])
+
     expect(getUser).toBeCalledTimes(3)
     expect(store.getState()).toStrictEqual({
+      ...emptyState,
       entities: generateTestEntitiesMap(3),
       queries: {
         ...emptyState.queries,
@@ -162,7 +140,6 @@ test.each(['getUser', 'getUserNoSelector'] as const)(
           },
         },
       },
-      mutations: {},
     })
   }
 )
@@ -174,45 +151,30 @@ test('no refetch on params change with custom cache key', async () => {
     query: 'getUsers',
     params: {page: 2},
   })
-  const resultText = getResultText()
   await act(advanceApiTimeout)
-  const resultTextAfterTimeout = getResultText()
+  assertEventLog(['render: ' + JSON.stringify({items: [0, 1, 2], page: 1})])
 
-  expect(resultText).toBe(JSON.stringify({items: [0, 1, 2], page: 1}))
-  expect(resultTextAfterTimeout).toBe(resultText)
   expect(getUsers).toBeCalledTimes(0)
   expect(store.getState()).toStrictEqual(getUsersOnePageState)
 })
 
 test.each([
   {query: 'getUser', result: undefined},
-  {query: 'getUserNoSelector', result: 1},
+  {query: 'getUserNoSelector', result: 0},
 ] as const)('fetch on mount having cache with cache-and-fetch policy', async ({query, result}) => {
   store.dispatch(
     setQueryStateAndEntities(
       query,
-      defaultGetParamsKey(1),
-      {
-        result,
-      },
-      {
-        merge: generateTestEntitiesMap(1),
-      }
+      defaultGetParamsKey(0),
+      {result},
+      {merge: generateTestEntitiesMap(1)}
     )
   )
 
-  render({
-    query,
-    cacheOptions: 'cache-and-fetch',
-    params: 1,
-  })
-
-  const loadingElementWhileLoading = getLoadingElement()
+  render({query, params: 0, cacheOptions: 'cache-and-fetch'})
   await act(advanceApiTimeout)
-  const resultText = getResultText()
+  assertEventLog(['render: 0', 'render: loading', 'render: 0'])
 
-  expect(loadingElementWhileLoading).toBeTruthy()
-  expect(resultText).toBe('1')
   expect(getUser).toBeCalledTimes(1)
 })
 
@@ -223,72 +185,56 @@ test('fetch after params change with custom cache key if cache-and-fetch policy'
     params: {page: 1},
   })
   await act(advanceApiTimeout)
+  assertEventLog([
+    'render: undefined',
+    'render: loading',
+    'merge results: first page',
+    'render: ' + JSON.stringify({items: [0, 1, 2], page: 1}),
+  ])
+
   render({
     query: 'getUsers',
     cacheOptions: 'cache-and-fetch',
     params: {page: 2},
   })
-  const loadingElementWhileLoading = getLoadingElement()
   await act(advanceApiTimeout)
-  const resultText = getResultText()
+  assertEventLog([
+    'render: ' + JSON.stringify({items: [0, 1, 2], page: 1}),
+    'render: loading',
+    'merge results: next page',
+    'render: ' + JSON.stringify({items: [0, 1, 2, 3, 4, 5], page: 2}),
+  ])
 
-  expect(loadingElementWhileLoading).toBeTruthy()
-  expect(resultText).toBe(JSON.stringify({items: [0, 1, 2, 3, 4, 5], page: 2}))
   expect(getUsers).toBeCalledTimes(2)
 })
 
 test.each(['getUser', 'getUserNoSelector'] as const)(
   'no fetch when skip, without cancelling current request when setting to true',
   async (query) => {
-    render({
-      query,
-      skip: true,
-      params: 0,
-    })
+    render({query, params: 0, skip: true})
     await act(advanceHalfApiTimeout)
-    const dataText1 = getResultText()
-    render({
-      query,
-      skip: true,
-      params: 1,
-    })
+    assertEventLog(['render: undefined'])
+
+    render({query, params: 1, skip: true})
     await act(advanceHalfApiTimeout)
-    const dataText2 = getResultText()
-    render({
-      query,
-      params: 2,
-    })
+    assertEventLog(['render: undefined'])
+
+    render({query, params: 2})
     await act(advanceHalfApiTimeout)
-    const loading3 = getLoadingElement()
-    render({
-      query,
-      skip: true,
-      params: 2,
-    })
+    assertEventLog(['render: undefined', 'render: loading'])
+
+    render({query, params: 2, skip: true})
     await act(advanceHalfApiTimeout)
-    const dataText4 = getResultText()
-    render({
-      query,
-      params: 3,
-    })
-    const loading5 = getLoadingElement()
+    assertEventLog(['render: loading', 'render: 2'])
+
+    render({query, params: 3})
     await act(advanceApiTimeout)
-    const dataText5 = getResultText()
-    render({
-      query,
-      skip: true,
-      params: 2,
-    })
-    const dataText6 = getResultText()
+    assertEventLog(['render: undefined', 'render: loading', 'render: 3'])
+
+    render({query, params: 2, skip: true})
+    assertEventLog(['render: 2'])
 
     expect(getUser).toBeCalledTimes(2)
-    expect(dataText1).toBe('')
-    expect(dataText2).toBe('')
-    expect(loading3).toBeTruthy()
-    expect(dataText4).toBe(JSON.stringify(2))
-    expect(loading5).toBeTruthy()
-    expect(dataText5).toBe(JSON.stringify(3))
-    expect(dataText6).toBe(JSON.stringify(2))
   }
 )
 
@@ -318,30 +264,24 @@ test.each([
     },
   },
 ] as const)('cancel manual refetch when currently loading same params', async ({query, state}) => {
-  render({
-    query,
-    params: 0,
-  })
+  render({query, params: 0})
 
   await act(advanceHalfApiTimeout)
-  const loadingElement = getLoadingElement()
   await act(() => {
     refetch()
   })
   await act(advanceHalfApiTimeout)
-  const data = getResultText()
 
-  expect(loadingElement).toBeTruthy()
-  expect(data).toBe(JSON.stringify(0))
   expect(getUser).toBeCalledTimes(1)
   expect(store.getState()).toStrictEqual({
+    ...emptyState,
     entities: generateTestEntitiesMap(1),
     queries: {
       ...emptyState.queries,
       ...state,
     },
-    mutations: {},
   })
+  assertEventLog(['render: undefined', 'render: loading', 'render: 0'])
 })
 
 // components
@@ -352,14 +292,9 @@ const TestUseQueryComponent = ({options}: {options: Parameters<typeof useQuery>[
   const [{result, loading}, refetchImpl] = useQuery(options)
   refetch = refetchImpl
 
-  logEvent(loading ? 'Loading' : 'Result: ' + JSON.stringify(result))
+  logEvent(loading ? 'render: loading' : 'render: ' + JSON.stringify(result))
 
-  // TODO remove
-  return loading ? (
-    <p data-testid="loading" />
-  ) : (
-    <p data-testid="result">{JSON.stringify(result)}</p>
-  )
+  return null
 }
 
 // utils
@@ -371,10 +306,6 @@ const render = (options: Parameters<typeof useQuery>[0]) => {
     </Provider>
   )
 }
-
-const getLoadingElement = () => screen.getByTestId('loading')
-
-const getResultText = () => screen.getByTestId('result').innerHTML
 
 const getUsersOnePageState = {
   entities: generateTestEntitiesMap(3),

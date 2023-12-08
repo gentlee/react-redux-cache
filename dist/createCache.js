@@ -17,6 +17,7 @@ const createCache = (cache) => {
     var _g, _h, _j;
     // @ts-expect-error hot
     const hotReloadEnabled = Boolean(module === null || module === void 0 ? void 0 : module.hot);
+    const abortControllers = new WeakMap();
     // provide all optional fields
     // and transform cacheOptions from QueryCachePolicy to QueryCacheOptions
     (_a = cache.options) !== null && _a !== void 0 ? _a : (cache.options = {});
@@ -25,6 +26,8 @@ const createCache = (cache) => {
     (_d = (_j = cache.options).validateHookArguments) !== null && _d !== void 0 ? _d : (_j.validateHookArguments = utilsAndConstants_1.isDev && !hotReloadEnabled);
     (_e = cache.queries) !== null && _e !== void 0 ? _e : (cache.queries = {});
     (_f = cache.mutations) !== null && _f !== void 0 ? _f : (cache.mutations = {});
+    // @ts-expect-error for testing
+    cache.abortControllers = abortControllers;
     for (const queryInfo of Object.values(cache.queries)) {
         if (typeof queryInfo.cacheOptions === 'string') {
             queryInfo.cacheOptions = useQuery_1.queryCacheOptionsByPolicy[queryInfo.cacheOptions];
@@ -81,7 +84,7 @@ const createCache = (cache) => {
                         },
                         mutate: (options) => {
                             var _a;
-                            return (0, mutate_1.mutate)('mutate', true, store, nonPartialCache, options.mutation, (_a = options.cacheOptions) !== null && _a !== void 0 ? _a : useMutation_1.defaultMutationCacheOptions, options.params);
+                            return (0, mutate_1.mutate)('mutate', true, store, nonPartialCache, options.mutation, (_a = options.cacheOptions) !== null && _a !== void 0 ? _a : useMutation_1.defaultMutationCacheOptions, options.params, abortControllers);
                         },
                     };
                     return client;
@@ -90,10 +93,15 @@ const createCache = (cache) => {
             /** Fetches query when params change and subscribes to query state. */
             useQuery: (options) => (0, useQuery_1.useQuery)(nonPartialCache, options),
             /** Subscribes to provided mutation state and provides mutate function. */
-            useMutation: (options) => (0, useMutation_1.useMutation)(nonPartialCache, options),
+            useMutation: (options) => (0, useMutation_1.useMutation)(nonPartialCache, options, abortControllers),
             /** Selects entity by id and subscribes to the changes. */
             useSelectEntityById: (id, typename) => {
                 return (0, react_redux_1.useSelector)((state) => id == null ? undefined : nonPartialCache.cacheStateSelector(state).entities[typename][id]);
+            },
+        },
+        utils: {
+            applyEntityChanges: (entities, changes) => {
+                return (0, utilsAndConstants_1.applyEntityChanges)(entities, changes, nonPartialCache.options);
             },
         },
     };

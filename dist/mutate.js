@@ -9,17 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mutate = exports.getAbortController = exports.abortControllers = void 0;
+exports.mutate = void 0;
 const reducer_1 = require("./reducer");
 const utilsAndConstants_1 = require("./utilsAndConstants");
-exports.abortControllers = new WeakMap();
-const getAbortController = (store, mutationKey) => { var _a; return (_a = exports.abortControllers.get(store)) === null || _a === void 0 ? void 0 : _a[mutationKey]; };
-exports.getAbortController = getAbortController;
-const mutate = (logTag, returnResult, store, cache, mutationKey, cacheOptions, params) => __awaiter(void 0, void 0, void 0, function* () {
-    let abortControllersOfStore = exports.abortControllers.get(store);
+const mutate = (logTag, returnResult, store, cache, mutationKey, cacheOptions, params, abortControllers) => __awaiter(void 0, void 0, void 0, function* () {
+    let abortControllersOfStore = abortControllers.get(store);
     if (abortControllersOfStore === undefined) {
         abortControllersOfStore = {};
-        exports.abortControllers.set(store, abortControllersOfStore);
+        abortControllers.set(store, abortControllersOfStore);
     }
     {
         const abortController = abortControllersOfStore[mutationKey];

@@ -19,7 +19,7 @@ exports.defaultMutationCacheOptions = {
     cacheMutationState: true,
     cacheEntities: true,
 };
-const useMutation = (cache, options) => {
+const useMutation = (cache, options, abortControllers) => {
     var _a, _b;
     const { mutation: mutationKey, cacheOptions = (_a = cache.mutations[mutationKey].cacheOptions) !== null && _a !== void 0 ? _a : exports.defaultMutationCacheOptions, } = options;
     // Check values that should be set once.
@@ -54,11 +54,12 @@ const useMutation = (cache, options) => {
             },
             // mutate
             (params) => __awaiter(void 0, void 0, void 0, function* () {
-                yield (0, mutate_1.mutate)('useMutation.mutate', false, store, cache, mutationKey, cacheOptions, params);
+                yield (0, mutate_1.mutate)('useMutation.mutate', false, store, cache, mutationKey, cacheOptions, params, abortControllers);
             }),
             // abort
             () => {
-                const abortController = (0, mutate_1.getAbortController)(store, mutationKey);
+                var _a;
+                const abortController = (_a = abortControllers.get(store)) === null || _a === void 0 ? void 0 : _a[mutationKey];
                 if (abortController === undefined || abortController.signal.aborted) {
                     return false;
                 }
