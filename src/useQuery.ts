@@ -3,12 +3,7 @@ import {useSelector, useStore} from 'react-redux'
 
 import {query as queryImpl} from './query'
 import {Cache, QueryMutationState, Typenames, UseQueryOptions} from './types'
-import {
-  defaultGetParamsKey,
-  defaultQueryMutationState,
-  log,
-  useAssertValueNotChanged,
-} from './utilsAndConstants'
+import {defaultGetParamsKey, defaultQueryMutationState, log} from './utilsAndConstants'
 
 export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
   cache: Cache<T, QP, QR, MP, MR>,
@@ -31,27 +26,6 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
   const cacheStateSelector = cache.cacheStateSelector
 
   const store = useStore()
-
-  // Check values that should be set once.
-  cache.options.validateHookArguments &&
-    (() => {
-      ;(
-        [
-          ['store', store],
-          ['cache', cache],
-          ['cache.queries', cache.queries],
-          ['cacheStateSelector', cache.cacheStateSelector],
-          ['options.query', options.query],
-          ['queryKey', queryKey],
-          ['resultSelector', cache.queries[queryKey].resultSelector],
-          ['mergeResults', cache.queries[queryKey].mergeResults],
-          ['getParamsKey', cache.queries[queryKey].getParamsKey],
-          ['getCacheKey', cache.queries[queryKey].getCacheKey],
-        ] as [key: string, value: unknown][]
-      )
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        .forEach((args) => useAssertValueNotChanged(...args))
-    })()
 
   const paramsKey = getParamsKey(
     // @ts-expect-error fix later
@@ -84,7 +58,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
   const fetch = useCallback(async () => {
     await queryImpl('useQuery.fetch', false, store, cache, queryKey, cacheKey, params)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cacheKey, paramsKey])
+  }, [store, queryKey, cacheKey, paramsKey])
 
   const queryStateFromSelector =
     useSelector((state: unknown) => {

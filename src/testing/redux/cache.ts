@@ -20,7 +20,6 @@ export const {
   options: {
     logsEnabled: true,
     validateFunctionArguments: true,
-    validateHookArguments: true,
   },
   typenames: {
     users: {} as User,

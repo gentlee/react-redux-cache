@@ -31,9 +31,6 @@ import {applyEntityChanges, defaultGetParamsKey, isDev} from './utilsAndConstant
 export const createCache = <T extends Typenames, QP, QR, MP, MR>(
   cache: OptionalPartial<Cache<T, QP, QR, MP, MR>, 'options' | 'queries' | 'mutations'>
 ) => {
-  // @ts-expect-error hot
-  const hotReloadEnabled = Boolean(module?.hot)
-
   const abortControllers = new WeakMap<Store, Record<Key, AbortController>>()
 
   // provide all optional fields
@@ -41,7 +38,6 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
   cache.options ??= {} as CacheOptions
   cache.options.logsEnabled ??= false
   cache.options.validateFunctionArguments ??= isDev
-  cache.options.validateHookArguments ??= isDev && !hotReloadEnabled
   cache.queries ??= {} as Cache<T, QP, QR, MP, MR>['queries']
   cache.mutations ??= {} as Cache<T, QP, QR, MP, MR>['mutations']
   // @ts-expect-error for testing

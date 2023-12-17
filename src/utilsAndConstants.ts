@@ -27,17 +27,6 @@ export const defaultGetParamsKey = <P = unknown>(params: P): Key => {
   }
 }
 
-export const useAssertValueNotChanged = (name: string, value: unknown) => {
-  const firstMountRef = useRef(false)
-  useMemo(() => {
-    if (firstMountRef.current) {
-      throw new Error(`${name} should not be modified`)
-    }
-    firstMountRef.current = true
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value])
-}
-
 export const log = (tag: string, data?: unknown) => {
   console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
 }

@@ -54,12 +54,6 @@ export type CacheOptions = {
    * */
   validateFunctionArguments: boolean
   /**
-   * Enables validation of package hook arguments. Recommened to enable in dev/testing mode and disable in production.
-   * Should be disabled with hot reloading.
-   * Default is true in dev mode without hot reloading.
-   * */
-  validateHookArguments: boolean
-  /**
    * Enable console logs.
    * Default is false.
    */

@@ -23,7 +23,6 @@ test('createCache returns correct result', () => {
     options: {
       logsEnabled: false,
       validateFunctionArguments: true,
-      validateHookArguments: true,
     },
     typenames,
     queries: {
@@ -44,7 +43,6 @@ test('createCache returns correct result', () => {
     options: {
       logsEnabled: false,
       validateFunctionArguments: true,
-      validateHookArguments: true,
     },
     typenames,
     queries: {
