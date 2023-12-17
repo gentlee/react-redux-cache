@@ -23,7 +23,7 @@ import {
 } from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
-import {applyEntityChanges, defaultGetParamsKey, isDev} from './utilsAndConstants'
+import {applyEntityChanges, defaultGetCacheKey, isDev} from './utilsAndConstants'
 
 /**
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
@@ -96,9 +96,8 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
               type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
               const {query: queryKey, params} = options
-              const getParamsKey =
-                nonPartialCache.queries[queryKey].getParamsKey ?? defaultGetParamsKey<P>
-              const getCacheKey = nonPartialCache.queries[queryKey].getCacheKey ?? getParamsKey
+              const getCacheKey =
+                nonPartialCache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
               // @ts-expect-error fix later
               const cacheKey = getCacheKey(params)
 

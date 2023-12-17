@@ -21,7 +21,7 @@ Usage example can be found in `example/` folder and run by `npm run example` com
    - [Infinite scroll pagination](https://github.com/gentlee/react-redux-cache#infinite-scroll-pagination)
    - [redux-persist](https://github.com/gentlee/react-redux-cache#redux-persist)
  - [FAQ](https://github.com/gentlee/react-redux-cache#faq)
-   - [Params key and cache key](https://github.com/gentlee/react-redux-cache#params-key-and-cache-key)
+   - [What is cache key?](https://github.com/gentlee/react-redux-cache#what-is-cache-key)
 
 ### Installation
 `react`, `redux` and `react-redux` are peer dependencies.
@@ -271,13 +271,13 @@ const persistedReducer = persistReducer(
 
 ### FAQ
 
-#### Params key and cache key
+#### What is cache key?
 
-**Params key** is used to determine when params were changed by comparing params key with `===`, and perform a fetch when it happens. Without it it would be required to memoize params, which is not convenient.
+**Cache key** is used for storing the query state and for performing a fetch when it changes. Queries with the same cache key share their state.
 
-Default implementation for `getParamsKey` is:
+Default implementation for `getCacheKey` is:
 ```typescript
-export const defaultGetParamsKey = <P = unknown>(params: P): Key => {
+export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
   switch (typeof params) {
     case 'string':
     case 'symbol':
@@ -290,8 +290,6 @@ export const defaultGetParamsKey = <P = unknown>(params: P): Key => {
 }
 ```
 
-But it is recommened to override it when default implementation is not optimal or when params in object can be sorted in random order.
-
-**Cache key** is used for storing the query state. Queries with the same cache key share their state. Default implementation uses **params key**.
+It is recommended to override it when default implementation is not optimal or when keys in params object can be sorted in random order.
 
 As example, can be overriden when implementing pagination.

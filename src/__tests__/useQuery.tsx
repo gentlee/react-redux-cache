@@ -7,7 +7,7 @@ import {assertEventLog, emptyState, generateTestEntitiesMap, logEvent} from '../
 import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/common'
 import {setQueryStateAndEntities, useClient, useQuery} from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
-import {defaultGetParamsKey, defaultQueryMutationState} from '../utilsAndConstants'
+import {defaultGetCacheKey, defaultQueryMutationState} from '../utilsAndConstants'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let client: {query: any}
@@ -165,7 +165,7 @@ test.each([
   store.dispatch(
     setQueryStateAndEntities(
       query,
-      defaultGetParamsKey(0),
+      defaultGetCacheKey(0),
       {result},
       {merge: generateTestEntitiesMap(1)}
     )
@@ -178,35 +178,33 @@ test.each([
   expect(getUser).toBeCalledTimes(1)
 })
 
-test('fetch after params change with custom cache key if cache-and-fetch policy', async () => {
-  render({
-    query: 'getUsers',
-    cachePolicy: 'cache-and-fetch',
-    params: {page: 1},
-  })
-  await act(advanceApiTimeout)
-  assertEventLog([
-    'render: undefined',
-    'render: loading',
-    'merge results: first page',
-    'render: ' + JSON.stringify({items: [0, 1, 2], page: 1}),
-  ])
+test.each(['cache-first', 'cache-and-fetch'] as const)(
+  'no fetch after params change with custom cache key',
+  async (cachePolicy) => {
+    render({
+      query: 'getUsers',
+      cachePolicy,
+      params: {page: 1},
+    })
+    await act(advanceApiTimeout)
+    assertEventLog([
+      'render: undefined',
+      'render: loading',
+      'merge results: first page',
+      'render: ' + JSON.stringify({items: [0, 1, 2], page: 1}),
+    ])
 
-  render({
-    query: 'getUsers',
-    cachePolicy: 'cache-and-fetch',
-    params: {page: 2},
-  })
-  await act(advanceApiTimeout)
-  assertEventLog([
-    'render: ' + JSON.stringify({items: [0, 1, 2], page: 1}),
-    'render: loading',
-    'merge results: next page',
-    'render: ' + JSON.stringify({items: [0, 1, 2, 3, 4, 5], page: 2}),
-  ])
+    render({
+      query: 'getUsers',
+      cachePolicy,
+      params: {page: 2},
+    })
+    await act(advanceApiTimeout)
+    assertEventLog(['render: ' + JSON.stringify({items: [0, 1, 2], page: 1})])
 
-  expect(getUsers).toBeCalledTimes(2)
-})
+    expect(getUsers).toBeCalledTimes(1)
+  }
+)
 
 test.each(['getUser', 'getUserNoSelector'] as const)(
   'no fetch when skip, without cancelling current request when setting to true',

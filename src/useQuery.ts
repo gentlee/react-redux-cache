@@ -3,7 +3,7 @@ import {useSelector, useStore} from 'react-redux'
 
 import {query as queryImpl} from './query'
 import {Cache, QueryMutationState, Typenames, UseQueryOptions} from './types'
-import {defaultGetParamsKey, defaultQueryMutationState, log} from './utilsAndConstants'
+import {defaultGetCacheKey, defaultQueryMutationState, log} from './utilsAndConstants'
 
 export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
   cache: Cache<T, QP, QR, MP, MR>,
@@ -17,39 +17,30 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
     skip,
     params,
     cachePolicy = cache.queries[queryKey].cachePolicy ?? 'cache-first',
-    getCacheKey = cache.queries[queryKey].getCacheKey,
+    getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>,
   } = options
 
   const logsEnabled = cache.options.logsEnabled
-  const getParamsKey = cache.queries[queryKey].getParamsKey ?? defaultGetParamsKey<P>
   const cacheResultSelector = cache.queries[queryKey].resultSelector
   const cacheStateSelector = cache.cacheStateSelector
 
   const store = useStore()
 
-  const paramsKey = getParamsKey(
-    // @ts-expect-error fix later
-    params
-  )
+  // @ts-expect-error fix types later
+  const cacheKey = getCacheKey(params)
 
-  const [cacheKey, resultSelector] = useMemo(() => {
-    return [
-      // cacheKey
-      getCacheKey
-        ? // @ts-expect-error fix types later
-          getCacheKey(params)
-        : paramsKey,
-      // resultSelector
+  const resultSelector = useMemo(() => {
+    return (
       cacheResultSelector &&
-        ((state: unknown) =>
-          cacheResultSelector(
-            cacheStateSelector(state),
-            // @ts-expect-error fix types later
-            params
-          )),
-    ]
+      ((state: unknown) =>
+        cacheResultSelector(
+          cacheStateSelector(state),
+          // @ts-expect-error fix types later
+          params
+        ))
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramsKey])
+  }, [cacheKey])
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const resultFromSelector = (resultSelector && useSelector(resultSelector)) as R | undefined
@@ -58,7 +49,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
   const fetch = useCallback(async () => {
     await queryImpl('useQuery.fetch', false, store, cache, queryKey, cacheKey, params)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, queryKey, cacheKey, paramsKey])
+  }, [store, queryKey, cacheKey])
 
   const queryStateFromSelector =
     useSelector((state: unknown) => {
@@ -75,7 +66,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
 
   useEffect(() => {
     if (skip) {
-      logsEnabled && log('useQuery.useEffect skip fetch', {skip, paramsKey})
+      logsEnabled && log('useQuery.useEffect skip fetch', {skip, cacheKey})
       return
     }
     if (queryState.result != null && cachePolicy === 'cache-first') {
@@ -89,11 +80,10 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
 
     fetch()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramsKey, cachePolicy, skip])
+  }, [cacheKey, cachePolicy, skip])
 
   logsEnabled &&
     log('useQuery', {
-      paramsKey,
       cacheKey,
       options,
       resultFromSelector,

@@ -18,7 +18,7 @@ export const {
 } = createCache({
   cacheStateSelector: (state) => state,
   options: {
-    logsEnabled: true,
+    logsEnabled: false,
     validateFunctionArguments: true,
   },
   typenames: {
@@ -28,7 +28,6 @@ export const {
   queries: {
     getUsers: {
       query: getUsers,
-      getParamsKey: (params) => params?.page ?? 0,
       getCacheKey: () => 'all-pages',
       mergeResults: (oldResult, {result: newResult}) => {
         if (!oldResult || newResult.page === 1) {
