@@ -13,18 +13,15 @@ const utilsAndConstants_1 = require("./utilsAndConstants");
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
  */
 const createCache = (cache) => {
-    var _a, _b, _c, _d, _e, _f;
-    var _g, _h, _j;
-    // @ts-expect-error hot
-    const hotReloadEnabled = Boolean(module === null || module === void 0 ? void 0 : module.hot);
+    var _a, _b, _c, _d, _e;
+    var _f, _g;
     const abortControllers = new WeakMap();
     // provide all optional fields
     (_a = cache.options) !== null && _a !== void 0 ? _a : (cache.options = {});
-    (_b = (_g = cache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_g.logsEnabled = false);
-    (_c = (_h = cache.options).validateFunctionArguments) !== null && _c !== void 0 ? _c : (_h.validateFunctionArguments = utilsAndConstants_1.isDev);
-    (_d = (_j = cache.options).validateHookArguments) !== null && _d !== void 0 ? _d : (_j.validateHookArguments = utilsAndConstants_1.isDev && !hotReloadEnabled);
-    (_e = cache.queries) !== null && _e !== void 0 ? _e : (cache.queries = {});
-    (_f = cache.mutations) !== null && _f !== void 0 ? _f : (cache.mutations = {});
+    (_b = (_f = cache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_f.logsEnabled = false);
+    (_c = (_g = cache.options).validateFunctionArguments) !== null && _c !== void 0 ? _c : (_g.validateFunctionArguments = utilsAndConstants_1.isDev);
+    (_d = cache.queries) !== null && _d !== void 0 ? _d : (cache.queries = {});
+    (_e = cache.mutations) !== null && _e !== void 0 ? _e : (cache.mutations = {});
     // @ts-expect-error for testing
     cache.abortControllers = abortControllers;
     const nonPartialCache = cache;
@@ -61,10 +58,9 @@ const createCache = (cache) => {
                 return (0, react_1.useMemo)(() => {
                     const client = {
                         query: (options) => {
-                            var _a, _b;
+                            var _a;
                             const { query: queryKey, params } = options;
-                            const getParamsKey = (_a = nonPartialCache.queries[queryKey].getParamsKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetParamsKey);
-                            const getCacheKey = (_b = nonPartialCache.queries[queryKey].getCacheKey) !== null && _b !== void 0 ? _b : getParamsKey;
+                            const getCacheKey = (_a = nonPartialCache.queries[queryKey].getCacheKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetCacheKey);
                             // @ts-expect-error fix later
                             const cacheKey = getCacheKey(params);
                             return (0, query_1.query)('query', true, store, nonPartialCache, queryKey, cacheKey, params);

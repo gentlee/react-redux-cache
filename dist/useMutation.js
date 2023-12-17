@@ -18,21 +18,6 @@ const utilsAndConstants_1 = require("./utilsAndConstants");
 const useMutation = (cache, options, abortControllers) => {
     var _a;
     const { mutation: mutationKey } = options;
-    // Check values that should be set once.
-    // Can be removed from deps.
-    cache.options.validateHookArguments &&
-        (() => {
-            ;
-            [
-                ['cache', cache],
-                ['cache.options', cache.options],
-                ['cache.options.logsEnabled', cache.options.logsEnabled],
-                ['cacheStateSelector', cache.cacheStateSelector],
-                ['mutationKey', mutationKey],
-            ]
-                // eslint-disable-next-line react-hooks/rules-of-hooks
-                .forEach((args) => (0, utilsAndConstants_1.useAssertValueNotChanged)(...args));
-        })();
     const store = (0, react_redux_1.useStore)();
     // Using single useMemo for performance reasons
     const [mutationStateSelector, mutate, abort] = (0, react_1.useMemo)(() => {
@@ -64,9 +49,8 @@ const useMutation = (cache, options, abortControllers) => {
                 return true;
             },
         ];
-    }, 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [store]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mutationKey, store]);
     // @ts-expect-error fix later
     const mutationState = (_a = (0, react_redux_1.useSelector)(mutationStateSelector)) !== null && _a !== void 0 ? _a : utilsAndConstants_1.defaultQueryMutationState;
     cache.options.logsEnabled &&

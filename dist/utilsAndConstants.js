@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.applyEntityChanges = exports.log = exports.useAssertValueNotChanged = exports.defaultGetParamsKey = exports.defaultQueryMutationState = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
-const react_1 = require("react");
+exports.applyEntityChanges = exports.log = exports.defaultGetCacheKey = exports.defaultQueryMutationState = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
 exports.PACKAGE_SHORT_NAME = 'RRC';
 exports.isDev = (() => {
     try {
@@ -13,9 +12,10 @@ exports.isDev = (() => {
     }
 })();
 exports.defaultQueryMutationState = { loading: false, error: undefined };
-const defaultGetParamsKey = (params) => {
+const defaultGetCacheKey = (params) => {
     switch (typeof params) {
         case 'string':
+        case 'symbol':
             return params;
         case 'object':
             return JSON.stringify(params);
@@ -23,18 +23,7 @@ const defaultGetParamsKey = (params) => {
             return String(params);
     }
 };
-exports.defaultGetParamsKey = defaultGetParamsKey;
-const useAssertValueNotChanged = (name, value) => {
-    const firstMountRef = (0, react_1.useRef)(false);
-    (0, react_1.useMemo)(() => {
-        if (firstMountRef.current) {
-            throw new Error(`${name} should not be modified`);
-        }
-        firstMountRef.current = true;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [value]);
-};
-exports.useAssertValueNotChanged = useAssertValueNotChanged;
+exports.defaultGetCacheKey = defaultGetCacheKey;
 const log = (tag, data) => {
     console.debug(`@${exports.PACKAGE_SHORT_NAME} [${tag}]`, data);
 };

@@ -36,12 +36,6 @@ export type CacheOptions = {
      * */
     validateFunctionArguments: boolean;
     /**
-     * Enables validation of package hook arguments. Recommened to enable in dev/testing mode and disable in production.
-     * Should be disabled with hot reloading.
-     * Default is true in dev mode without hot reloading.
-     * */
-    validateHookArguments: boolean;
-    /**
      * Enable console logs.
      * Default is false.
      */
@@ -73,15 +67,9 @@ export type QueryInfo<T extends Typenames, P, R, S> = {
     /** Merges results before saving to the store. */
     mergeResults?: (oldResult: R | undefined, response: QueryResponse<T, R>, params: P | undefined) => R;
     /**
-     * Params key is used for determining if parameters were changed and fetch is needed.
-     * Also used as cache key, of `getCacheKey` wasn't provided.
+     * Cache key is used for storing the query state and for performing a fetch when it changes. Queries with the same cache key share their state.
      * Default implementation uses `JSON.stringify` or `String()` depending on type.
-     * */
-    getParamsKey?: (params?: P) => Key;
-    /**
-     * Cache key is a key in redux state for caching query state.
-     * Queries with equal cache keys have the same state.
-     * Default implementation is equal to `getParamsKey`.
+     * It is recommended to override it when default implementation is not optimal or when keys in params object can be sorted in random order etc.
      * */
     getCacheKey?: (params?: P) => Key;
 };
