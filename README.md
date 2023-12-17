@@ -21,7 +21,8 @@ Usage example can be found in `example/` folder and run by `npm run example` com
    - [Infinite scroll pagination](https://github.com/gentlee/react-redux-cache#infinite-scroll-pagination)
    - [redux-persist](https://github.com/gentlee/react-redux-cache#redux-persist)
  - [FAQ](https://github.com/gentlee/react-redux-cache#faq)
-   - [What is cache key?](https://github.com/gentlee/react-redux-cache#what-is-cache-key)
+   - [What is a query cache key?](https://github.com/gentlee/react-redux-cache#what-is-a-query-cache-key)
+   - [How mutation fetching differs from queries?](https://github.com/gentlee/react-redux-cache#how-mutation-fetching-differs-from-queries)
 
 ### Installation
 `react`, `redux` and `react-redux` are peer dependencies.
@@ -271,7 +272,7 @@ const persistedReducer = persistReducer(
 
 ### FAQ
 
-#### What is cache key?
+#### What is a query cache key?
 
 **Cache key** is used for storing the query state and for performing a fetch when it changes. Queries with the same cache key share their state.
 
@@ -293,3 +294,9 @@ export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
 It is recommended to override it when default implementation is not optimal or when keys in params object can be sorted in random order.
 
 As example, can be overriden when implementing pagination.
+
+#### How mutation fetching differs from queries?
+
+**Queries:** For each cache key (= unique params by default) of each query fetch is running in parallel. If fetch is already running for specific cache key, all next fetches are cancelled until it finishes.
+
+**Mutations:** Only one mutation can be run for each mutation key at a time. If another one called, previous is aborted.
