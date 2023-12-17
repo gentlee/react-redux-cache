@@ -1,6 +1,6 @@
 import {useMemo, useRef} from 'react'
 
-import {CacheOptions, EntitiesMap, EntityChanges, Typenames} from './types'
+import {CacheOptions, EntitiesMap, EntityChanges, Key, Typenames} from './types'
 
 export const PACKAGE_SHORT_NAME = 'RRC'
 
@@ -15,9 +15,10 @@ export const isDev: boolean = (() => {
 
 export const defaultQueryMutationState = {loading: false, error: undefined} as const
 
-export const defaultGetParamsKey = <P = unknown>(params: P): string => {
+export const defaultGetParamsKey = <P = unknown>(params: P): Key => {
   switch (typeof params) {
     case 'string':
+    case 'symbol':
       return params
     case 'object':
       return JSON.stringify(params)

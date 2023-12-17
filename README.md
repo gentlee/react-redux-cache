@@ -20,6 +20,8 @@ Usage example can be found in `example/` folder and run by `npm run example` com
    - [resultSelector](https://github.com/gentlee/react-redux-cache#resultselector)
    - [Infinite scroll pagination](https://github.com/gentlee/react-redux-cache#infinite-scroll-pagination)
    - [redux-persist](https://github.com/gentlee/react-redux-cache#redux-persist)
+ - [FAQ](https://github.com/gentlee/react-redux-cache#faq)
+   - [Params key and cache key](https://github.com/gentlee/react-redux-cache#params-key-and-cache-key)
 
 ### Installation
 `react`, `redux` and `react-redux` are peer dependencies.
@@ -141,7 +143,7 @@ export const UserScreen = () => {
 
 #### resultSelector
 
-By default result of a query is stored under its cache key, but sometimes it makes sense to take result from other queries or normalized entities.
+By default result of a query is stored under its **cache key**, but sometimes it makes sense to take result from other queries or normalized entities.
 
 For example when single `User` entity is requested by `userId` for the first time, the entity can already be in the cache after `getUsers` query finished.
 
@@ -157,7 +159,7 @@ For that case `resultSelector` can be used:
     ...
     getUser: {
       query: getUser,
-      resultSelector: (state, id) => state.entities.users[id]?.id, // <-- Result is selected from cache entities
+      resultSelector: (state, id) => state.entities.users[id]?.id, // <-- Result is selected from cached entities
     },
   },
 })
@@ -266,3 +268,30 @@ const persistedReducer = persistReducer(
   reducer
 )
 ```
+
+### FAQ
+
+#### Params key and cache key
+
+**Params key** is used to determine when params were changed by comparing params key with `===`, and perform a fetch when it happens. Without it it would be required to memoize params, which is not convenient.
+
+Default implementation for `getParamsKey` is:
+```typescript
+export const defaultGetParamsKey = <P = unknown>(params: P): Key => {
+  switch (typeof params) {
+    case 'string':
+    case 'symbol':
+      return params
+    case 'object':
+      return JSON.stringify(params)
+    default:
+      return String(params)
+  }
+}
+```
+
+But it is recommened to override it when default implementation is not optimal or when params in object can be sorted in random order.
+
+**Cache key** is used for storing the query state. Queries with the same cache key share their state. Default implementation uses **params key**.
+
+As example, can be overriden when implementing pagination.
