@@ -17,6 +17,7 @@ Usage example can be found in `example/` folder and run by `npm run example` com
    - [api.ts](https://github.com/gentlee/react-redux-cache#apits) 
  - [Usage](https://github.com/gentlee/react-redux-cache#usage)
  - [Advanced](https://github.com/gentlee/react-redux-cache#advanced)
+   - [resultSelector](https://github.com/gentlee/react-redux-cache#resultselector)
    - [Infinite scroll pagination](https://github.com/gentlee/react-redux-cache#infinite-scroll-pagination)
    - [redux-persist](https://github.com/gentlee/react-redux-cache#redux-persist)
 
@@ -137,6 +138,46 @@ export const UserScreen = () => {
 ```
 
 ### Advanced
+
+#### resultSelector
+
+By default result of a query is stored under its cache key, but sometimes it makes sense to take result from other queries or normalized entities.
+
+For example when single `User` entity is requested by `userId` for the first time, the entity can already be in the cache after `getUsers` query finished.
+
+For that case `resultSelector` can be used:
+
+```typescript
+
+// createCache
+
+... = createCache({
+  ...
+  queries: {
+    ...
+    getUser: {
+      query: getUser,
+      resultSelector: (state, id) => state.entities.users[id]?.id, // <-- Result is selected from cache entities
+    },
+  },
+})
+
+// component
+
+export const UserScreen = () => {
+  ...
+
+  // When screen mounts for the first time, query is not fetched
+  // and cached value is returned if user entity was already in the cache
+  const [{result, loading, error}] = useQuery({
+    query: 'getUser',
+    params: userId,
+  })
+
+  ...
+}
+
+```
 
 #### Infinite scroll pagination
 
