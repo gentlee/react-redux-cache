@@ -6,8 +6,6 @@
 
 Remains **full control** of redux state with ability to write custom selectors, actions and reducers to manage cached state.
     
-Usage example can be found in `example/` folder and run by `npm run example` command from the root folder.
-    
 ### Table of contents
 
  - [Installation](https://github.com/gentlee/react-redux-cache#Installation)
@@ -112,6 +110,9 @@ export const removeUser = async (id: number) => {
 ```
 
 ### Usage
+
+Please check `example/` folder (`npm run example` to run).
+
 #### UserScreen.tsx
 ```typescript
 export const UserScreen = () => {
