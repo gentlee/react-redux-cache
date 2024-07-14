@@ -1,3 +1,11 @@
+### Donations 🙌
+
+**BTC:** bc1qs0sq7agz5j30qnqz9m60xj4tt8th6aazgw7kxr \
+**ETH:** 0x1D834755b5e889703930AC9b784CB625B3cd833E \
+**USDT(Tron):** TPrCq8LxGykQ4as3o1oB8V7x1w2YPU2o5n \
+**TON:** EQAtBuFWI3H_LpHfEToil4iYemtfmyzlaJpahM3tFSoxojvV \
+**DOGE:** D7GMQdKhKC9ymbT9PtcetSFTQjyPRRfkwT
+
 # react-redux-cache
 
 **Powerful** yet **lightweight** data fetching and caching library that supports **normalization** unlike `react-query` and `rtk-query`, while having similar but very simple interface. Built on top of `redux`, fully typed and written on Typescript. Can be considered as `ApolloClient` for protocols other than `GraphQL`.
