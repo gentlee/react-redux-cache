@@ -1,4 +1,4 @@
-import {apiTimeout} from '../common'
+import {apiTimeout} from '../utils'
 import {User} from './types'
 import {generateTestBank, generateTestUser} from './utils'
 

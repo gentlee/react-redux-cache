@@ -40,7 +40,7 @@ const useQuery = (cache, options) => {
     const queryStateFromSelector = (_c = (0, react_redux_1.useSelector)((state) => {
         const queryState = cacheStateSelector(state).queries[queryKey][cacheKey];
         return queryState; // TODO proper type
-    })) !== null && _c !== void 0 ? _c : utilsAndConstants_1.defaultQueryMutationState;
+    })) !== null && _c !== void 0 ? _c : utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE;
     const queryState = hasResultFromSelector
         ? (Object.assign(Object.assign({}, queryStateFromSelector), { result: resultFromSelector }))
         : queryStateFromSelector;

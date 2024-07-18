@@ -1,4 +1,4 @@
-import type { createCacheReducer, ReduxCacheState } from './reducer';
+import { createCacheReducer, ReduxCacheState } from './reducer';
 export type Key = string | number | symbol;
 export type Dict<T> = Record<Key, T>;
 export type OptionalPartial<T, K extends keyof T> = Partial<{

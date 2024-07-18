@@ -4,16 +4,16 @@ import {Provider} from 'react-redux'
 
 import {
   assertEventLog,
-  emptyState,
   generateTestBank,
   generateTestEntitiesMap,
   generateTestUser,
   logEvent,
 } from '../testing/api/utils'
-import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/common'
+import {EMPTY_STATE} from '../testing/constants'
 import {useClient} from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
-import {defaultQueryMutationState} from '../utilsAndConstants'
+import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
+import {DEFAULT_QUERY_MUTATION_STATE} from '../utilsAndConstants'
 
 let store: ReturnType<typeof createReduxStore>
 let mutate: ReturnType<typeof useClient>['mutate']
@@ -40,10 +40,10 @@ test('should update mutation state and return result', async () => {
 
   expect(result).toEqual({result: 0})
   expect(store.getState()).toEqual({
-    ...emptyState,
+    ...EMPTY_STATE,
     mutations: {
       updateUser: {
-        ...defaultQueryMutationState,
+        ...DEFAULT_QUERY_MUTATION_STATE,
         result: 0,
       },
     },
@@ -55,8 +55,8 @@ test('should update mutation state and return result', async () => {
   assertEventLog([
     '@RRC/MERGE_ENTITY_CHANGES',
     'render',
-    '@RRC/SET_MUTATION_STATE_AND_ENTITIES',
-    '@RRC/SET_MUTATION_STATE_AND_ENTITIES',
+    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES',
+    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES',
   ])
 })
 
@@ -88,10 +88,10 @@ test('mutate should cancel previous not finished mutation', async () => {
   expect(result1).toEqual({aborted: true})
   expect(result2).toEqual({result: 1})
   expect(store.getState()).toEqual({
-    ...emptyState,
+    ...EMPTY_STATE,
     mutations: {
       updateUser: {
-        ...defaultQueryMutationState,
+        ...DEFAULT_QUERY_MUTATION_STATE,
         result: 1,
       },
     },
@@ -106,8 +106,8 @@ test('mutate should cancel previous not finished mutation', async () => {
   assertEventLog([
     '@RRC/MERGE_ENTITY_CHANGES',
     'render',
-    '@RRC/SET_MUTATION_STATE_AND_ENTITIES',
-    '@RRC/SET_MUTATION_STATE_AND_ENTITIES',
+    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES',
+    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES',
   ])
 })
 

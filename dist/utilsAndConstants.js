@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.applyEntityChanges = exports.log = exports.defaultGetCacheKey = exports.defaultQueryMutationState = exports.isDev = exports.PACKAGE_SHORT_NAME = void 0;
+exports.applyEntityChanges = exports.log = exports.defaultGetCacheKey = exports.DEFAULT_QUERY_MUTATION_STATE = exports.IS_DEV = exports.PACKAGE_SHORT_NAME = void 0;
 exports.PACKAGE_SHORT_NAME = 'RRC';
-exports.isDev = (() => {
+exports.IS_DEV = (() => {
     try {
         // @ts-expect-error __DEV__ is only for React Native
         return __DEV__;
@@ -11,7 +11,7 @@ exports.isDev = (() => {
         return process.env.NODE_ENV === 'development';
     }
 })();
-exports.defaultQueryMutationState = { loading: false, error: undefined };
+exports.DEFAULT_QUERY_MUTATION_STATE = { loading: false, error: undefined };
 const defaultGetCacheKey = (params) => {
     switch (typeof params) {
         case 'string':

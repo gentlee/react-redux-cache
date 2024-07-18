@@ -3,11 +3,18 @@ import React from 'react'
 import {Provider} from 'react-redux'
 
 import {getUser, getUsers} from '../testing/api/mocks'
-import {assertEventLog, emptyState, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
-import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/common'
-import {setQueryStateAndEntities, useClient, useQuery} from '../testing/redux/cache'
+import {assertEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
+import {EMPTY_STATE} from '../testing/constants'
+import {GET_USERS_ONE_PAGE_STATE} from '../testing/constants'
+import {
+  clearQueryState,
+  updateQueryStateAndEntities,
+  useClient,
+  useQuery,
+} from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
-import {defaultGetCacheKey, defaultQueryMutationState} from '../utilsAndConstants'
+import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
+import {DEFAULT_QUERY_MUTATION_STATE, defaultGetCacheKey} from '../utilsAndConstants'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let client: {query: any}
@@ -41,12 +48,12 @@ test('fetch if no cache', async () => {
   ])
 
   expect(getUsers).toBeCalledTimes(1)
-  expect(store.getState()).toStrictEqual(getUsersOnePageState)
+  expect(store.getState()).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
 })
 
 const setCacheAndMountAndCheckNoRefetch = async () => {
   store.dispatch(
-    setQueryStateAndEntities(
+    updateQueryStateAndEntities(
       'getUsers',
       'all-pages',
       {
@@ -66,7 +73,7 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
   assertEventLog(['render: ' + JSON.stringify({items: [0, 1, 2], page: 1})])
 
   expect(getUsers).toBeCalledTimes(0)
-  expect(store.getState()).toStrictEqual(getUsersOnePageState)
+  expect(store.getState()).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
 }
 
 test('no fetch on mount if has cache', setCacheAndMountAndCheckNoRefetch)
@@ -119,22 +126,22 @@ test.each(['getUser', 'getUserNoSelector'] as const)(
 
     expect(getUser).toBeCalledTimes(3)
     expect(store.getState()).toStrictEqual({
-      ...emptyState,
+      ...EMPTY_STATE,
       entities: generateTestEntitiesMap(3),
       queries: {
-        ...emptyState.queries,
+        ...EMPTY_STATE.queries,
         ...{
           [query]: {
             0: {
-              ...defaultQueryMutationState,
+              ...DEFAULT_QUERY_MUTATION_STATE,
               result: query === 'getUser' ? undefined : 0,
             },
             1: {
-              ...defaultQueryMutationState,
+              ...DEFAULT_QUERY_MUTATION_STATE,
               result: query === 'getUser' ? undefined : 1,
             },
             2: {
-              ...defaultQueryMutationState,
+              ...DEFAULT_QUERY_MUTATION_STATE,
               result: query === 'getUser' ? undefined : 2,
             },
           },
@@ -155,7 +162,7 @@ test('no refetch on params change with custom cache key', async () => {
   assertEventLog(['render: ' + JSON.stringify({items: [0, 1, 2], page: 1})])
 
   expect(getUsers).toBeCalledTimes(0)
-  expect(store.getState()).toStrictEqual(getUsersOnePageState)
+  expect(store.getState()).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
 })
 
 test.each([
@@ -163,7 +170,7 @@ test.each([
   {query: 'getUserNoSelector', result: 0},
 ] as const)('fetch on mount having cache with cache-and-fetch policy', async ({query, result}) => {
   store.dispatch(
-    setQueryStateAndEntities(
+    updateQueryStateAndEntities(
       query,
       defaultGetCacheKey(0),
       {result},
@@ -272,10 +279,10 @@ test.each([
 
   expect(getUser).toBeCalledTimes(1)
   expect(store.getState()).toStrictEqual({
-    ...emptyState,
+    ...EMPTY_STATE,
     entities: generateTestEntitiesMap(1),
     queries: {
-      ...emptyState.queries,
+      ...EMPTY_STATE.queries,
       ...state,
     },
   })
@@ -303,22 +310,4 @@ const render = (options: Parameters<typeof useQuery>[0]) => {
       <TestUseQueryComponent options={options} />
     </Provider>
   )
-}
-
-const getUsersOnePageState = {
-  entities: generateTestEntitiesMap(3),
-  queries: {
-    ...emptyState.queries,
-    getUsers: {
-      'all-pages': {
-        result: {
-          items: [0, 1, 2],
-          page: 1,
-        },
-        loading: false,
-        error: undefined,
-      },
-    },
-  },
-  mutations: {},
 }

@@ -3,7 +3,7 @@ import {useSelector, useStore} from 'react-redux'
 
 import {query as queryImpl} from './query'
 import {Cache, QueryMutationState, Typenames, UseQueryOptions} from './types'
-import {defaultGetCacheKey, defaultQueryMutationState, log} from './utilsAndConstants'
+import {DEFAULT_QUERY_MUTATION_STATE, defaultGetCacheKey, log} from './utilsAndConstants'
 
 export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
   cache: Cache<T, QP, QR, MP, MR>,
@@ -55,7 +55,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
     useSelector((state: unknown) => {
       const queryState = cacheStateSelector(state).queries[queryKey as keyof QR][cacheKey]
       return queryState as QueryMutationState<R> | undefined // TODO proper type
-    }) ?? (defaultQueryMutationState as QueryMutationState<R>)
+    }) ?? (DEFAULT_QUERY_MUTATION_STATE as QueryMutationState<R>)
 
   const queryState = hasResultFromSelector
     ? ({

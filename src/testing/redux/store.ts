@@ -21,5 +21,3 @@ export const createReduxStore = (
 
   return createStore(reducer, applyMiddleware(...middlewares))
 }
-
-export type ReduxState = ReturnType<typeof reducer>

@@ -1,6 +1,6 @@
 import {Store} from 'redux'
 
-import {setMutationStateAndEntities} from './reducer'
+import {updateMutationStateAndEntities} from './actions'
 import {Cache, Key, MutationResult, Typenames} from './types'
 import {log} from './utilsAndConstants'
 
@@ -33,7 +33,7 @@ export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends key
       abortController.abort()
     } else {
       store.dispatch(
-        setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
+        updateMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
           loading: true,
           result: undefined,
         })
@@ -72,7 +72,7 @@ export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends key
 
   if (error) {
     store.dispatch(
-      setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
+      updateMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
         error: error as Error,
         loading: false,
       })
@@ -82,7 +82,7 @@ export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends key
 
   if (response) {
     store.dispatch(
-      setMutationStateAndEntities(
+      updateMutationStateAndEntities(
         mutationKey as keyof MR,
         {
           error: undefined,

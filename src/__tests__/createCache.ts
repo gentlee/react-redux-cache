@@ -69,8 +69,10 @@ test('createCache returns correct result', () => {
   })
 
   expect(actions.mergeEntityChanges).toBeDefined()
-  expect(actions.setMutationStateAndEntities).toBeDefined()
-  expect(actions.setQueryStateAndEntities).toBeDefined()
+  expect(actions.updateMutationStateAndEntities).toBeDefined()
+  expect(actions.updateQueryStateAndEntities).toBeDefined()
+  expect(actions.clearQueryState).toBeDefined()
+  expect(actions.clearMutationState).toBeDefined()
 
   expect(selectors.entitiesSelector).toBeDefined()
   expect(selectors.entitiesByTypenameSelector).toBeDefined()

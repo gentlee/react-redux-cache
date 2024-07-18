@@ -4,15 +4,15 @@ import {Provider} from 'react-redux'
 
 import {
   assertEventLog,
-  emptyState,
   generateTestEntitiesMap,
   generateTestUser,
   logEvent,
 } from '../testing/api/utils'
-import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/common'
+import {EMPTY_STATE} from '../testing/constants'
 import {useMutation} from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
-import {defaultQueryMutationState} from '../utilsAndConstants'
+import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
+import {DEFAULT_QUERY_MUTATION_STATE} from '../utilsAndConstants'
 
 let store: ReturnType<typeof createReduxStore>
 let updateUser: ReturnType<typeof useMutation<'updateUser'>>[0]
@@ -55,8 +55,8 @@ test('should be able to abort started mutation', async () => {
   expect(mutationResult1).toBe(undefined) // useMutation's mutate doesn't return result
   expect(mutationResult2).toBe(undefined)
   expect(store.getState()).toEqual({
-    ...emptyState,
-    mutations: {updateUser: defaultQueryMutationState},
+    ...EMPTY_STATE,
+    mutations: {updateUser: DEFAULT_QUERY_MUTATION_STATE},
     entities: {
       ...generateTestEntitiesMap(1),
       users: {0: {...generateTestUser(0), name: 'New name'}},
@@ -65,13 +65,13 @@ test('should be able to abort started mutation', async () => {
   assertEventLog([
     '@RRC/MERGE_ENTITY_CHANGES',
     'render: loading: false, result: undefined',
-    '@RRC/SET_MUTATION_STATE_AND_ENTITIES', // loading true
+    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES', // loading true
     'render: loading: true, result: undefined',
-    '@RRC/SET_MUTATION_STATE_AND_ENTITIES', // loading false, result 0
+    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES', // loading false, result 0
     'render: loading: false, result: 0',
-    '@RRC/SET_MUTATION_STATE_AND_ENTITIES', // loading true, result undefined
+    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES', // loading true, result undefined
     'render: loading: true, result: undefined',
-    '@RRC/SET_MUTATION_STATE_AND_ENTITIES', // abort, loading false
+    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES', // abort, loading false
     'render: loading: false, result: undefined',
   ])
 })

@@ -1,6 +1,6 @@
 // Common
 
-import type {createCacheReducer, ReduxCacheState} from './reducer'
+import {createCacheReducer, ReduxCacheState} from './reducer'
 
 export type Key = string | number | symbol
 

@@ -1,7 +1,7 @@
-import { CacheOptions, EntitiesMap, EntityChanges, Key, Typenames } from './types';
+import type { CacheOptions, EntitiesMap, EntityChanges, Key, Typenames } from './types';
 export declare const PACKAGE_SHORT_NAME = "RRC";
-export declare const isDev: boolean;
-export declare const defaultQueryMutationState: {
+export declare const IS_DEV: boolean;
+export declare const DEFAULT_QUERY_MUTATION_STATE: {
     readonly loading: false;
     readonly error: undefined;
 };

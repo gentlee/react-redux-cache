@@ -12,8 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.useMutation = void 0;
 const react_1 = require("react");
 const react_redux_1 = require("react-redux");
+const actions_1 = require("./actions");
 const mutate_1 = require("./mutate");
-const reducer_1 = require("./reducer");
 const utilsAndConstants_1 = require("./utilsAndConstants");
 const useMutation = (cache, options, abortControllers) => {
     var _a;
@@ -43,7 +43,7 @@ const useMutation = (cache, options, abortControllers) => {
                     return false;
                 }
                 abortController.abort();
-                store.dispatch((0, reducer_1.setMutationStateAndEntities)(mutationKey, {
+                store.dispatch((0, actions_1.updateMutationStateAndEntities)(mutationKey, {
                     loading: false,
                 }));
                 return true;
@@ -52,7 +52,7 @@ const useMutation = (cache, options, abortControllers) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mutationKey, store]);
     // @ts-expect-error fix later
-    const mutationState = (_a = (0, react_redux_1.useSelector)(mutationStateSelector)) !== null && _a !== void 0 ? _a : utilsAndConstants_1.defaultQueryMutationState;
+    const mutationState = (_a = (0, react_redux_1.useSelector)(mutationStateSelector)) !== null && _a !== void 0 ? _a : utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE;
     cache.options.logsEnabled &&
         (0, utilsAndConstants_1.log)('useMutation', {
             options,

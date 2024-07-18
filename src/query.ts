@@ -1,7 +1,7 @@
 import {Store} from 'redux'
 
-import {setQueryStateAndEntities} from './reducer'
-import {Cache, Key, QueryResult, Typenames} from './types'
+import {updateQueryStateAndEntities} from './actions'
+import type {Cache, Key, QueryResult, Typenames} from './types'
 import {log} from './utilsAndConstants'
 
 export const query = async <T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
@@ -34,7 +34,7 @@ export const query = async <T extends Typenames, QP, QR, MP, MR, QK extends keyo
   }
 
   store.dispatch(
-    setQueryStateAndEntities<T, QR, keyof QR>(queryKey as keyof QR, cacheKey, {
+    updateQueryStateAndEntities<T, QR, keyof QR>(queryKey as keyof QR, cacheKey, {
       loading: true,
     })
   )
@@ -50,7 +50,7 @@ export const query = async <T extends Typenames, QP, QR, MP, MR, QK extends keyo
     )
   } catch (error) {
     store.dispatch(
-      setQueryStateAndEntities<T, QR, keyof QR>(queryKey as keyof QR, cacheKey, {
+      updateQueryStateAndEntities<T, QR, keyof QR>(queryKey as keyof QR, cacheKey, {
         error: error as Error,
         loading: false,
       })
@@ -73,7 +73,7 @@ export const query = async <T extends Typenames, QP, QR, MP, MR, QK extends keyo
       : response.result,
   }
 
-  store.dispatch(setQueryStateAndEntities(queryKey as keyof QR, cacheKey, newState, response))
+  store.dispatch(updateQueryStateAndEntities(queryKey as keyof QR, cacheKey, newState, response))
 
   // @ts-expect-error fix types
   return returnResult

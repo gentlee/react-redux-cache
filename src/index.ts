@@ -1,14 +1,23 @@
 export {createCache} from './createCache'
 export type {ReduxCacheState} from './reducer'
 export * from './types'
-export {defaultGetCacheKey, defaultQueryMutationState} from './utilsAndConstants'
+export {
+  defaultGetCacheKey,
+  DEFAULT_QUERY_MUTATION_STATE as defaultQueryMutationState,
+} from './utilsAndConstants'
 
 // Backlog
 
 // ! high
+// screenshot of redux state to README
+// optimistic response
 // cover with tests
+// try use skip for refreshing strategy?
+// add example without normalization
+// make query key / cache key difference more clear in the docs
 
 // ! medium
+// make named caches to produce named hooks, actions etc (same as slices in RTK)?
 // allow multiple mutation with same keys?
 // type extractors from cache
 // custom useStore
@@ -19,7 +28,6 @@ export {defaultGetCacheKey, defaultQueryMutationState} from './utilsAndConstants
 // refetch queries on mutation success
 // remove query/mutation state when it finished without errors
 // deep equal entities while merging state
-// optimistic response
 // make error type generic
 // don't cache result if resultSelector set? throw error if mergeResult set with resultSelector?
 
@@ -33,3 +41,4 @@ export {defaultGetCacheKey, defaultQueryMutationState} from './utilsAndConstants
 // support any store, not only redux
 // readonly types?
 // proper types, remove as, any, todo
+// add number of retries param?

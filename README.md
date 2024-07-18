@@ -36,7 +36,7 @@ Remains **full control** of redux state with ability to write custom selectors, 
 npm add react-redux-cache react redux react-redux
 ```
 ### Initialization
-The only function that needs to be imported is `createCache`, which creates fully typed reducer, hooks, actions, selectors and utils to be used in the app.
+The only function that needs to be imported is `createCache`, which creates fully typed reducer, hooks, actions, selectors and utils to be used in the app. Only **single** cache reducer per store is supported currenlty.
 All typenames, queries and mutations should be passed while initializing the cache for proper typing.
 #### cache.ts
 ```typescript
@@ -45,7 +45,7 @@ export const {
   hooks: {useClient, useMutation, useQuery, useSelectEntityById},
   // Actions, selectors and utils may be not used at all
   selectors: {entitiesSelector, entitiesByTypenameSelector},
-  actions: {setQueryStateAndEntities, setMutationStateAndEntities, mergeEntityChanges},
+  actions: {updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges},
   utils: {applyEntityChanges},
 } = createCache({
   // This selector should return the cache state based on the path to its reducer.

@@ -1,6 +1,6 @@
 import {createCache} from '../../createCache'
 import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
-import {Bank, User} from '../api/types'
+import type {Bank, User} from '../api/types'
 import {logEvent} from '../api/utils'
 
 export type TestTypenames = {
@@ -8,10 +8,18 @@ export type TestTypenames = {
   banks: Bank
 }
 
+export type ReduxState = ReturnType<typeof reducer>
+
 export const {
   cache,
   reducer,
-  actions: {setQueryStateAndEntities, setMutationStateAndEntities, mergeEntityChanges},
+  actions: {
+    updateQueryStateAndEntities,
+    updateMutationStateAndEntities,
+    mergeEntityChanges,
+    clearQueryState,
+    clearMutationState,
+  },
   selectors: {entitiesSelector, entitiesByTypenameSelector},
   hooks: {useClient, useMutation, useQuery, useSelectEntityById},
   utils: {applyEntityChanges},
@@ -63,7 +71,7 @@ export const {
   },
 })
 
-// setQueryStateAndEntities('getUser', 'a', {
+// updateQueryStateAndEntities('getUser', 'a', {
 //   result: 0,
 // })
 

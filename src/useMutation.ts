@@ -2,10 +2,10 @@ import {useMemo} from 'react'
 import {useSelector, useStore} from 'react-redux'
 import {Store} from 'redux'
 
+import {updateMutationStateAndEntities} from './actions'
 import {mutate as mutateImpl} from './mutate'
-import {setMutationStateAndEntities} from './reducer'
 import {Cache, Key, QueryMutationState, Typenames} from './types'
-import {defaultQueryMutationState, log} from './utilsAndConstants'
+import {DEFAULT_QUERY_MUTATION_STATE, log} from './utilsAndConstants'
 
 export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & MR)>(
   cache: Cache<T, unknown, unknown, MP, MR>,
@@ -53,7 +53,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
         }
         abortController.abort()
         store.dispatch(
-          setMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
+          updateMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
             loading: false,
           })
         )
@@ -65,7 +65,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
 
   // @ts-expect-error fix later
   const mutationState: QueryMutationState<R> =
-    useSelector(mutationStateSelector) ?? defaultQueryMutationState
+    useSelector(mutationStateSelector) ?? DEFAULT_QUERY_MUTATION_STATE
 
   cache.options.logsEnabled &&
     log('useMutation', {

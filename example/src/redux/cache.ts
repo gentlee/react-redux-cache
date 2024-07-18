@@ -11,7 +11,7 @@ export type TestTypenames = {
 export const {
   cache,
   reducer,
-  actions: {setQueryStateAndEntities, setMutationStateAndEntities, mergeEntityChanges},
+  actions: {updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges},
   selectors: {entitiesSelector, entitiesByTypenameSelector},
   hooks: {useClient, useMutation, useQuery, useSelectEntityById},
 } = createCache({

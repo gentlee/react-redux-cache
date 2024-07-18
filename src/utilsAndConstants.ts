@@ -1,8 +1,8 @@
-import {CacheOptions, EntitiesMap, EntityChanges, Key, Typenames} from './types'
+import type {CacheOptions, EntitiesMap, EntityChanges, Key, Typenames} from './types'
 
 export const PACKAGE_SHORT_NAME = 'RRC'
 
-export const isDev: boolean = (() => {
+export const IS_DEV: boolean = (() => {
   try {
     // @ts-expect-error __DEV__ is only for React Native
     return __DEV__
@@ -11,7 +11,7 @@ export const isDev: boolean = (() => {
   }
 })()
 
-export const defaultQueryMutationState = {loading: false, error: undefined} as const
+export const DEFAULT_QUERY_MUTATION_STATE = {loading: false, error: undefined} as const
 
 export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
   switch (typeof params) {

@@ -2,15 +2,17 @@ import {useMemo} from 'react'
 import {useSelector, useStore} from 'react-redux'
 import {Store} from 'redux'
 
+import {
+  clearMutationState,
+  clearQueryState,
+  mergeEntityChanges,
+  updateMutationStateAndEntities,
+  updateQueryStateAndEntities,
+} from './actions'
 import {mutate as mutateImpl} from './mutate'
 import {query as queryImpl} from './query'
-import {
-  createCacheReducer,
-  mergeEntityChanges,
-  setMutationStateAndEntities,
-  setQueryStateAndEntities,
-} from './reducer'
-import {
+import {createCacheReducer} from './reducer'
+import type {
   Cache,
   CacheOptions,
   EntitiesMap,
@@ -23,64 +25,80 @@ import {
 } from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
-import {applyEntityChanges, defaultGetCacheKey, isDev} from './utilsAndConstants'
+import {applyEntityChanges, defaultGetCacheKey, IS_DEV} from './utilsAndConstants'
 
 /**
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
  */
 export const createCache = <T extends Typenames, QP, QR, MP, MR>(
-  cache: OptionalPartial<Cache<T, QP, QR, MP, MR>, 'options' | 'queries' | 'mutations'>
+  partialCache: OptionalPartial<Cache<T, QP, QR, MP, MR>, 'options' | 'queries' | 'mutations'>
 ) => {
   const abortControllers = new WeakMap<Store, Record<Key, AbortController>>()
 
   // provide all optional fields
 
-  cache.options ??= {} as CacheOptions
-  cache.options.logsEnabled ??= false
-  cache.options.validateFunctionArguments ??= isDev
-  cache.queries ??= {} as Cache<T, QP, QR, MP, MR>['queries']
-  cache.mutations ??= {} as Cache<T, QP, QR, MP, MR>['mutations']
+  partialCache.options ??= {} as CacheOptions
+  partialCache.options.logsEnabled ??= false
+  partialCache.options.validateFunctionArguments ??= IS_DEV
+  partialCache.queries ??= {} as Cache<T, QP, QR, MP, MR>['queries']
+  partialCache.mutations ??= {} as Cache<T, QP, QR, MP, MR>['mutations']
   // @ts-expect-error for testing
-  cache.abortControllers = abortControllers
+  partialCache.abortControllers = abortControllers
 
-  const nonPartialCache = cache as Cache<T, QP, QR, MP, MR>
+  const cache = partialCache as Cache<T, QP, QR, MP, MR>
 
   // make selectors
 
   const entitiesSelector = (state: unknown) => {
-    return nonPartialCache.cacheStateSelector(state).entities
+    return cache.cacheStateSelector(state).entities
   }
 
-  const enitityMapSelectorByTypename = Object.keys(cache.typenames).reduce((result, x: keyof T) => {
-    result[x] = (state: unknown) => nonPartialCache.cacheStateSelector(state).entities[x]
-    return result
-  }, {} as {[K in keyof T]: (state: unknown) => EntitiesMap<T>[K]})
+  const enitityMapSelectorByTypename = Object.keys(partialCache.typenames).reduce(
+    (result, x: keyof T) => {
+      result[x] = (state: unknown) => cache.cacheStateSelector(state).entities[x]
+      return result
+    },
+    {} as {[K in keyof T]: (state: unknown) => EntitiesMap<T>[K]}
+  )
 
   return {
-    cache: nonPartialCache,
+    cache,
     /** Reducer of the cache, should be added to redux store. */
     reducer: createCacheReducer<T, QP, QR, MP, MR>(
-      nonPartialCache.typenames,
-      nonPartialCache.queries,
-      nonPartialCache.mutations,
-      nonPartialCache.options
+      cache.typenames,
+      cache.queries,
+      cache.mutations,
+      cache.options
     ),
     actions: {
       /** Updates query state, and optionally merges entity changes in a single action. */
-      setQueryStateAndEntities: setQueryStateAndEntities as <K extends keyof QR>(
-        ...args: Parameters<typeof setQueryStateAndEntities<T, QR, K>>
-      ) => ReturnType<typeof setQueryStateAndEntities<T, QR, K>>,
+      updateQueryStateAndEntities: updateQueryStateAndEntities as <K extends keyof QR>(
+        ...args: Parameters<typeof updateQueryStateAndEntities<T, QR, K>>
+      ) => ReturnType<typeof updateQueryStateAndEntities<T, QR, K>>,
 
       /** Updates mutation state, and optionally merges entity changes in a single action. */
-      setMutationStateAndEntities: setMutationStateAndEntities as <K extends keyof MR>(
-        ...args: Parameters<typeof setMutationStateAndEntities<T, MR, K>>
-      ) => ReturnType<typeof setMutationStateAndEntities<T, MR, K>>,
+      updateMutationStateAndEntities: updateMutationStateAndEntities as <K extends keyof MR>(
+        ...args: Parameters<typeof updateMutationStateAndEntities<T, MR, K>>
+      ) => ReturnType<typeof updateMutationStateAndEntities<T, MR, K>>,
 
       /** Merge EntityChanges to the state. */
       mergeEntityChanges: mergeEntityChanges as typeof mergeEntityChanges<T>,
+
+      /** Clear states for provided query keys and cache keys.
+       * If cache key for query key is not provided, the whole state for query key is cleared. */
+      clearQueryState: clearQueryState as <K extends keyof QR>(
+        ...args: Parameters<typeof clearQueryState<QR, K>>
+      ) => ReturnType<typeof clearQueryState<QR, K>>,
+
+      /** Clear states for provided mutation keys. */
+      clearMutationState: clearMutationState as <K extends keyof MR>(
+        ...args: Parameters<typeof clearMutationState<MR, K>>
+      ) => ReturnType<typeof clearMutationState<MR, K>>,
     },
     selectors: {
+      /** Select all entities from the state. */
       entitiesSelector,
+      /** Select all entities of provided typename. */
       entitiesByTypenameSelector: <TN extends keyof T>(typename: TN) => {
         return enitityMapSelectorByTypename[typename]
       },
@@ -96,20 +114,13 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
               type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
               const {query: queryKey, params} = options
-              const getCacheKey =
-                nonPartialCache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
+              const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
               // @ts-expect-error fix later
               const cacheKey = getCacheKey(params)
 
-              return queryImpl(
-                'query',
-                true,
-                store,
-                nonPartialCache,
-                queryKey,
-                cacheKey,
-                params
-              ) as Promise<QueryResult<R>>
+              return queryImpl('query', true, store, cache, queryKey, cacheKey, params) as Promise<
+                QueryResult<R>
+              >
             },
             mutate: <MK extends keyof (MP & MR)>(options: {
               mutation: MK
@@ -121,7 +132,7 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
                 'mutate',
                 true,
                 store,
-                nonPartialCache,
+                cache,
                 options.mutation,
                 options.params,
                 abortControllers
@@ -135,12 +146,12 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
       /** Fetches query when params change and subscribes to query state. */
       useQuery: <QK extends keyof (QP & QR)>(
         options: Parameters<typeof useQuery<T, QP, QR, MP, MR, QK>>[1]
-      ) => useQuery(nonPartialCache, options),
+      ) => useQuery(cache, options),
 
       /** Subscribes to provided mutation state and provides mutate function. */
       useMutation: <MK extends keyof (MP & MR)>(
         options: Parameters<typeof useMutation<T, MP, MR, MK>>[1]
-      ) => useMutation(nonPartialCache, options, abortControllers),
+      ) => useMutation(cache, options, abortControllers),
 
       /** Selects entity by id and subscribes to the changes. */
       useSelectEntityById: <K extends keyof T>(
@@ -148,7 +159,7 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
         typename: K
       ): T[K] | undefined => {
         return useSelector((state) =>
-          id == null ? undefined : nonPartialCache.cacheStateSelector(state).entities[typename][id]
+          id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id]
         )
       },
     },
@@ -157,7 +168,7 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
         entities: Parameters<typeof applyEntityChanges<T>>[0],
         changes: Parameters<typeof applyEntityChanges<T>>[1]
       ) => {
-        return applyEntityChanges<T>(entities, changes, nonPartialCache.options)
+        return applyEntityChanges<T>(entities, changes, cache.options)
       },
     },
   }

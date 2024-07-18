@@ -1,7 +1,6 @@
-import {EntitiesMap} from '../..'
-import {TestTypenames} from '../redux/cache'
-import {createReduxStore} from '../redux/store'
-import {Bank, User} from './types'
+import type {EntitiesMap} from '../..'
+import type {TestTypenames} from '../redux/cache'
+import type {Bank, User} from './types'
 
 // event log
 
@@ -19,8 +18,6 @@ export const assertEventLog = (log: string[]) => {
 export const clearEventLog = () => (eventLog.length = 0)
 
 // mocks
-
-export const emptyState = createReduxStore(false).getState()
 
 export const generateTestUser = (id: number, full = true, nameSuffix = ''): User => {
   const user: User = {
