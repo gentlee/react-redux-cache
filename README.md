@@ -45,7 +45,13 @@ export const {
   hooks: {useClient, useMutation, useQuery, useSelectEntityById},
   // Actions, selectors and utils may be not used at all
   selectors: {entitiesSelector, entitiesByTypenameSelector},
-  actions: {updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges},
+  actions: {
+    updateQueryStateAndEntities,
+    updateMutationStateAndEntities,
+    mergeEntityChanges,
+    clearQueryState,
+    clearMutationState,
+  },
   utils: {applyEntityChanges},
 } = createCache({
   // This selector should return the cache state based on the path to its reducer.
