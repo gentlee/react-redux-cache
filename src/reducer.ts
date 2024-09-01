@@ -1,24 +1,19 @@
-import {
-  clearMutationState,
-  clearQueryState,
-  mergeEntityChanges,
-  updateMutationStateAndEntities,
-  updateQueryStateAndEntities,
-} from './actions'
+import {createActions} from './createActions'
 import type {Cache, Dict, EntitiesMap, QueryMutationState, Typenames} from './types'
 import {applyEntityChanges, DEFAULT_QUERY_MUTATION_STATE, log} from './utilsAndConstants'
 
-export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
-  ReturnType<typeof createCacheReducer<T, QP, QR, MP, MR>>
+export type ReduxCacheState<N extends string, T extends Typenames, QP, QR, MP, MR> = ReturnType<
+  ReturnType<typeof createCacheReducer<N, T, QP, QR, MP, MR>>
 >
 
 const EMPTY_QUERY_STATE = Object.freeze({})
 
-export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
-  typenames: Cache<T, QP, QR, MP, MR>['typenames'],
-  queries: Cache<T, QP, QR, MP, MR>['queries'],
-  mutations: Cache<T, QP, QR, MP, MR>['mutations'],
-  cacheOptions: Cache<T, QP, QR, MP, MR>['options']
+export const createCacheReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
+  actions: ReturnType<typeof createActions<N, T, QR, MR>>,
+  typenames: Cache<N, T, QP, QR, MP, MR>['typenames'],
+  queries: Cache<N, T, QP, QR, MP, MR>['queries'],
+  mutations: Cache<N, T, QP, QR, MP, MR>['mutations'],
+  cacheOptions: Cache<N, T, QP, QR, MP, MR>['options']
 ) => {
   const entitiesMap = {} as EntitiesMap<T>
   for (const key in typenames) {
@@ -48,17 +43,16 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
 
   return (
     state = initialState,
-    action: ReturnType<
-      | typeof updateQueryStateAndEntities<T, QR, keyof QR>
-      | typeof updateMutationStateAndEntities<T, MR, keyof MR>
-      | typeof mergeEntityChanges<T>
-      | typeof clearQueryState<QR, keyof QR>
-      | typeof clearMutationState<MR, keyof MR>
-    >
+    action: ReturnType<(typeof actions)[keyof typeof actions]>
   ): typeof initialState => {
     switch (action.type) {
-      case '@RRC/UPDATE_QUERY_STATE_AND_ENTITIES': {
-        const {queryKey, queryCacheKey, state: queryState, entityChagnes} = action
+      case actions.updateQueryStateAndEntities.type: {
+        const {
+          queryKey,
+          queryCacheKey,
+          state: queryState,
+          entityChagnes,
+        } = action as ReturnType<typeof actions.updateQueryStateAndEntities>
 
         const newEntities =
           entityChagnes && applyEntityChanges(state.entities, entityChagnes, cacheOptions)
@@ -82,8 +76,12 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
           },
         }
       }
-      case '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES': {
-        const {mutationKey, state: mutationState, entityChagnes} = action
+      case actions.updateMutationStateAndEntities.type: {
+        const {
+          mutationKey,
+          state: mutationState,
+          entityChagnes,
+        } = action as ReturnType<typeof actions.updateMutationStateAndEntities>
 
         const newEntities =
           entityChagnes && applyEntityChanges(state.entities, entityChagnes, cacheOptions)
@@ -104,15 +102,15 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
           },
         }
       }
-      case '@RRC/MERGE_ENTITY_CHANGES': {
-        const {changes} = action
+      case actions.mergeEntityChanges.type: {
+        const {changes} = action as ReturnType<typeof actions.mergeEntityChanges>
 
         const newEntities = applyEntityChanges(state.entities, changes, cacheOptions)
 
         return newEntities ? {...state, entities: newEntities} : state
       }
-      case '@RRC/CLEAR_QUERY_STATE': {
-        const {queryKeys} = action
+      case actions.clearQueryState.type: {
+        const {queryKeys} = action as ReturnType<typeof actions.clearQueryState>
         if (!queryKeys.length) {
           return state
         }
@@ -143,8 +141,8 @@ export const createCacheReducer = <T extends Typenames, QP, QR, MP, MR>(
           queries: newQueries,
         }
       }
-      case '@RRC/CLEAR_MUTATION_STATE': {
-        const {mutationKeys} = action
+      case actions.clearMutationState.type: {
+        const {mutationKeys} = action as ReturnType<typeof actions.clearMutationState>
 
         if (!mutationKeys.length) {
           return state

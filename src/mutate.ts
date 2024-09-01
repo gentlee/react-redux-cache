@@ -1,14 +1,23 @@
 import {Store} from 'redux'
 
-import {updateMutationStateAndEntities} from './actions'
-import {Cache, Key, MutationResult, Typenames} from './types'
+import type {ActionMap} from './createActions'
+import type {Cache, Key, MutationResult, Typenames} from './types'
 import {log} from './utilsAndConstants'
 
-export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends keyof (MP & MR)>(
+export const mutate = async <
+  N extends string,
+  T extends Typenames,
+  QP,
+  QR,
+  MP,
+  MR,
+  MK extends keyof (MP & MR)
+>(
   logTag: string,
   returnResult: boolean,
   store: Store,
-  cache: Cache<T, QP, QR, MP, MR>,
+  cache: Cache<N, T, QP, QR, MP, MR>,
+  {updateMutationStateAndEntities}: Pick<ActionMap<N, T, QR, MR>, 'updateMutationStateAndEntities'>,
   mutationKey: MK,
   params: MK extends keyof (MP | MR) ? MP[MK] : never,
   abortControllers: WeakMap<Store, Record<Key, AbortController>>
@@ -33,7 +42,7 @@ export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends key
       abortController.abort()
     } else {
       store.dispatch(
-        updateMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
+        updateMutationStateAndEntities(mutationKey as keyof MR, {
           loading: true,
           result: undefined,
         })
@@ -72,7 +81,7 @@ export const mutate = async <T extends Typenames, QP, QR, MP, MR, MK extends key
 
   if (error) {
     store.dispatch(
-      updateMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
+      updateMutationStateAndEntities(mutationKey as keyof MR, {
         error: error as Error,
         loading: false,
       })

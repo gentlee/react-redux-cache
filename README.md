@@ -54,9 +54,9 @@ export const {
   },
   utils: {applyEntityChanges},
 } = createCache({
-  // This selector should return the cache state based on the path to its reducer.
-  cacheStateSelector: (state) => state.cache,
-  // Typenames provide a mapping of all typenames to their entity types, which is needed for normalization.
+  // Used as prefix for actions and in default cacheStateSelector
+  name: 'cache',
+  // Typenames provide a mapping of all typenames to their entity types, which is needed for proper typing and normalization.
   // Empty objects with type casting can be used as values.
   typenames: {
     users: {} as User, // here `users` entities will have type `User`

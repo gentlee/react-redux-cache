@@ -1,12 +1,22 @@
 import {useCallback, useEffect, useMemo} from 'react'
 import {useSelector, useStore} from 'react-redux'
 
+import {ActionMap} from './createActions'
 import {query as queryImpl} from './query'
 import {Cache, QueryMutationState, Typenames, UseQueryOptions} from './types'
 import {DEFAULT_QUERY_MUTATION_STATE, defaultGetCacheKey, log} from './utilsAndConstants'
 
-export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
-  cache: Cache<T, QP, QR, MP, MR>,
+export const useQuery = <
+  N extends string,
+  T extends Typenames,
+  QP,
+  QR,
+  MP,
+  MR,
+  QK extends keyof (QP & QR)
+>(
+  cache: Cache<N, T, QP, QR, MP, MR>,
+  actions: Pick<ActionMap<N, T, QR, MR>, 'updateQueryStateAndEntities'>,
   options: UseQueryOptions<T, QP, QR, MP, MR, QK>
 ) => {
   type P = QK extends keyof (QP | QR) ? QP[QK] : never
@@ -47,7 +57,7 @@ export const useQuery = <T extends Typenames, QP, QR, MP, MR, QK extends keyof (
   const hasResultFromSelector = resultFromSelector !== undefined
 
   const fetch = useCallback(async () => {
-    await queryImpl('useQuery.fetch', false, store, cache, queryKey, cacheKey, params)
+    await queryImpl('useQuery.fetch', false, store, cache, actions, queryKey, cacheKey, params)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, queryKey, cacheKey])
 

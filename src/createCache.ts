@@ -2,13 +2,7 @@ import {useMemo} from 'react'
 import {useSelector, useStore} from 'react-redux'
 import {Store} from 'redux'
 
-import {
-  clearMutationState,
-  clearQueryState,
-  mergeEntityChanges,
-  updateMutationStateAndEntities,
-  updateQueryStateAndEntities,
-} from './actions'
+import {createActions} from './createActions'
 import {mutate as mutateImpl} from './mutate'
 import {query as queryImpl} from './query'
 import {createCacheReducer} from './reducer'
@@ -30,9 +24,14 @@ import {applyEntityChanges, defaultGetCacheKey, IS_DEV} from './utilsAndConstant
 /**
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
  */
-export const createCache = <T extends Typenames, QP, QR, MP, MR>(
-  partialCache: OptionalPartial<Cache<T, QP, QR, MP, MR>, 'options' | 'queries' | 'mutations'>
+export const createCache = <N extends string, T extends Typenames, QP, QR, MP, MR>(
+  partialCache: OptionalPartial<
+    Cache<N, T, QP, QR, MP, MR>,
+    'options' | 'queries' | 'mutations' | 'cacheStateSelector'
+  >
 ) => {
+  type TypedCache = Cache<N, T, QP, QR, MP, MR>
+
   const abortControllers = new WeakMap<Store, Record<Key, AbortController>>()
 
   // provide all optional fields
@@ -40,12 +39,14 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
   partialCache.options ??= {} as CacheOptions
   partialCache.options.logsEnabled ??= false
   partialCache.options.validateFunctionArguments ??= IS_DEV
-  partialCache.queries ??= {} as Cache<T, QP, QR, MP, MR>['queries']
-  partialCache.mutations ??= {} as Cache<T, QP, QR, MP, MR>['mutations']
-  // @ts-expect-error for testing
+  partialCache.queries ??= {} as TypedCache['queries']
+  partialCache.mutations ??= {} as TypedCache['mutations']
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  partialCache.cacheStateSelector ??= (state: any) => state[cache.name]
+  // @ts-expect-error private field for testing
   partialCache.abortControllers = abortControllers
 
-  const cache = partialCache as Cache<T, QP, QR, MP, MR>
+  const cache = partialCache as TypedCache
 
   // make selectors
 
@@ -61,40 +62,19 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
     {} as {[K in keyof T]: (state: unknown) => EntitiesMap<T>[K]}
   )
 
+  const actions = createActions<N, T, QR, MR>(name)
+
   return {
     cache,
     /** Reducer of the cache, should be added to redux store. */
-    reducer: createCacheReducer<T, QP, QR, MP, MR>(
+    reducer: createCacheReducer<N, T, QP, QR, MP, MR>(
+      actions,
       cache.typenames,
       cache.queries,
       cache.mutations,
       cache.options
     ),
-    actions: {
-      /** Updates query state, and optionally merges entity changes in a single action. */
-      updateQueryStateAndEntities: updateQueryStateAndEntities as <K extends keyof QR>(
-        ...args: Parameters<typeof updateQueryStateAndEntities<T, QR, K>>
-      ) => ReturnType<typeof updateQueryStateAndEntities<T, QR, K>>,
-
-      /** Updates mutation state, and optionally merges entity changes in a single action. */
-      updateMutationStateAndEntities: updateMutationStateAndEntities as <K extends keyof MR>(
-        ...args: Parameters<typeof updateMutationStateAndEntities<T, MR, K>>
-      ) => ReturnType<typeof updateMutationStateAndEntities<T, MR, K>>,
-
-      /** Merge EntityChanges to the state. */
-      mergeEntityChanges: mergeEntityChanges as typeof mergeEntityChanges<T>,
-
-      /** Clear states for provided query keys and cache keys.
-       * If cache key for query key is not provided, the whole state for query key is cleared. */
-      clearQueryState: clearQueryState as <K extends keyof QR>(
-        ...args: Parameters<typeof clearQueryState<QR, K>>
-      ) => ReturnType<typeof clearQueryState<QR, K>>,
-
-      /** Clear states for provided mutation keys. */
-      clearMutationState: clearMutationState as <K extends keyof MR>(
-        ...args: Parameters<typeof clearMutationState<MR, K>>
-      ) => ReturnType<typeof clearMutationState<MR, K>>,
-    },
+    actions,
     selectors: {
       /** Select all entities from the state. */
       entitiesSelector,
@@ -118,9 +98,16 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
               // @ts-expect-error fix later
               const cacheKey = getCacheKey(params)
 
-              return queryImpl('query', true, store, cache, queryKey, cacheKey, params) as Promise<
-                QueryResult<R>
-              >
+              return queryImpl(
+                'query',
+                true,
+                store,
+                cache,
+                actions,
+                queryKey,
+                cacheKey,
+                params
+              ) as Promise<QueryResult<R>>
             },
             mutate: <MK extends keyof (MP & MR)>(options: {
               mutation: MK
@@ -133,6 +120,7 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
                 true,
                 store,
                 cache,
+                actions,
                 options.mutation,
                 options.params,
                 abortControllers
@@ -145,13 +133,13 @@ export const createCache = <T extends Typenames, QP, QR, MP, MR>(
 
       /** Fetches query when params change and subscribes to query state. */
       useQuery: <QK extends keyof (QP & QR)>(
-        options: Parameters<typeof useQuery<T, QP, QR, MP, MR, QK>>[1]
-      ) => useQuery(cache, options),
+        options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[1]
+      ) => useQuery(cache, actions, options),
 
       /** Subscribes to provided mutation state and provides mutate function. */
       useMutation: <MK extends keyof (MP & MR)>(
-        options: Parameters<typeof useMutation<T, MP, MR, MK>>[1]
-      ) => useMutation(cache, options, abortControllers),
+        options: Parameters<typeof useMutation<N, T, MP, MR, MK>>[1]
+      ) => useMutation(cache, actions, options, abortControllers),
 
       /** Selects entity by id and subscribes to the changes. */
       useSelectEntityById: <K extends keyof T>(

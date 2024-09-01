@@ -11,6 +11,7 @@ export type TestTypenames = {
 export type ReduxState = ReturnType<typeof reducer>
 
 export const {
+  name,
   cache,
   reducer,
   actions: {
@@ -24,7 +25,7 @@ export const {
   hooks: {useClient, useMutation, useQuery, useSelectEntityById},
   utils: {applyEntityChanges},
 } = createCache({
-  cacheStateSelector: (state) => state,
+  name: 'cache',
   options: {
     logsEnabled: false,
     validateFunctionArguments: true,

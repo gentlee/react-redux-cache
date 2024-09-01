@@ -1,14 +1,23 @@
 import {Store} from 'redux'
 
-import {updateQueryStateAndEntities} from './actions'
+import type {ActionMap} from './createActions'
 import type {Cache, Key, QueryResult, Typenames} from './types'
 import {log} from './utilsAndConstants'
 
-export const query = async <T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
+export const query = async <
+  N extends string,
+  T extends Typenames,
+  QP,
+  QR,
+  MP,
+  MR,
+  QK extends keyof (QP & QR)
+>(
   logTag: string,
   returnResult: boolean,
   store: Store,
-  cache: Cache<T, QP, QR, MP, MR>,
+  cache: Cache<N, T, QP, QR, MP, MR>,
+  {updateQueryStateAndEntities}: Pick<ActionMap<N, T, QR, MR>, 'updateQueryStateAndEntities'>,
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never
@@ -34,7 +43,7 @@ export const query = async <T extends Typenames, QP, QR, MP, MR, QK extends keyo
   }
 
   store.dispatch(
-    updateQueryStateAndEntities<T, QR, keyof QR>(queryKey as keyof QR, cacheKey, {
+    updateQueryStateAndEntities(queryKey as keyof QR, cacheKey, {
       loading: true,
     })
   )
@@ -50,7 +59,7 @@ export const query = async <T extends Typenames, QP, QR, MP, MR, QK extends keyo
     )
   } catch (error) {
     store.dispatch(
-      updateQueryStateAndEntities<T, QR, keyof QR>(queryKey as keyof QR, cacheKey, {
+      updateQueryStateAndEntities(queryKey as keyof QR, cacheKey, {
         error: error as Error,
         loading: false,
       })

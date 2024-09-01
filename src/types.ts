@@ -26,7 +26,16 @@ export type EntityChanges<T extends Typenames> = {
 /** Record of typename and its corresponding entity type */
 export type Typenames = Record<string, object>
 
-export type Cache<T extends Typenames, QP, QR, MP, MR> = {
+export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
+  /** Used as prefix for actions and in default cacheStateSelector. */
+  name: N
+  /** Mapping of all typenames to their entity types, which is needed for proper typing and normalization.
+   * Empty objects with type casting can be used as values.
+   * @example
+   * typenames: {
+      users: {} as User, // here `users` entities will have type `User`
+      banks: {} as Bank,
+  } */
   typenames: T
   queries: {
     [QK in keyof (QP & QR)]: QK extends keyof (QP | QR)
@@ -34,7 +43,7 @@ export type Cache<T extends Typenames, QP, QR, MP, MR> = {
           T,
           QP[QK],
           QR[QK],
-          ReturnType<ReturnType<typeof createCacheReducer<T, QP, QR, MP, MR>>>
+          ReturnType<ReturnType<typeof createCacheReducer<T, QP, QR, MP, MR>>['reducer']>
         >
       : never
   }
@@ -42,7 +51,7 @@ export type Cache<T extends Typenames, QP, QR, MP, MR> = {
     [MK in keyof (MP & MR)]: MK extends keyof (MP | MR) ? MutationInfo<T, MP[MK], MR[MK]> : never
   }
   options: CacheOptions
-  /** Returns cache state from redux root state. */
+  /** Should return cache state from redux root state. Default implementation returns `state[name]`. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cacheStateSelector: (state: any) => ReduxCacheState<T, QP, QR, MP, MR>
 }

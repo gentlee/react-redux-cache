@@ -2,13 +2,20 @@ import {useMemo} from 'react'
 import {useSelector, useStore} from 'react-redux'
 import {Store} from 'redux'
 
-import {updateMutationStateAndEntities} from './actions'
+import {ActionMap} from './createActions'
 import {mutate as mutateImpl} from './mutate'
 import {Cache, Key, QueryMutationState, Typenames} from './types'
 import {DEFAULT_QUERY_MUTATION_STATE, log} from './utilsAndConstants'
 
-export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & MR)>(
-  cache: Cache<T, unknown, unknown, MP, MR>,
+export const useMutation = <
+  N extends string,
+  T extends Typenames,
+  MP,
+  MR,
+  MK extends keyof (MP & MR)
+>(
+  cache: Cache<N, T, unknown, unknown, MP, MR>,
+  actions: Pick<ActionMap<N, T, unknown, MR>, 'updateMutationStateAndEntities'>,
   options: {
     mutation: MK
   },
@@ -40,6 +47,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
           false,
           store,
           cache,
+          actions,
           mutationKey,
           params,
           abortControllers
@@ -53,7 +61,7 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
         }
         abortController.abort()
         store.dispatch(
-          updateMutationStateAndEntities<T, MR, keyof MR>(mutationKey as keyof MR, {
+          actions.updateMutationStateAndEntities(mutationKey as keyof MR, {
             loading: false,
           })
         )
@@ -63,7 +71,6 @@ export const useMutation = <T extends Typenames, MP, MR, MK extends keyof (MP & 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mutationKey, store])
 
-  // @ts-expect-error fix later
   const mutationState: QueryMutationState<R> =
     useSelector(mutationStateSelector) ?? DEFAULT_QUERY_MUTATION_STATE
 

@@ -1,45 +1,11 @@
 import {createCache} from '../createCache'
 
 test('createCache returns correct result', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const cacheStateSelector = (state: any) => state
-  const typenames = {
-    users: {} as {id: number},
-  }
-
-  const getUser = async (id: number) => ({
-    result: id,
-    merge: {
-      [id]: {id},
-    },
-  })
-
-  const updateUser = async (id: number) => ({
-    result: id,
-  })
-
-  const {cache, reducer, actions, selectors, hooks} = createCache({
-    cacheStateSelector,
-    options: {
-      logsEnabled: false,
-      validateFunctionArguments: true,
-    },
-    typenames,
-    queries: {
-      getUser: {
-        query: getUser,
-      },
-    },
-    mutations: {
-      updateUser: {
-        mutation: updateUser,
-      },
-    },
-  })
+  const {cache, actions, hooks, reducer, selectors, utils} = createTestingCache()
 
   expect(cache).toStrictEqual({
     abortControllers: new WeakMap(),
-    cacheStateSelector,
+    cacheStateSelector: cache.cacheStateSelector,
     options: {
       logsEnabled: false,
       validateFunctionArguments: true,
@@ -81,4 +47,73 @@ test('createCache returns correct result', () => {
   expect(hooks.useMutation).toBeDefined()
   expect(hooks.useSelectEntityById).toBeDefined()
   expect(hooks.useClient).toBeDefined()
+
+  expect(utils.applyEntityChanges).toBeDefined()
 })
+
+test('supports multiple cache reducers', () => {
+  const {
+    reducer,
+    actions: {mergeEntityChanges},
+  } = createTestingCache()
+
+  const {
+    actions: {mergeEntityChanges: mergeEntityChangesInSecondCache},
+  } = createTestingCache()
+
+  const state = reducer(
+    undefined,
+    mergeEntityChanges({
+      entities: {
+        users: {1: {id: 1}},
+      },
+    })
+  )
+  // here reducer should not handle action from second cache - should not remove user
+  const stateAfterSecondCacheAction = reducer(
+    state,
+    mergeEntityChangesInSecondCache({
+      remove: {
+        users: [1],
+      },
+    })
+  )
+
+  expect(stateAfterSecondCacheAction).toBe(state)
+})
+
+const typenames = {
+  users: {} as {id: number},
+}
+
+const getUser = async (id: number) => ({
+  result: id,
+  merge: {
+    [id]: {id},
+  },
+})
+
+const updateUser = async (id: number) => ({
+  result: id,
+})
+
+const createTestingCache = () => {
+  return createCache({
+    name: 'cache',
+    options: {
+      logsEnabled: false,
+      validateFunctionArguments: true,
+    },
+    typenames,
+    queries: {
+      getUser: {
+        query: getUser,
+      },
+    },
+    mutations: {
+      updateUser: {
+        mutation: updateUser,
+      },
+    },
+  })
+}

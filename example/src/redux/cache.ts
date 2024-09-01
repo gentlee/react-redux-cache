@@ -15,7 +15,7 @@ export const {
   selectors: {entitiesSelector, entitiesByTypenameSelector},
   hooks: {useClient, useMutation, useQuery, useSelectEntityById},
 } = createCache({
-  cacheStateSelector: (state) => state,
+  name: 'cache',
   typenames: {
     users: {} as User,
     banks: {} as Bank,
