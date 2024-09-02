@@ -9,13 +9,10 @@ export {
 // Backlog
 
 // ! high
-// screenshot of redux state to README
-// optimistic response
-// cover with tests
-// try use skip for refreshing strategy?
 // add example without normalization
-// make query key / cache key difference more clear in the docs
-// support multiple caches = reducers
+// try use skip for refreshing strategy?
+// optimistic response
+// make query key / cache key difference more clear in the docs, or remove queryKey at all?
 
 // ! medium
 // make named caches to produce named hooks, actions etc (same as slices in RTK)?
