@@ -4,7 +4,7 @@ import storage from 'redux-persist/lib/storage'
 
 import {reducer} from './cache'
 
-export const createReduxStore = (name: string, persistEnabled: boolean, loggerEnabled: boolean) => {
+export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean) => {
   function stringifyReplacer(key: string, value: unknown) {
     return key === 'loading' || key === 'error' ? undefined : value
   }
