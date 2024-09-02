@@ -1,6 +1,6 @@
 import {EntitiesMap} from 'react-redux-cache'
 
-import {TestTypenames} from '../redux/cache'
+import {Typenames} from '../redux/cache'
 import {Bank, User} from './types'
 
 export const API_TIMEOUT = 1000
@@ -27,7 +27,7 @@ export const generateTestBank = (id: string, nameSuffix = ''): Bank => {
   }
 }
 
-export const generateTestEntitiesMap = (size: number, full = true): EntitiesMap<TestTypenames> => {
+export const generateTestEntitiesMap = (size: number, full = true): EntitiesMap<Typenames> => {
   const users = Array.from({length: size}, (_, i) => generateTestUser(i + 1, full))
   const banks = Array.from({length: size}, (_, i) => generateTestBank(String(i + 1)))
 

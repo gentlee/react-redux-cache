@@ -8030,10 +8030,10 @@ react-is@^18.0.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-18.2.0.tgz#199431eeaaa2e09f86427efbb4f1473edb47609b"
   integrity sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==
 
-react-redux-cache@0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/react-redux-cache/-/react-redux-cache-0.1.1.tgz#41b7636527fad8bbd90990a9f37d919756f8e037"
-  integrity sha512-dczI4vR1/3CiiXSyr2nH/DRoHNWr/oeUVngxZJblBCfqd/59oo3pd4kS0RlMcCLy6lihfNokyAEa62TWO8MNPw==
+react-redux-cache@0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/react-redux-cache/-/react-redux-cache-0.2.0.tgz#5a9fc482a903f04e0fc41feab85b61e38471f166"
+  integrity sha512-JoF50VsOWomYTLAruB1dCHKAZ5XTupa3dLkLsrIwP8MkP3RUF0IwX91ShL6NkuO+eDDhPAMX3HmUNf8t5urhXQ==
 
 react-redux@8.0.5:
   version "8.0.5"
