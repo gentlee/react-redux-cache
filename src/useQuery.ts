@@ -11,13 +11,13 @@ export const useQuery = <
   T extends Typenames,
   QP,
   QR,
-  MP,
+  MP, // TODO remove?
   MR,
   QK extends keyof (QP & QR)
 >(
   cache: Cache<N, T, QP, QR, MP, MR>,
   actions: Pick<ActionMap<N, T, QR, MR>, 'updateQueryStateAndEntities'>,
-  options: UseQueryOptions<T, QP, QR, MP, MR, QK>
+  options: UseQueryOptions<T, QP, QR, MR, QK>
 ) => {
   type P = QK extends keyof (QP | QR) ? QP[QK] : never
   type R = QK extends keyof (QP | QR) ? QR[QK] : never

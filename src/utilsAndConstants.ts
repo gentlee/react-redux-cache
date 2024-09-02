@@ -1,6 +1,6 @@
 import type {CacheOptions, EntitiesMap, EntityChanges, Key, Typenames} from './types'
 
-export const PACKAGE_SHORT_NAME = 'RRC'
+export const PACKAGE_SHORT_NAME = 'rrc'
 
 export const IS_DEV: boolean = (() => {
   try {

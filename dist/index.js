@@ -29,6 +29,7 @@ Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, 
 // try use skip for refreshing strategy?
 // add example without normalization
 // make query key / cache key difference more clear in the docs
+// support multiple caches = reducers
 // ! medium
 // make named caches to produce named hooks, actions etc (same as slices in RTK)?
 // allow multiple mutation with same keys?

@@ -6,12 +6,7 @@ import {getUser, getUsers} from '../testing/api/mocks'
 import {assertEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
 import {EMPTY_STATE} from '../testing/constants'
 import {GET_USERS_ONE_PAGE_STATE} from '../testing/constants'
-import {
-  clearQueryState,
-  updateQueryStateAndEntities,
-  useClient,
-  useQuery,
-} from '../testing/redux/cache'
+import {updateQueryStateAndEntities, useClient, useQuery} from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
 import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
 import {DEFAULT_QUERY_MUTATION_STATE, defaultGetCacheKey} from '../utilsAndConstants'
@@ -48,7 +43,7 @@ test('fetch if no cache', async () => {
   ])
 
   expect(getUsers).toBeCalledTimes(1)
-  expect(store.getState()).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
+  expect(store.getState().cache).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
 })
 
 const setCacheAndMountAndCheckNoRefetch = async () => {
@@ -73,7 +68,7 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
   assertEventLog(['render: ' + JSON.stringify({items: [0, 1, 2], page: 1})])
 
   expect(getUsers).toBeCalledTimes(0)
-  expect(store.getState()).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
+  expect(store.getState().cache).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
 }
 
 test('no fetch on mount if has cache', setCacheAndMountAndCheckNoRefetch)
@@ -125,7 +120,7 @@ test.each(['getUser', 'getUserNoSelector'] as const)(
     assertEventLog(['render: undefined', 'render: loading', 'render: 2'])
 
     expect(getUser).toBeCalledTimes(3)
-    expect(store.getState()).toStrictEqual({
+    expect(store.getState().cache).toStrictEqual({
       ...EMPTY_STATE,
       entities: generateTestEntitiesMap(3),
       queries: {
@@ -162,7 +157,7 @@ test('no refetch on params change with custom cache key', async () => {
   assertEventLog(['render: ' + JSON.stringify({items: [0, 1, 2], page: 1})])
 
   expect(getUsers).toBeCalledTimes(0)
-  expect(store.getState()).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
+  expect(store.getState().cache).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
 })
 
 test.each([
@@ -278,7 +273,7 @@ test.each([
   await act(advanceHalfApiTimeout)
 
   expect(getUser).toBeCalledTimes(1)
-  expect(store.getState()).toStrictEqual({
+  expect(store.getState().cache).toStrictEqual({
     ...EMPTY_STATE,
     entities: generateTestEntitiesMap(1),
     queries: {

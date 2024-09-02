@@ -1,4 +1,4 @@
-import { createCacheReducer, ReduxCacheState } from './reducer';
+import type { ReduxCacheState } from './reducer';
 export type Key = string | number | symbol;
 export type Dict<T> = Record<Key, T>;
 export type OptionalPartial<T, K extends keyof T> = Partial<{
@@ -17,17 +17,26 @@ export type EntityChanges<T extends Typenames> = {
 };
 /** Record of typename and its corresponding entity type */
 export type Typenames = Record<string, object>;
-export type Cache<T extends Typenames, QP, QR, MP, MR> = {
+export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
+    /** Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state. */
+    name: N;
+    /** Mapping of all typenames to their entity types, which is needed for proper typing and normalization.
+     * Empty objects with type casting can be used as values.
+     * @example
+     * typenames: {
+        users: {} as User, // here `users` entities will have type `User`
+        banks: {} as Bank,
+    } */
     typenames: T;
     queries: {
-        [QK in keyof (QP & QR)]: QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK], ReturnType<ReturnType<typeof createCacheReducer<T, QP, QR, MP, MR>>>> : never;
+        [QK in keyof (QP & QR)]: QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QR, MR>> : never;
     };
     mutations: {
         [MK in keyof (MP & MR)]: MK extends keyof (MP | MR) ? MutationInfo<T, MP[MK], MR[MK]> : never;
     };
     options: CacheOptions;
-    /** Returns cache state from redux root state. */
-    cacheStateSelector: (state: any) => ReduxCacheState<T, QP, QR, MP, MR>;
+    /** Should return cache state from redux root state. Default implementation returns `state[name]`. */
+    cacheStateSelector: (state: any) => ReduxCacheState<T, QR, MR>;
 };
 export type CacheOptions = {
     /**
@@ -73,11 +82,11 @@ export type QueryInfo<T extends Typenames, P, R, S> = {
      * */
     getCacheKey?: (params?: P) => Key;
 };
-export type UseQueryOptions<T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)> = {
+export type UseQueryOptions<T extends Typenames, QP, QR, MR, QK extends keyof (QP & QR)> = {
     query: QK;
     params: QK extends keyof (QP | QR) ? QP[QK] : never;
     skip?: boolean;
-} & Pick<QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QP, QR, MP, MR>> : never, 'cachePolicy' | 'mergeResults' | 'getCacheKey'>;
+} & Pick<QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QR, MR>> : never, 'cachePolicy' | 'mergeResults' | 'getCacheKey'>;
 /**
  * @param cache-first for each params key fetch is not called if cache exists.
  * @param cache-and-fetch for each params key result is taken from cache and fetch is called.
@@ -92,7 +101,7 @@ export type QueryResult<R> = {
     cancelled?: true;
     result?: R;
 };
-export type QueryOptions<T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)> = Omit<UseQueryOptions<T, QP, QR, MP, MR, QK>, 'skip'>;
+export type QueryOptions<T extends Typenames, QP, QR, MR, QK extends keyof (QP & QR)> = Omit<UseQueryOptions<T, QP, QR, MR, QK>, 'skip'>;
 export type Mutation<T extends Typenames, P, R> = (params: P, 
 /** Signal is aborted for current mutation when the same mutation was called once again. */
 abortSignal: AbortSignal) => Promise<MutationResponse<T, R>>;

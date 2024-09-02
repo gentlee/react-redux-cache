@@ -41,6 +41,7 @@ All typenames, queries and mutations should be passed while initializing the cac
 #### cache.ts
 ```typescript
 export const {
+  cache,
   reducer,
   hooks: {useClient, useMutation, useQuery, useSelectEntityById},
   // Actions, selectors and utils may be not used at all
@@ -54,7 +55,7 @@ export const {
   },
   utils: {applyEntityChanges},
 } = createCache({
-  // Used as prefix for actions and in default cacheStateSelector
+  // Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state.
   name: 'cache',
   // Typenames provide a mapping of all typenames to their entity types, which is needed for proper typing and normalization.
   // Empty objects with type casting can be used as values.
@@ -74,11 +75,12 @@ export const {
 ```
 #### store.ts
 ```typescript
-// Create store as usual, passing the new cache reducer
-// under the key, previously used in cacheStateSelector
+// Create store as usual, passing the new cache reducer under the name of the cache.
+// If some other redux structure is needed, provide custom cacheStateSelector when creating cache.
 const store = configureStore({
   reducer: {
-    cache: reducer,
+    [cache.name]: reducer,
+    ...
   }
 })
 ```

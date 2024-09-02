@@ -1,6 +1,6 @@
 // Common
 
-import {createCacheReducer, ReduxCacheState} from './reducer'
+import type {ReduxCacheState} from './reducer'
 
 export type Key = string | number | symbol
 
@@ -27,7 +27,7 @@ export type EntityChanges<T extends Typenames> = {
 export type Typenames = Record<string, object>
 
 export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
-  /** Used as prefix for actions and in default cacheStateSelector. */
+  /** Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state. */
   name: N
   /** Mapping of all typenames to their entity types, which is needed for proper typing and normalization.
    * Empty objects with type casting can be used as values.
@@ -39,12 +39,7 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
   typenames: T
   queries: {
     [QK in keyof (QP & QR)]: QK extends keyof (QP | QR)
-      ? QueryInfo<
-          T,
-          QP[QK],
-          QR[QK],
-          ReturnType<ReturnType<typeof createCacheReducer<T, QP, QR, MP, MR>>['reducer']>
-        >
+      ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QR, MR>>
       : never
   }
   mutations: {
@@ -53,7 +48,7 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
   options: CacheOptions
   /** Should return cache state from redux root state. Default implementation returns `state[name]`. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cacheStateSelector: (state: any) => ReduxCacheState<T, QP, QR, MP, MR>
+  cacheStateSelector: (state: any) => ReduxCacheState<T, QR, MR>
 }
 
 export type CacheOptions = {
@@ -106,14 +101,12 @@ export type QueryInfo<T extends Typenames, P, R, S> = {
   getCacheKey?: (params?: P) => Key
 }
 
-export type UseQueryOptions<T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)> = {
+export type UseQueryOptions<T extends Typenames, QP, QR, MR, QK extends keyof (QP & QR)> = {
   query: QK
   params: QK extends keyof (QP | QR) ? QP[QK] : never
   skip?: boolean
 } & Pick<
-  QK extends keyof (QP | QR)
-    ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QP, QR, MP, MR>>
-    : never,
+  QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QR, MR>> : never,
   'cachePolicy' | 'mergeResults' | 'getCacheKey'
 >
 
@@ -134,8 +127,8 @@ export type QueryResult<R> = {
   result?: R
 }
 
-export type QueryOptions<T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)> = Omit<
-  UseQueryOptions<T, QP, QR, MP, MR, QK>,
+export type QueryOptions<T extends Typenames, QP, QR, MR, QK extends keyof (QP & QR)> = Omit<
+  UseQueryOptions<T, QP, QR, MR, QK>,
   'skip'
 >
 

@@ -11,7 +11,6 @@ export type TestTypenames = {
 export type ReduxState = ReturnType<typeof reducer>
 
 export const {
-  name,
   cache,
   reducer,
   actions: {

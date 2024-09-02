@@ -10,9 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.query = void 0;
-const actions_1 = require("./actions");
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const query = (logTag, returnResult, store, cache, queryKey, cacheKey, params) => __awaiter(void 0, void 0, void 0, function* () {
+const query = (logTag, returnResult, store, cache, { updateQueryStateAndEntities }, queryKey, cacheKey, params) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const logsEnabled = cache.options.logsEnabled;
     const cacheStateSelector = cache.cacheStateSelector;
@@ -28,7 +27,7 @@ const query = (logTag, returnResult, store, cache, queryKey, cacheKey, params) =
             });
         return returnResult ? { cancelled: true } : undefined;
     }
-    store.dispatch((0, actions_1.updateQueryStateAndEntities)(queryKey, cacheKey, {
+    store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, {
         loading: true,
     }));
     logsEnabled && (0, utilsAndConstants_1.log)(`${logTag} started`, { queryStateOnStart, params, cacheKey });
@@ -40,7 +39,7 @@ const query = (logTag, returnResult, store, cache, queryKey, cacheKey, params) =
         params);
     }
     catch (error) {
-        store.dispatch((0, actions_1.updateQueryStateAndEntities)(queryKey, cacheKey, {
+        store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, {
             error: error,
             loading: false,
         }));
@@ -57,7 +56,7 @@ const query = (logTag, returnResult, store, cache, queryKey, cacheKey, params) =
                 (_a = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _a === void 0 ? void 0 : _a.result, response, params)
                 : response.result,
     };
-    store.dispatch((0, actions_1.updateQueryStateAndEntities)(queryKey, cacheKey, newState, response));
+    store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, newState, response));
     // @ts-expect-error fix types
     return returnResult
         ? {

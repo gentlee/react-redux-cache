@@ -8,7 +8,7 @@ export type ActionMap<N extends string, T extends Typenames, QR, MR> = ReturnTyp
 export const createActions = <N extends string, T extends Typenames, QR, MR>(name: N) => {
   const actionPrefix = `@${PACKAGE_SHORT_NAME}/${name}/` as const
 
-  const updateQueryStateAndEntitiesType = `${actionPrefix}UPDATE_QUERY_STATE_AND_ENTITIES` as const
+  const updateQueryStateAndEntitiesType = `${actionPrefix}updateQueryStateAndEntities` as const
   /** Updates query state, and optionally merges entity changes in a single action. */
   const updateQueryStateAndEntities = <K extends keyof QR>(
     queryKey: K,
@@ -25,7 +25,7 @@ export const createActions = <N extends string, T extends Typenames, QR, MR>(nam
   updateQueryStateAndEntities.type = updateQueryStateAndEntitiesType
 
   const updateMutationStateAndEntitiesType =
-    `${actionPrefix}UPDATE_MUTATION_STATE_AND_ENTITIES` as const
+    `${actionPrefix}updateMutationStateAndEntities` as const
   /** Updates mutation state, and optionally merges entity changes in a single action. */
   const updateMutationStateAndEntities = <K extends keyof MR>(
     mutationKey: K,
@@ -39,7 +39,7 @@ export const createActions = <N extends string, T extends Typenames, QR, MR>(nam
   })
   updateMutationStateAndEntities.type = updateMutationStateAndEntitiesType
 
-  const mergeEntityChangesType = `${actionPrefix}MERGE_ENTITY_CHANGES` as const
+  const mergeEntityChangesType = `${actionPrefix}mergeEntityChanges` as const
   /** Merge EntityChanges to the state. */
   const mergeEntityChanges = (changes: EntityChanges<T>) => ({
     type: mergeEntityChangesType,
@@ -47,7 +47,7 @@ export const createActions = <N extends string, T extends Typenames, QR, MR>(nam
   })
   mergeEntityChanges.type = mergeEntityChangesType
 
-  const clearQueryStateType = `${actionPrefix}CLEAR_QUERY_STATE` as const
+  const clearQueryStateType = `${actionPrefix}clearQueryState` as const
   /** Clear states for provided query keys and cache keys.
    * If cache key for query key is not provided, the whole state for query key is cleared. */
   const clearQueryState = <K extends keyof QR>(queryKeys: {key: K; cacheKey?: Key}[]) => ({
@@ -56,7 +56,7 @@ export const createActions = <N extends string, T extends Typenames, QR, MR>(nam
   })
   clearQueryState.type = clearQueryStateType
 
-  const clearMutationStateType = `${actionPrefix}CLEAR_MUTATION_STATE` as const
+  const clearMutationStateType = `${actionPrefix}clearMutationState` as const
   /** Clear states for provided mutation keys. */
   const clearMutationState = <K extends keyof MR>(mutationKeys: K[]) => ({
     type: clearMutationStateType,

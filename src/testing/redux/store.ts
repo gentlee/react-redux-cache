@@ -1,7 +1,7 @@
 import {applyMiddleware, combineReducers, createStore, Middleware} from 'redux'
 
 import {logEvent} from '../api/utils'
-import {cache, name, reducer} from './cache'
+import {cache, reducer} from './cache'
 
 export const createReduxStore = (
   eventLogEnabled: boolean,
@@ -19,5 +19,5 @@ export const createReduxStore = (
     })
   }
 
-  return createStore(combineReducers({[name]: reducer}), applyMiddleware(...middlewares))
+  return createStore(combineReducers({[cache.name]: reducer}), applyMiddleware(...middlewares))
 }

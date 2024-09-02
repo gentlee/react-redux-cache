@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.applyEntityChanges = exports.log = exports.defaultGetCacheKey = exports.DEFAULT_QUERY_MUTATION_STATE = exports.IS_DEV = exports.PACKAGE_SHORT_NAME = void 0;
-exports.PACKAGE_SHORT_NAME = 'RRC';
+exports.PACKAGE_SHORT_NAME = 'rrc';
 exports.IS_DEV = (() => {
     try {
         // @ts-expect-error __DEV__ is only for React Native

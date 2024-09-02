@@ -71,6 +71,7 @@ export const useMutation = <
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mutationKey, store])
 
+  // @ts-expect-error fix later
   const mutationState: QueryMutationState<R> =
     useSelector(mutationStateSelector) ?? DEFAULT_QUERY_MUTATION_STATE
 

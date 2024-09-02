@@ -1,9 +1,13 @@
+import {createStore} from 'redux'
+
 import {createCache} from '../createCache'
+import {Cache, Typenames} from '../types'
 
 test('createCache returns correct result', () => {
-  const {cache, actions, hooks, reducer, selectors, utils} = createTestingCache()
+  const {cache, actions, hooks, reducer, selectors, utils} = createTestingCache('cache')
 
   expect(cache).toStrictEqual({
+    name: 'cache',
     abortControllers: new WeakMap(),
     cacheStateSelector: cache.cacheStateSelector,
     options: {
@@ -55,11 +59,11 @@ test('supports multiple cache reducers', () => {
   const {
     reducer,
     actions: {mergeEntityChanges},
-  } = createTestingCache()
+  } = createTestingCache('cache1')
 
   const {
     actions: {mergeEntityChanges: mergeEntityChangesInSecondCache},
-  } = createTestingCache()
+  } = createTestingCache('cache2')
 
   const state = reducer(
     undefined,
@@ -72,6 +76,7 @@ test('supports multiple cache reducers', () => {
   // here reducer should not handle action from second cache - should not remove user
   const stateAfterSecondCacheAction = reducer(
     state,
+    // @ts-expect-error for testing
     mergeEntityChangesInSecondCache({
       remove: {
         users: [1],
@@ -81,6 +86,19 @@ test('supports multiple cache reducers', () => {
 
   expect(stateAfterSecondCacheAction).toBe(state)
 })
+
+test('custom cacheStateSelector', () => {
+  const {
+    reducer,
+    selectors: {entitiesSelector},
+  } = createTestingCache('cache', (state) => state)
+  const store = createStore(reducer)
+
+  // cacheStateSelector is used in all selectors
+  expect(entitiesSelector(store.getState())).toBe(store.getState().entities)
+})
+
+// utils & constants
 
 const typenames = {
   users: {} as {id: number},
@@ -97,9 +115,12 @@ const updateUser = async (id: number) => ({
   result: id,
 })
 
-const createTestingCache = () => {
+const createTestingCache = <N extends string>(
+  name: N,
+  cacheStateSelector?: Cache<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateSelector']
+) => {
   return createCache({
-    name: 'cache',
+    name,
     options: {
       logsEnabled: false,
       validateFunctionArguments: true,
@@ -115,5 +136,6 @@ const createTestingCache = () => {
         mutation: updateUser,
       },
     },
+    cacheStateSelector,
   })
 }

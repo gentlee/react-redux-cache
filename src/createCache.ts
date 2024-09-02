@@ -62,16 +62,15 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
     {} as {[K in keyof T]: (state: unknown) => EntitiesMap<T>[K]}
   )
 
-  const actions = createActions<N, T, QR, MR>(name)
+  const actions = createActions<N, T, QR, MR>(cache.name)
 
   return {
     cache,
     /** Reducer of the cache, should be added to redux store. */
-    reducer: createCacheReducer<N, T, QP, QR, MP, MR>(
+    reducer: createCacheReducer<N, T, QR, MR>(
       actions,
       cache.typenames,
-      cache.queries,
-      cache.mutations,
+      Object.keys(cache.queries) as (keyof QR)[],
       cache.options
     ),
     actions,
@@ -89,7 +88,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
         const store = useStore()
         return useMemo(() => {
           const client = {
-            query: <QK extends keyof (QP & QR)>(options: QueryOptions<T, QP, QR, MP, MR, QK>) => {
+            query: <QK extends keyof (QP & QR)>(options: QueryOptions<T, QP, QR, MR, QK>) => {
               type P = QK extends keyof (QP | QR) ? QP[QK] : never
               type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
@@ -133,20 +132,21 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
 
       /** Fetches query when params change and subscribes to query state. */
       useQuery: <QK extends keyof (QP & QR)>(
-        options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[1]
+        options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[2]
       ) => useQuery(cache, actions, options),
 
       /** Subscribes to provided mutation state and provides mutate function. */
       useMutation: <MK extends keyof (MP & MR)>(
-        options: Parameters<typeof useMutation<N, T, MP, MR, MK>>[1]
+        options: Parameters<typeof useMutation<N, T, MP, MR, MK>>[2]
       ) => useMutation(cache, actions, options, abortControllers),
 
       /** Selects entity by id and subscribes to the changes. */
-      useSelectEntityById: <K extends keyof T>(
+      useSelectEntityById: <TN extends keyof T>(
         id: Key | null | undefined,
-        typename: K
-      ): T[K] | undefined => {
+        typename: TN
+      ): T[TN] | undefined => {
         return useSelector((state) =>
+          // TODO move to selectors?
           id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id]
         )
       },

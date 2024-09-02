@@ -1,43 +1,41 @@
-import {createActions} from './createActions'
-import type {Cache, Dict, EntitiesMap, QueryMutationState, Typenames} from './types'
+import type {ActionMap} from './createActions'
+import type {CacheOptions, Dict, EntitiesMap, QueryMutationState, Typenames} from './types'
 import {applyEntityChanges, DEFAULT_QUERY_MUTATION_STATE, log} from './utilsAndConstants'
 
-export type ReduxCacheState<N extends string, T extends Typenames, QP, QR, MP, MR> = ReturnType<
-  ReturnType<typeof createCacheReducer<N, T, QP, QR, MP, MR>>
+export type ReduxCacheState<T extends Typenames, QR, MR> = ReturnType<
+  ReturnType<typeof createCacheReducer<string, T, QR, MR>>
 >
 
 const EMPTY_QUERY_STATE = Object.freeze({})
 
-export const createCacheReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
-  actions: ReturnType<typeof createActions<N, T, QR, MR>>,
-  typenames: Cache<N, T, QP, QR, MP, MR>['typenames'],
-  queries: Cache<N, T, QP, QR, MP, MR>['queries'],
-  mutations: Cache<N, T, QP, QR, MP, MR>['mutations'],
-  cacheOptions: Cache<N, T, QP, QR, MP, MR>['options']
+export const createCacheReducer = <N extends string, T extends Typenames, QR, MR>(
+  actions: ActionMap<N, T, QR, MR>,
+  typenames: T,
+  queryKeys: (keyof QR)[],
+  cacheOptions: CacheOptions
 ) => {
   const entitiesMap = {} as EntitiesMap<T>
   for (const key in typenames) {
     entitiesMap[key] = EMPTY_QUERY_STATE
   }
 
-  const queriesMap = {} as {[QK in keyof QR]: Dict<QueryMutationState<QR[QK]>>}
-  for (const key in queries) {
-    queriesMap[key as keyof QR] = {}
+  const queryStateMap = {} as {[QK in keyof QR]: Dict<QueryMutationState<QR[QK]>>}
+  for (const key of queryKeys) {
+    queryStateMap[key] = {}
   }
 
-  const mutationsMap = {} as {[MK in keyof MR]: QueryMutationState<MR[MK]>}
+  const mutationStateMap = {} as {[MK in keyof MR]: QueryMutationState<MR[MK]>}
 
   const initialState = {
     entities: entitiesMap,
-    queries: queriesMap,
-    mutations: mutationsMap,
+    queries: queryStateMap,
+    mutations: mutationStateMap,
   }
 
   cacheOptions.logsEnabled &&
     log('createCacheReducer', {
       typenames,
-      queries,
-      mutations,
+      queryKeys,
       initialState,
     })
 
@@ -110,14 +108,14 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
         return newEntities ? {...state, entities: newEntities} : state
       }
       case actions.clearQueryState.type: {
-        const {queryKeys} = action as ReturnType<typeof actions.clearQueryState>
-        if (!queryKeys.length) {
+        const {queryKeys: queryKeysToClear} = action as ReturnType<typeof actions.clearQueryState>
+        if (!queryKeysToClear.length) {
           return state
         }
 
         let newQueries = undefined
 
-        for (const query of queryKeys) {
+        for (const query of queryKeysToClear) {
           if (query.cacheKey != null) {
             if ((newQueries ?? state.queries)[query.key][query.cacheKey]) {
               newQueries ??= {...state.queries}

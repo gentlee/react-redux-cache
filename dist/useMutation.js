@@ -12,10 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.useMutation = void 0;
 const react_1 = require("react");
 const react_redux_1 = require("react-redux");
-const actions_1 = require("./actions");
 const mutate_1 = require("./mutate");
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const useMutation = (cache, options, abortControllers) => {
+const useMutation = (cache, actions, options, abortControllers) => {
     var _a;
     const { mutation: mutationKey } = options;
     const store = (0, react_redux_1.useStore)();
@@ -33,7 +32,7 @@ const useMutation = (cache, options, abortControllers) => {
             },
             // mutate
             (params) => __awaiter(void 0, void 0, void 0, function* () {
-                yield (0, mutate_1.mutate)('useMutation.mutate', false, store, cache, mutationKey, params, abortControllers);
+                yield (0, mutate_1.mutate)('useMutation.mutate', false, store, cache, actions, mutationKey, params, abortControllers);
             }),
             // abort
             () => {
@@ -43,7 +42,7 @@ const useMutation = (cache, options, abortControllers) => {
                     return false;
                 }
                 abortController.abort();
-                store.dispatch((0, actions_1.updateMutationStateAndEntities)(mutationKey, {
+                store.dispatch(actions.updateMutationStateAndEntities(mutationKey, {
                     loading: false,
                 }));
                 return true;

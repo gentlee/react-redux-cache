@@ -10,9 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mutate = void 0;
-const actions_1 = require("./actions");
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const mutate = (logTag, returnResult, store, cache, mutationKey, params, abortControllers) => __awaiter(void 0, void 0, void 0, function* () {
+const mutate = (logTag, returnResult, store, cache, { updateMutationStateAndEntities }, mutationKey, params, abortControllers) => __awaiter(void 0, void 0, void 0, function* () {
     let abortControllersOfStore = abortControllers.get(store);
     if (abortControllersOfStore === undefined) {
         abortControllersOfStore = {};
@@ -30,7 +29,7 @@ const mutate = (logTag, returnResult, store, cache, mutationKey, params, abortCo
             abortController.abort();
         }
         else {
-            store.dispatch((0, actions_1.updateMutationStateAndEntities)(mutationKey, {
+            store.dispatch(updateMutationStateAndEntities(mutationKey, {
                 loading: true,
                 result: undefined,
             }));
@@ -60,14 +59,14 @@ const mutate = (logTag, returnResult, store, cache, mutationKey, params, abortCo
     }
     delete abortControllersOfStore[mutationKey];
     if (error) {
-        store.dispatch((0, actions_1.updateMutationStateAndEntities)(mutationKey, {
+        store.dispatch(updateMutationStateAndEntities(mutationKey, {
             error: error,
             loading: false,
         }));
         return { error };
     }
     if (response) {
-        store.dispatch((0, actions_1.updateMutationStateAndEntities)(mutationKey, {
+        store.dispatch(updateMutationStateAndEntities(mutationKey, {
             error: undefined,
             loading: false,
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

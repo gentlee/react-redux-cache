@@ -24,7 +24,7 @@ beforeEach(() => {
 
 test('should be able to abort started mutation', async () => {
   store.dispatch({
-    type: '@RRC/MERGE_ENTITY_CHANGES',
+    type: '@rrc/cache/mergeEntityChanges',
     changes: {merge: generateTestEntitiesMap(1)},
   })
   await act(() => render())
@@ -55,23 +55,25 @@ test('should be able to abort started mutation', async () => {
   expect(mutationResult1).toBe(undefined) // useMutation's mutate doesn't return result
   expect(mutationResult2).toBe(undefined)
   expect(store.getState()).toEqual({
-    ...EMPTY_STATE,
-    mutations: {updateUser: DEFAULT_QUERY_MUTATION_STATE},
-    entities: {
-      ...generateTestEntitiesMap(1),
-      users: {0: {...generateTestUser(0), name: 'New name'}},
+    cache: {
+      ...EMPTY_STATE,
+      mutations: {updateUser: DEFAULT_QUERY_MUTATION_STATE},
+      entities: {
+        ...generateTestEntitiesMap(1),
+        users: {0: {...generateTestUser(0), name: 'New name'}},
+      },
     },
   })
   assertEventLog([
-    '@RRC/MERGE_ENTITY_CHANGES',
+    '@rrc/cache/mergeEntityChanges',
     'render: loading: false, result: undefined',
-    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES', // loading true
+    '@rrc/cache/updateMutationStateAndEntities', // loading true
     'render: loading: true, result: undefined',
-    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES', // loading false, result 0
+    '@rrc/cache/updateMutationStateAndEntities', // loading false, result 0
     'render: loading: false, result: 0',
-    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES', // loading true, result undefined
+    '@rrc/cache/updateMutationStateAndEntities', // loading true, result undefined
     'render: loading: true, result: undefined',
-    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES', // abort, loading false
+    '@rrc/cache/updateMutationStateAndEntities', // abort, loading false
     'render: loading: false, result: undefined',
   ])
 })

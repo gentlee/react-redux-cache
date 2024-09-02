@@ -24,7 +24,7 @@ beforeEach(() => {
 
 test('should update mutation state and return result', async () => {
   store.dispatch({
-    type: '@RRC/MERGE_ENTITY_CHANGES',
+    type: '@rrc/cache/mergeEntityChanges',
     changes: {merge: generateTestEntitiesMap(1)},
   })
   await act(() => render())
@@ -40,29 +40,31 @@ test('should update mutation state and return result', async () => {
 
   expect(result).toEqual({result: 0})
   expect(store.getState()).toEqual({
-    ...EMPTY_STATE,
-    mutations: {
-      updateUser: {
-        ...DEFAULT_QUERY_MUTATION_STATE,
-        result: 0,
+    cache: {
+      ...EMPTY_STATE,
+      mutations: {
+        updateUser: {
+          ...DEFAULT_QUERY_MUTATION_STATE,
+          result: 0,
+        },
       },
-    },
-    entities: {
-      banks: {0: generateTestBank('0')},
-      users: {0: {...generateTestUser(0), name: 'New name'}},
+      entities: {
+        banks: {0: generateTestBank('0')},
+        users: {0: {...generateTestUser(0), name: 'New name'}},
+      },
     },
   })
   assertEventLog([
-    '@RRC/MERGE_ENTITY_CHANGES',
+    '@rrc/cache/mergeEntityChanges',
     'render',
-    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES',
-    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES',
+    '@rrc/cache/updateMutationStateAndEntities',
+    '@rrc/cache/updateMutationStateAndEntities',
   ])
 })
 
 test('mutate should cancel previous not finished mutation', async () => {
   store.dispatch({
-    type: '@RRC/MERGE_ENTITY_CHANGES',
+    type: '@rrc/cache/mergeEntityChanges',
     changes: {merge: generateTestEntitiesMap(2)},
   })
   await act(() => render())
@@ -88,26 +90,28 @@ test('mutate should cancel previous not finished mutation', async () => {
   expect(result1).toEqual({aborted: true})
   expect(result2).toEqual({result: 1})
   expect(store.getState()).toEqual({
-    ...EMPTY_STATE,
-    mutations: {
-      updateUser: {
-        ...DEFAULT_QUERY_MUTATION_STATE,
-        result: 1,
+    cache: {
+      ...EMPTY_STATE,
+      mutations: {
+        updateUser: {
+          ...DEFAULT_QUERY_MUTATION_STATE,
+          result: 1,
+        },
       },
-    },
-    entities: {
-      ...generateTestEntitiesMap(2),
-      users: {
-        0: generateTestUser(0),
-        1: {...generateTestUser(1), name: 'New name 2'},
+      entities: {
+        ...generateTestEntitiesMap(2),
+        users: {
+          0: generateTestUser(0),
+          1: {...generateTestUser(1), name: 'New name 2'},
+        },
       },
     },
   })
   assertEventLog([
-    '@RRC/MERGE_ENTITY_CHANGES',
+    '@rrc/cache/mergeEntityChanges',
     'render',
-    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES',
-    '@RRC/UPDATE_MUTATION_STATE_AND_ENTITIES',
+    '@rrc/cache/updateMutationStateAndEntities',
+    '@rrc/cache/updateMutationStateAndEntities',
   ])
 })
 
