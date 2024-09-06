@@ -1,33 +1,74 @@
-.App {
-  text-align: center;
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+html,
+body,
+div {
   display: flex;
+  align-items: stretch;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+p {
+  margin: 8px;
 }
 
-.User-screen-update-user-button {
-  padding: 10px;
+button {
+  margin: 4px;
+  padding: 8px;
   border-radius: 4px;
 }
 
-@keyframes App-logo-spin {
-  from {
+#root {
+  flex-grow: 1;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  text-align: center;
+  padding: 20px;
+  background-color: #282c34;
+  color: white;
+  font-size: calc(10px + 2vmin);
+  align-items: center;
+  justify-content: center;
+  margin: 0px;
+  padding: 8px;
+}
+
+.link {
+  margin: 8px;
+  color: #61dafb;
+}
+
+.checkbox {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.spinner {
+  margin: 8px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  0% {
     transform: rotate(0deg);
   }
 
-  to {
+  100% {
     transform: rotate(360deg);
   }
 }

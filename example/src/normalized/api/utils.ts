@@ -1,6 +1,6 @@
 import {EntitiesMap} from 'react-redux-cache'
 
-import {Typenames} from '../redux/cache'
+import {Typenames} from '../cache'
 import {Bank, User} from './types'
 
 export const API_TIMEOUT = 1000
@@ -9,7 +9,7 @@ const timeout = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)
 
 export const apiTimeout = () => timeout(API_TIMEOUT)
 
-export const generateTestUser = (id: number, full = true, nameSuffix = ''): User => {
+export const generateUser = (id: number, full = true, nameSuffix = ''): User => {
   const user: User = {
     id,
     bankId: String(id),
@@ -20,7 +20,7 @@ export const generateTestUser = (id: number, full = true, nameSuffix = ''): User
   return user
 }
 
-export const generateTestBank = (id: string, nameSuffix = ''): Bank => {
+export const generateBank = (id: string, nameSuffix = ''): Bank => {
   return {
     id,
     name: 'Bank ' + id + nameSuffix,
@@ -28,8 +28,8 @@ export const generateTestBank = (id: string, nameSuffix = ''): Bank => {
 }
 
 export const generateTestEntitiesMap = (size: number, full = true): EntitiesMap<Typenames> => {
-  const users = Array.from({length: size}, (_, i) => generateTestUser(i + 1, full))
-  const banks = Array.from({length: size}, (_, i) => generateTestBank(String(i + 1)))
+  const users = Array.from({length: size}, (_, i) => generateUser(i + 1, full))
+  const banks = Array.from({length: size}, (_, i) => generateBank(String(i + 1)))
 
   return {
     users: mapFromArray(users, 'id'),

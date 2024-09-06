@@ -1,5 +1,5 @@
 import {User} from './types'
-import {apiTimeout, generateTestBank, generateTestUser} from './utils'
+import {apiTimeout, generateBank, generateUser} from './utils'
 
 export const getUser = async (id: number) => {
   await apiTimeout()
@@ -7,10 +7,10 @@ export const getUser = async (id: number) => {
     result: id,
     merge: {
       users: {
-        [id]: generateTestUser(id),
+        [id]: generateUser(id),
       },
       banks: {
-        [id]: generateTestBank(String(id)),
+        [id]: generateBank(String(id)),
       },
     },
   }
@@ -27,14 +27,14 @@ export const getUsers = async ({page = 1}: {page: number}) => {
     },
     merge: {
       users: {
-        [items[0]]: generateTestUser(items[0]),
-        [items[1]]: generateTestUser(items[1]),
-        [items[2]]: generateTestUser(items[2]),
+        [items[0]]: generateUser(items[0]),
+        [items[1]]: generateUser(items[1]),
+        [items[2]]: generateUser(items[2]),
       },
       banks: {
-        [items[0]]: generateTestBank(String(items[0])),
-        [items[1]]: generateTestBank(String(items[1])),
-        [items[2]]: generateTestBank(String(items[2])),
+        [items[0]]: generateBank(String(items[0])),
+        [items[1]]: generateBank(String(items[1])),
+        [items[2]]: generateBank(String(items[2])),
       },
     },
   }

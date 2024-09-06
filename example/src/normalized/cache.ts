@@ -1,7 +1,7 @@
 import {Cache, createCache} from 'react-redux-cache'
 
-import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
-import {Bank, User} from '../api/types'
+import {getUser, getUsers, removeUser, updateUser} from './api/mocks'
+import {Bank, User} from './api/types'
 
 export type Typenames = typeof cache extends Cache<
   string,
