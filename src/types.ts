@@ -160,7 +160,7 @@ export type MutationResult<R> = {
 export type QueryMutationState<R> = {
   /** `true` when query or mutation is currently in progress. */
   loading: boolean
-  /** Result of the latest successfull query response. */
+  /** Result of the latest successfull response. */
   result?: R
   /** Error of the latest response. */
   error?: Error
