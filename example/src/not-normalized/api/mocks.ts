@@ -33,6 +33,9 @@ export const removeUser = async (id: User['id']) => {
 export const updateUser = async (user: Partial<Omit<User, 'bank'>> & Pick<User, 'id'>) => {
   await apiTimeout()
   return {
-    result: user,
+    result: {
+      ...generateUser(user.id),
+      ...user,
+    },
   }
 }

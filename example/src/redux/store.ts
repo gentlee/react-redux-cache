@@ -1,3 +1,4 @@
+import {useDispatch, useStore} from 'react-redux'
 import {applyMiddleware, combineReducers, createStore} from 'redux'
 import {persistReducer, persistStore} from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
@@ -49,5 +50,9 @@ export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean
     persistor,
   }
 }
+
+export type AppStore = ReturnType<typeof createReduxStore>['store']
+export const useAppStore = useStore as () => AppStore
+export const useAppDispatch = useDispatch as () => AppStore['dispatch']
 
 export type ReduxState = ReturnType<typeof reducer>

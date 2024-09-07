@@ -1,21 +1,31 @@
-import React, {useState} from 'react'
+import {useState} from 'react'
+import {defaultGetCacheKey} from 'react-redux-cache'
 import {Link, useParams} from 'react-router-dom'
 
+import {useAppStore} from '../redux/store'
 import {cacheNotNormalized} from './cache'
 
 export const UserScreen = () => {
+  const {
+    actions: {updateQueryStateAndEntities},
+    hooks: {useQuery, useClient, useMutation},
+  } = cacheNotNormalized
+
+  const {dispatch, getState} = useAppStore()
   const {id: userIdParam} = useParams()
+  const {mutate} = useClient()
 
   const [userId, setUserId] = useState(Number(userIdParam))
   const [skip, setSkip] = useState(false)
 
-  const [{result: user, loading, error}] = cacheNotNormalized.hooks.useQuery({
+  const [{result: user, loading, error}] = useQuery({
     query: 'getUser',
     params: userId,
     skip,
   })
 
-  const [updateUser, {loading: updatingUser}] = cacheNotNormalized.hooks.useMutation({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, {loading: updatingUser}] = useMutation({
     mutation: 'updateUser',
   })
 
@@ -42,16 +52,48 @@ export const UserScreen = () => {
       <Link id={'users-link'} className={'link'} to={'/not-normalized/users'}>
         {'users'}
       </Link>
-      <button
-        id="update-user"
-        onClick={() => {
-          user &&
-            updateUser({
-              id: user.id,
-              name: user.name + ' *',
+      {!!user && (
+        <button
+          id="update-user"
+          onClick={async () => {
+            // using client's mutate because it returns result. TODO return result for useMutation mutate
+            const {result} = await mutate({
+              mutation: 'updateUser',
+              params: {
+                id: user.id,
+                name: user.name + ' *',
+              },
             })
-        }}
-      >{`updat${updatingUser ? 'ing' : 'e'} user name`}</button>
+            // Updating getUser and getUsers results after successfull mutation.
+            // Refetch instead can be used, but this will cause additional requests.
+            // Normalization approach does that automatically.
+            if (result) {
+              // Update getUser result
+              dispatch(
+                updateQueryStateAndEntities('getUser', defaultGetCacheKey(result.id), {
+                  result,
+                })
+              )
+
+              // Update getUsers result
+              const usersResult = getState().cacheNotNormalized.queries.getUsers['all-pages'].result
+              const userIndex = usersResult?.items.findIndex((x) => x.id === result.id)
+              if (usersResult && userIndex != null && userIndex != -1) {
+                const newUsersResult = {
+                  ...usersResult,
+                  items: [...usersResult.items],
+                }
+                newUsersResult.items.splice(userIndex, 1, result)
+                dispatch(
+                  updateQueryStateAndEntities('getUsers', 'all-pages', {
+                    result: newUsersResult,
+                  })
+                )
+              }
+            }
+          }}
+        >{`updat${updatingUser ? 'ing' : 'e'} user name`}</button>
+      )}
       <button
         id="next-user"
         onClick={() => {

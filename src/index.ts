@@ -9,7 +9,6 @@ export {
 // Backlog
 
 // ! high
-// add example without normalization
 // try use skip for refreshing strategy?
 // optimistic response
 // make query key / cache key difference more clear in the docs, or remove queryKey at all?
