@@ -10,7 +10,7 @@ test('add new entities', () => {
 
   const result = applyEntityChanges(entitiesMap, changes)
 
-  expect(result).toEqual(generateTestEntitiesMap(2))
+  expect(result).toStrictEqual(generateTestEntitiesMap(2))
 })
 
 test('remove entities', () => {
@@ -24,7 +24,7 @@ test('remove entities', () => {
 
   const result = applyEntityChanges(entitiesMap, changes)
 
-  expect(result).toEqual({
+  expect(result).toStrictEqual({
     users: {
       1: generateTestUser(1),
     },
@@ -53,7 +53,7 @@ test('update entities', () => {
 
   const result = applyEntityChanges(entitiesMap, changes)
 
-  expect(result).toEqual({
+  expect(result).toStrictEqual({
     users: {
       0: generateTestUser(0),
       1: generateTestUser(1, true, ' updated'),
@@ -80,7 +80,7 @@ test('replace entities', () => {
 
   const result = applyEntityChanges(entitiesMap, changes)
 
-  expect(result).toEqual({
+  expect(result).toStrictEqual({
     users: {
       0: generateTestUser(0),
       1: generateTestUser(1, false),
@@ -120,7 +120,7 @@ test('add, remove, update and replace entities', () => {
 
   const result = applyEntityChanges(entitiesMap, changes)
 
-  expect(result).toEqual({
+  expect(result).toStrictEqual({
     users: {
       1: generateTestUser(1, true, ' updated'),
       2: generateTestUser(2, false),

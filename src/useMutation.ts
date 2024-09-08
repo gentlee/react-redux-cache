@@ -42,9 +42,8 @@ export const useMutation = <
       },
       // mutate
       async (params: P) => {
-        await mutateImpl(
+        return await mutateImpl(
           'useMutation.mutate',
-          false,
           store,
           cache,
           actions,

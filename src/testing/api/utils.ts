@@ -11,7 +11,7 @@ export const logEvent = (event: string) => {
 }
 
 export const assertEventLog = (log: string[]) => {
-  expect(eventLog).toEqual(log)
+  expect(eventLog).toStrictEqual(log)
   clearEventLog()
 }
 

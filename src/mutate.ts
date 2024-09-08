@@ -14,14 +14,13 @@ export const mutate = async <
   MK extends keyof (MP & MR)
 >(
   logTag: string,
-  returnResult: boolean,
   store: Store,
   cache: Cache<N, T, QP, QR, MP, MR>,
   {updateMutationStateAndEntities}: Pick<ActionMap<N, T, QR, MR>, 'updateMutationStateAndEntities'>,
   mutationKey: MK,
   params: MK extends keyof (MP | MR) ? MP[MK] : never,
   abortControllers: WeakMap<Store, Record<Key, AbortController>>
-): Promise<void | MutationResult<MK extends keyof (MP | MR) ? MR[MK] : never>> => {
+): Promise<MutationResult<MK extends keyof (MP | MR) ? MR[MK] : never>> => {
   let abortControllersOfStore = abortControllers.get(store)
   if (abortControllersOfStore === undefined) {
     abortControllersOfStore = {}
@@ -74,7 +73,7 @@ export const mutate = async <
     })
 
   if (abortController.signal.aborted) {
-    return returnResult ? {aborted: true} : undefined
+    return ABORTED_RESULT
   }
 
   delete abortControllersOfStore[mutationKey]
@@ -103,8 +102,10 @@ export const mutate = async <
       )
     )
     // @ts-expect-error fix later
-    return returnResult ? {result: response.result} : undefined
+    return {result: response.result}
   }
 
   throw new Error(`${logTag}: both error and response are not defined`)
 }
+
+const ABORTED_RESULT = Object.freeze({aborted: true})
