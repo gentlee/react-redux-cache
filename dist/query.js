@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.query = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const query = (logTag, returnResult, store, cache, { updateQueryStateAndEntities }, queryKey, cacheKey, params) => __awaiter(void 0, void 0, void 0, function* () {
+const query = (logTag, store, cache, { updateQueryStateAndEntities }, queryKey, cacheKey, params) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const logsEnabled = cache.options.logsEnabled;
     const cacheStateSelector = cache.cacheStateSelector;
@@ -25,7 +25,7 @@ const query = (logTag, returnResult, store, cache, { updateQueryStateAndEntities
                 params,
                 cacheKey,
             });
-        return returnResult ? { cancelled: true } : undefined;
+        return CANCELLED_RESULT;
     }
     store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, {
         loading: true,
@@ -43,7 +43,7 @@ const query = (logTag, returnResult, store, cache, { updateQueryStateAndEntities
             error: error,
             loading: false,
         }));
-        return returnResult ? { error } : undefined;
+        return { error };
     }
     const newState = {
         error: undefined,
@@ -53,19 +53,18 @@ const query = (logTag, returnResult, store, cache, { updateQueryStateAndEntities
             : mergeResults
                 ? mergeResults(
                 // @ts-expect-error fix later
-                (_a = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _a === void 0 ? void 0 : _a.result, response, params)
+                (_a = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _a === void 0 ? void 0 : _a.result, response, params, store)
                 : response.result,
     };
     store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, newState, response));
-    // @ts-expect-error fix types
-    return returnResult
-        ? {
-            result: cacheResultSelector
-                ? cacheResultSelector(cacheStateSelector(store.getState()), 
-                // @ts-expect-error fix types
-                params)
-                : newState === null || newState === void 0 ? void 0 : newState.result,
-        }
-        : undefined;
+    return {
+        // @ts-expect-error fix types
+        result: cacheResultSelector
+            ? cacheResultSelector(cacheStateSelector(store.getState()), 
+            // @ts-expect-error fix types
+            params)
+            : newState === null || newState === void 0 ? void 0 : newState.result,
+    };
 });
 exports.query = query;
+const CANCELLED_RESULT = Object.freeze({ cancelled: true });

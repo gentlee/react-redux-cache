@@ -14,14 +14,13 @@ export const query = async <
   QK extends keyof (QP & QR)
 >(
   logTag: string,
-  returnResult: boolean,
   store: Store,
   cache: Cache<N, T, QP, QR, MP, MR>,
   {updateQueryStateAndEntities}: Pick<ActionMap<N, T, QR, MR>, 'updateQueryStateAndEntities'>,
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never
-): Promise<void | QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>> => {
+): Promise<QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>> => {
   const logsEnabled = cache.options.logsEnabled
   const cacheStateSelector = cache.cacheStateSelector
   const cacheResultSelector = cache.queries[queryKey].resultSelector
@@ -39,7 +38,7 @@ export const query = async <
         cacheKey,
       })
 
-    return returnResult ? {cancelled: true} : undefined
+    return CANCELLED_RESULT
   }
 
   store.dispatch(
@@ -64,7 +63,7 @@ export const query = async <
         loading: false,
       })
     )
-    return returnResult ? {error} : undefined
+    return {error}
   }
 
   const newState = {
@@ -77,23 +76,24 @@ export const query = async <
           // @ts-expect-error fix later
           cacheStateSelector(store.getState()).queries[queryKey as keyof QR][cacheKey]?.result,
           response,
-          params
+          params,
+          store
         )
       : response.result,
   }
 
   store.dispatch(updateQueryStateAndEntities(queryKey as keyof QR, cacheKey, newState, response))
 
-  // @ts-expect-error fix types
-  return returnResult
-    ? {
-        result: cacheResultSelector
-          ? cacheResultSelector(
-              cacheStateSelector(store.getState()),
-              // @ts-expect-error fix types
-              params
-            )
-          : newState?.result,
-      }
-    : undefined
+  return {
+    // @ts-expect-error fix types
+    result: cacheResultSelector
+      ? cacheResultSelector(
+          cacheStateSelector(store.getState()),
+          // @ts-expect-error fix types
+          params
+        )
+      : newState?.result,
+  }
 }
+
+const CANCELLED_RESULT = Object.freeze({cancelled: true})

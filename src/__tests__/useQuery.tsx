@@ -2,11 +2,20 @@ import {act, render as renderImpl} from '@testing-library/react'
 import React from 'react'
 import {Provider} from 'react-redux'
 
+import {defaultQueryMutationState} from '..'
 import {getUser, getUsers} from '../testing/api/mocks'
 import {assertEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
 import {EMPTY_STATE} from '../testing/constants'
 import {GET_USERS_ONE_PAGE_STATE} from '../testing/constants'
-import {updateQueryStateAndEntities, useClient, useQuery} from '../testing/redux/cache'
+import {
+  selectQueryError,
+  selectQueryLoading,
+  selectQueryResult,
+  selectQueryState,
+  updateQueryStateAndEntities,
+  useClient,
+  useQuery,
+} from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
 import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
 import {DEFAULT_QUERY_MUTATION_STATE, defaultGetCacheKey} from '../utilsAndConstants'
@@ -73,7 +82,7 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
 
 test('no fetch on mount if has cache', setCacheAndMountAndCheckNoRefetch)
 
-test('loads three pages sequentially', async () => {
+test('loads three pages sequentially, query selectors work', async () => {
   await setCacheAndMountAndCheckNoRefetch()
 
   act(() => {
@@ -96,13 +105,21 @@ test('loads three pages sequentially', async () => {
     })
   })
   await act(advanceApiTimeout)
+  const finalState = {items: [0, 1, 2, 3, 4, 5, 6, 7, 8], page: 3}
   assertEventLog([
     'render: loading',
     'merge results: next page',
-    'render: ' + JSON.stringify({items: [0, 1, 2, 3, 4, 5, 6, 7, 8], page: 3}),
+    'render: ' + JSON.stringify(finalState),
   ])
 
   expect(getUsers).toBeCalledTimes(2)
+  expect(selectQueryState(store.getState(), 'getUsers', 'all-pages')).toStrictEqual({
+    ...defaultQueryMutationState,
+    result: finalState,
+  })
+  expect(selectQueryResult(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(finalState)
+  expect(selectQueryLoading(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(false)
+  expect(selectQueryError(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(undefined)
 })
 
 test.each(['getUser', 'getUserNoSelector'] as const)(
@@ -266,13 +283,19 @@ test.each([
 ] as const)('cancel manual refetch when currently loading same params', async ({query, state}) => {
   render({query, params: 0})
 
+  let shouldBeCancelledResult
+  let refetchResult
   await act(advanceHalfApiTimeout)
   await act(() => {
-    refetch()
+    refetch().then((x: unknown) => (shouldBeCancelledResult = x)) // should be cancelled because fetch already in progress
   })
-  await act(advanceHalfApiTimeout)
+  await act(advanceHalfApiTimeout) // first fetch finishes here
+  await act(() => {
+    refetch().then((x: unknown) => (refetchResult = x)) // this refetch should work
+  })
+  await act(advanceApiTimeout)
 
-  expect(getUser).toBeCalledTimes(1)
+  expect(getUser).toBeCalledTimes(2)
   expect(store.getState().cache).toStrictEqual({
     ...EMPTY_STATE,
     entities: generateTestEntitiesMap(1),
@@ -281,7 +304,15 @@ test.each([
       ...state,
     },
   })
-  assertEventLog(['render: undefined', 'render: loading', 'render: 0'])
+  expect(shouldBeCancelledResult).toStrictEqual({cancelled: true})
+  expect(refetchResult).toStrictEqual({result: 0})
+  assertEventLog([
+    'render: undefined',
+    'render: loading',
+    'render: 0',
+    'render: loading',
+    'render: 0',
+  ])
 })
 
 // components

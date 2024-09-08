@@ -1,5 +1,7 @@
 // Common
 
+import {Store} from 'redux'
+
 import type {ReduxCacheState} from './reducer'
 
 export type Key = string | number | symbol
@@ -87,11 +89,12 @@ export type QueryInfo<T extends Typenames, P, R, S> = {
    * Needed when query result may already be in the cache, e.g. for single entity query by id.
    * */
   resultSelector?: (state: S, params: P) => R | undefined
-  /** Merges results before saving to the store. */
+  /** Merges results before saving to the store. Default implementation is using the latest result. */
   mergeResults?: (
     oldResult: R | undefined,
     response: QueryResponse<T, R>,
-    params: P | undefined
+    params: P | undefined,
+    store: Store
   ) => R
   /**
    * Cache key is used for storing the query state and for performing a fetch when it changes. Queries with the same cache key share their state.
@@ -107,7 +110,7 @@ export type UseQueryOptions<T extends Typenames, QP, QR, MR, QK extends keyof (Q
   skip?: boolean
 } & Pick<
   QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QR, MR>> : never,
-  'cachePolicy' | 'mergeResults' | 'getCacheKey'
+  'cachePolicy'
 >
 
 /**

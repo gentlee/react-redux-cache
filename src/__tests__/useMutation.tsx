@@ -9,7 +9,13 @@ import {
   logEvent,
 } from '../testing/api/utils'
 import {EMPTY_STATE} from '../testing/constants'
-import {useMutation} from '../testing/redux/cache'
+import {
+  selectMutationError,
+  selectMutationLoading,
+  selectMutationResult,
+  selectMutationState,
+  useMutation,
+} from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
 import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
 import {DEFAULT_QUERY_MUTATION_STATE} from '../utilsAndConstants'
@@ -22,7 +28,7 @@ beforeEach(() => {
   store = createReduxStore(true)
 })
 
-test('should be able to abort started mutation', async () => {
+test('should be able to abort started mutation, mutation selectors work', async () => {
   store.dispatch({
     type: '@rrc/cache/mergeEntityChanges',
     changes: {merge: generateTestEntitiesMap(1)},
@@ -52,18 +58,30 @@ test('should be able to abort started mutation', async () => {
   expect(abortResult1).toBe(false)
   expect(abortResult2).toBe(false)
   expect(abortResult3).toBe(true)
-  expect(mutationResult1).toBe(undefined) // useMutation's mutate doesn't return result
-  expect(mutationResult2).toBe(undefined)
-  expect(store.getState()).toEqual({
+  expect(mutationResult1).toStrictEqual({result: 0})
+  expect(mutationResult2).toStrictEqual({aborted: true})
+  expect(store.getState()).toStrictEqual({
     cache: {
       ...EMPTY_STATE,
-      mutations: {updateUser: DEFAULT_QUERY_MUTATION_STATE},
+      mutations: {
+        updateUser: {
+          ...DEFAULT_QUERY_MUTATION_STATE,
+          result: undefined,
+        },
+      },
       entities: {
         ...generateTestEntitiesMap(1),
         users: {0: {...generateTestUser(0), name: 'New name'}},
       },
     },
   })
+  expect(selectMutationState(store.getState(), 'updateUser')).toStrictEqual({
+    ...DEFAULT_QUERY_MUTATION_STATE,
+    result: undefined,
+  })
+  expect(selectMutationResult(store.getState(), 'updateUser')).toStrictEqual(undefined)
+  expect(selectMutationLoading(store.getState(), 'updateUser')).toStrictEqual(false)
+  expect(selectMutationError(store.getState(), 'updateUser')).toStrictEqual(undefined)
   assertEventLog([
     '@rrc/cache/mergeEntityChanges',
     'render: loading: false, result: undefined',

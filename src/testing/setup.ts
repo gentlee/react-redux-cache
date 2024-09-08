@@ -13,5 +13,5 @@ afterAll(() => {
   // @ts-expect-error it is private
   const abortControllers = cache.abortControllers
 
-  expect(JSON.stringify(abortControllers)).toEqual(JSON.stringify(new WeakMap()))
+  expect(JSON.stringify(abortControllers)).toStrictEqual(JSON.stringify(new WeakMap()))
 })

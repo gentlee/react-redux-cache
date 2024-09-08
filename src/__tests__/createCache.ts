@@ -46,6 +46,14 @@ test('createCache returns correct result', () => {
 
   expect(selectors.entitiesSelector).toBeDefined()
   expect(selectors.entitiesByTypenameSelector).toBeDefined()
+  expect(selectors.selectQueryState).toBeDefined()
+  expect(selectors.selectQueryResult).toBeDefined()
+  expect(selectors.selectQueryLoading).toBeDefined()
+  expect(selectors.selectQueryError).toBeDefined()
+  expect(selectors.selectMutationState).toBeDefined()
+  expect(selectors.selectMutationResult).toBeDefined()
+  expect(selectors.selectMutationLoading).toBeDefined()
+  expect(selectors.selectMutationError).toBeDefined()
 
   expect(hooks.useQuery).toBeDefined()
   expect(hooks.useMutation).toBeDefined()

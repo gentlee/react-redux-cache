@@ -27,10 +27,10 @@ export const useQuery = <
     skip,
     params,
     cachePolicy = cache.queries[queryKey].cachePolicy ?? 'cache-first',
-    getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>,
   } = options
 
   const logsEnabled = cache.options.logsEnabled
+  const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
   const cacheResultSelector = cache.queries[queryKey].resultSelector
   const cacheStateSelector = cache.cacheStateSelector
 
@@ -57,7 +57,7 @@ export const useQuery = <
   const hasResultFromSelector = resultFromSelector !== undefined
 
   const fetch = useCallback(async () => {
-    await queryImpl('useQuery.fetch', false, store, cache, actions, queryKey, cacheKey, params)
+    return await queryImpl('useQuery.fetch', store, cache, actions, queryKey, cacheKey, params)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, queryKey, cacheKey])
 

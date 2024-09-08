@@ -38,8 +38,8 @@ test('should update mutation state and return result', async () => {
   })
   await act(() => advanceApiTimeout())
 
-  expect(result).toEqual({result: 0})
-  expect(store.getState()).toEqual({
+  expect(result).toStrictEqual({result: 0})
+  expect(store.getState()).toStrictEqual({
     cache: {
       ...EMPTY_STATE,
       mutations: {
@@ -87,9 +87,9 @@ test('mutate should cancel previous not finished mutation', async () => {
   })
   await act(() => advanceApiTimeout())
 
-  expect(result1).toEqual({aborted: true})
-  expect(result2).toEqual({result: 1})
-  expect(store.getState()).toEqual({
+  expect(result1).toStrictEqual({aborted: true})
+  expect(result2).toStrictEqual({result: 1})
+  expect(store.getState()).toStrictEqual({
     cache: {
       ...EMPTY_STATE,
       mutations: {

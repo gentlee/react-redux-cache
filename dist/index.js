@@ -23,13 +23,10 @@ Object.defineProperty(exports, "defaultGetCacheKey", { enumerable: true, get: fu
 Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, get: function () { return utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE; } });
 // Backlog
 // ! high
-// screenshot of redux state to README
-// optimistic response
-// cover with tests
-// try use skip for refreshing strategy?
 // add example without normalization
-// make query key / cache key difference more clear in the docs
-// support multiple caches = reducers
+// try use skip for refreshing strategy?
+// optimistic response
+// make query key / cache key difference more clear in the docs, or remove queryKey at all?
 // ! medium
 // make named caches to produce named hooks, actions etc (same as slices in RTK)?
 // allow multiple mutation with same keys?
