@@ -8,12 +8,11 @@ import {cacheNotNormalized} from './cache'
 export const UserScreen = () => {
   const {
     actions: {updateQueryStateAndEntities},
-    hooks: {useQuery, useClient, useMutation},
+    hooks: {useQuery, useMutation},
   } = cacheNotNormalized
 
   const {dispatch, getState} = useAppStore()
   const {id: userIdParam} = useParams()
-  const {mutate} = useClient()
 
   const [userId, setUserId] = useState(Number(userIdParam))
   const [skip, setSkip] = useState(false)
@@ -25,7 +24,7 @@ export const UserScreen = () => {
   })
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, {loading: updatingUser}] = useMutation({
+  const [updateUser, {loading: updatingUser}] = useMutation({
     mutation: 'updateUser',
   })
 
@@ -47,52 +46,55 @@ export const UserScreen = () => {
     )
   }
 
+  const onUpdateUserNameClick = async () => {
+    if (!user) {
+      return
+    }
+
+    const {result} = await updateUser({
+      id: user.id,
+      name: user.name + ' *',
+    })
+    // Updating getUser and getUsers results after successfull mutation.
+    // Refetch instead can be used, but this will cause additional requests.
+    // Normalization approach does that automatically.
+    if (result) {
+      // Update getUser result
+      dispatch(
+        updateQueryStateAndEntities('getUser', defaultGetCacheKey(result.id), {
+          result,
+        })
+      )
+
+      // Update getUsers result
+      const getUsersState = getState().cacheNotNormalized.queries.getUsers['all-pages']
+      if (getUsersState) {
+        const userIndex = getUsersState.result?.items.findIndex((x) => x.id === result.id)
+        if (getUsersState.result && userIndex != null && userIndex != -1) {
+          const newUsersResult = {
+            ...getUsersState.result,
+            items: [...getUsersState.result.items],
+          }
+          newUsersResult.items.splice(userIndex, 1, result)
+          dispatch(
+            updateQueryStateAndEntities('getUsers', 'all-pages', {
+              result: newUsersResult,
+            })
+          )
+        }
+      }
+    }
+  }
+
   return (
     <div className="screen">
       <Link id={'users-link'} className={'link'} to={'/not-normalized/users'}>
         {'users'}
       </Link>
       {!!user && (
-        <button
-          id="update-user"
-          onClick={async () => {
-            // using client's mutate because it returns result. TODO return result for useMutation mutate
-            const {result} = await mutate({
-              mutation: 'updateUser',
-              params: {
-                id: user.id,
-                name: user.name + ' *',
-              },
-            })
-            // Updating getUser and getUsers results after successfull mutation.
-            // Refetch instead can be used, but this will cause additional requests.
-            // Normalization approach does that automatically.
-            if (result) {
-              // Update getUser result
-              dispatch(
-                updateQueryStateAndEntities('getUser', defaultGetCacheKey(result.id), {
-                  result,
-                })
-              )
-
-              // Update getUsers result
-              const usersResult = getState().cacheNotNormalized.queries.getUsers['all-pages'].result
-              const userIndex = usersResult?.items.findIndex((x) => x.id === result.id)
-              if (usersResult && userIndex != null && userIndex != -1) {
-                const newUsersResult = {
-                  ...usersResult,
-                  items: [...usersResult.items],
-                }
-                newUsersResult.items.splice(userIndex, 1, result)
-                dispatch(
-                  updateQueryStateAndEntities('getUsers', 'all-pages', {
-                    result: newUsersResult,
-                  })
-                )
-              }
-            }
-          }}
-        >{`updat${updatingUser ? 'ing' : 'e'} user name`}</button>
+        <button id="update-user" onClick={onUpdateUserNameClick}>{`updat${
+          updatingUser ? 'ing' : 'e'
+        } user name`}</button>
       )}
       <button
         id="next-user"
