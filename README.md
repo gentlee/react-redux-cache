@@ -9,7 +9,7 @@
 
 # react-redux-cache
 
-**Powerful** yet **lightweight** data fetching and caching library that supports **normalization** unlike `react-query` and `rtk-query`, while having similar but very simple interface. Built on top of `redux`, fully typed and written on Typescript. Can be considered as `ApolloClient` for protocols other than `GraphQL`.
+**Powerful** yet **lightweight** data fetching and caching library that supports **normalization** unlike `react-query` and `rtk-query`, while having similar but very simple interface. Built on top of `redux`, fully typed and written on Typescript. Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with full access to well known storage - redux.
 
 **Normalization** is the best way to keep the state of the app **consistent** between different views, reduces the number of fetches and allows to show cached data when navigating, which greatly improves **user experience**.
 
