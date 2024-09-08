@@ -36,6 +36,14 @@ const createCache = (partialCache) => {
         result[x] = (state) => cache.cacheStateSelector(state).entities[x];
         return result;
     }, {});
+    const selectQueryState = (state, query, cacheKey) => {
+        // @ts-expect-error fix later
+        return cache.cacheStateSelector(state).queries[query][cacheKey];
+    };
+    const selectMutationState = (state, mutation) => {
+        // @ts-expect-error fix later
+        return cache.cacheStateSelector(state).mutations[mutation];
+    };
     const actions = (0, createActions_1.createActions)(cache.name);
     return {
         cache,
@@ -43,6 +51,29 @@ const createCache = (partialCache) => {
         reducer: (0, reducer_1.createCacheReducer)(actions, cache.typenames, Object.keys(cache.queries), cache.options),
         actions,
         selectors: {
+            selectQueryState,
+            selectQueryResult: (state, query, cacheKey) => {
+                var _a;
+                return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.result;
+            },
+            selectQueryLoading: (state, query, cacheKey) => {
+                var _a;
+                return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.loading;
+            },
+            selectQueryError: (state, query, cacheKey) => {
+                var _a;
+                return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.error;
+            },
+            selectMutationState,
+            selectMutationResult: (state, mutation) => {
+                return selectMutationState(state, mutation).result;
+            },
+            selectMutationLoading: (state, mutation) => {
+                return selectMutationState(state, mutation).loading;
+            },
+            selectMutationError: (state, mutation) => {
+                return selectMutationState(state, mutation).error;
+            },
             /** Select all entities from the state. */
             entitiesSelector,
             /** Select all entities of provided typename. */
@@ -62,10 +93,10 @@ const createCache = (partialCache) => {
                             const getCacheKey = (_a = cache.queries[queryKey].getCacheKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetCacheKey);
                             // @ts-expect-error fix later
                             const cacheKey = getCacheKey(params);
-                            return (0, query_1.query)('query', true, store, cache, actions, queryKey, cacheKey, params);
+                            return (0, query_1.query)('query', store, cache, actions, queryKey, cacheKey, params);
                         },
                         mutate: (options) => {
-                            return (0, mutate_1.mutate)('mutate', true, store, cache, actions, options.mutation, options.params, abortControllers);
+                            return (0, mutate_1.mutate)('mutate', store, cache, actions, options.mutation, options.params, abortControllers);
                         },
                     };
                     return client;

@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mutate = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const mutate = (logTag, returnResult, store, cache, { updateMutationStateAndEntities }, mutationKey, params, abortControllers) => __awaiter(void 0, void 0, void 0, function* () {
+const mutate = (logTag, store, cache, { updateMutationStateAndEntities }, mutationKey, params, abortControllers) => __awaiter(void 0, void 0, void 0, function* () {
     let abortControllersOfStore = abortControllers.get(store);
     if (abortControllersOfStore === undefined) {
         abortControllersOfStore = {};
@@ -55,7 +55,7 @@ const mutate = (logTag, returnResult, store, cache, { updateMutationStateAndEnti
             aborted: abortController.signal.aborted,
         });
     if (abortController.signal.aborted) {
-        return returnResult ? { aborted: true } : undefined;
+        return ABORTED_RESULT;
     }
     delete abortControllersOfStore[mutationKey];
     if (error) {
@@ -73,8 +73,9 @@ const mutate = (logTag, returnResult, store, cache, { updateMutationStateAndEnti
             result: response.result,
         }, response));
         // @ts-expect-error fix later
-        return returnResult ? { result: response.result } : undefined;
+        return { result: response.result };
     }
     throw new Error(`${logTag}: both error and response are not defined`);
 });
 exports.mutate = mutate;
+const ABORTED_RESULT = Object.freeze({ aborted: true });

@@ -1,3 +1,4 @@
+import { Store } from 'redux';
 import type { ReduxCacheState } from './reducer';
 export type Key = string | number | symbol;
 export type Dict<T> = Record<Key, T>;
@@ -73,8 +74,8 @@ export type QueryInfo<T extends Typenames, P, R, S> = {
      * Needed when query result may already be in the cache, e.g. for single entity query by id.
      * */
     resultSelector?: (state: S, params: P) => R | undefined;
-    /** Merges results before saving to the store. */
-    mergeResults?: (oldResult: R | undefined, response: QueryResponse<T, R>, params: P | undefined) => R;
+    /** Merges results before saving to the store. Default implementation is using the latest result. */
+    mergeResults?: (oldResult: R | undefined, response: QueryResponse<T, R>, params: P | undefined, store: Store) => R;
     /**
      * Cache key is used for storing the query state and for performing a fetch when it changes. Queries with the same cache key share their state.
      * Default implementation uses `JSON.stringify` or `String()` depending on type.
@@ -86,7 +87,7 @@ export type UseQueryOptions<T extends Typenames, QP, QR, MR, QK extends keyof (Q
     query: QK;
     params: QK extends keyof (QP | QR) ? QP[QK] : never;
     skip?: boolean;
-} & Pick<QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QR, MR>> : never, 'cachePolicy' | 'mergeResults' | 'getCacheKey'>;
+} & Pick<QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QR, MR>> : never, 'cachePolicy'>;
 /**
  * @param cache-first for each params key fetch is not called if cache exists.
  * @param cache-and-fetch for each params key result is taken from cache and fetch is called.
