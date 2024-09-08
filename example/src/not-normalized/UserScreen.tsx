@@ -9,18 +9,20 @@ export const UserScreen = () => {
   const {
     actions: {updateQueryStateAndEntities},
     hooks: {useQuery, useMutation},
+    selectors: {selectQueryState},
   } = cacheNotNormalized
 
   const {dispatch, getState} = useAppStore()
   const {id: userIdParam} = useParams()
-
-  const [userId, setUserId] = useState(Number(userIdParam))
   const [skip, setSkip] = useState(false)
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const userId = +userIdParam!
 
   const [{result: user, loading, error}] = useQuery({
     query: 'getUser',
     params: userId,
-    skip,
+    skip: skip || isNaN(userId),
   })
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -34,7 +36,6 @@ export const UserScreen = () => {
     error,
     user,
     userId,
-    userIdParam,
     skip,
   })
 
@@ -67,7 +68,7 @@ export const UserScreen = () => {
       )
 
       // Update getUsers result
-      const getUsersState = getState().cacheNotNormalized.queries.getUsers['all-pages']
+      const getUsersState = selectQueryState(getState(), 'getUsers', 'all-pages')
       if (getUsersState) {
         const userIndex = getUsersState.result?.items.findIndex((x) => x.id === result.id)
         if (getUsersState.result && userIndex != null && userIndex != -1) {
@@ -96,23 +97,14 @@ export const UserScreen = () => {
           updatingUser ? 'ing' : 'e'
         } user name`}</button>
       )}
-      <button
-        id="next-user"
-        onClick={() => {
-          setUserId(userId + 1)
-        }}
-      >
+      <Link id="next-user" className="link" to={'/not-normalized/user/' + String(userId + 1)}>
         next user
-      </button>
-      <button
-        id="prev-user"
-        disabled={userId === 0}
-        onClick={() => {
-          setUserId(userId - 1)
-        }}
-      >
-        previous user
-      </button>
+      </Link>
+      {userId > 0 && (
+        <Link id="next-user" className="link" to={'/not-normalized/user/' + String(userId - 1)}>
+          previous user
+        </Link>
+      )}
       <div className="checkbox">
         <input id="skip" type="checkbox" checked={skip} onChange={() => setSkip(!skip)} />
         <label>skip</label>

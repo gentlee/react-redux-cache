@@ -6,13 +6,15 @@ import {useMutation, useQuery, useSelectEntityById} from './cache'
 export const UserScreen = () => {
   const {id: userIdParam} = useParams()
 
-  const [userId, setUserId] = useState(Number(userIdParam))
   const [skip, setSkip] = useState(false)
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const userId = +userIdParam!
 
   const [{result, loading, error}] = useQuery({
     query: 'getUser',
     params: userId,
-    skip,
+    skip: skip || isNaN(userId),
   })
 
   const [updateUser, {loading: updatingUser}] = useMutation({
@@ -56,23 +58,14 @@ export const UserScreen = () => {
             })
         }}
       >{`updat${updatingUser ? 'ing' : 'e'} user name`}</button>
-      <button
-        id="next-user"
-        onClick={() => {
-          setUserId(userId + 1)
-        }}
-      >
+      <Link id="next-user" className="link" to={'/user/' + String(userId + 1)}>
         next user
-      </button>
-      <button
-        id="prev-user"
-        disabled={userId === 0}
-        onClick={() => {
-          setUserId(userId - 1)
-        }}
-      >
-        previous user
-      </button>
+      </Link>
+      {userId > 0 && (
+        <Link id="next-user" className="link" to={'/user/' + String(userId - 1)}>
+          previous user
+        </Link>
+      )}
       <div className="checkbox">
         <input id="skip" type="checkbox" checked={skip} onChange={() => setSkip(!skip)} />
         <label>skip</label>
