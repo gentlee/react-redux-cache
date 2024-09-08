@@ -80,17 +80,7 @@ All typenames, queries and mutations should be passed while initializing the cac
 export const {
   cache,
   reducer,
-  hooks: {useClient, useMutation, useQuery, useSelectEntityById},
-  // Actions, selectors and utils may be not used at all
-  selectors: {entitiesSelector, entitiesByTypenameSelector},
-  actions: {
-    updateQueryStateAndEntities,
-    updateMutationStateAndEntities,
-    mergeEntityChanges,
-    clearQueryState,
-    clearMutationState,
-  },
-  utils: {applyEntityChanges},
+  hooks: {useClient, useMutation, useQuery},
 } = createCache({
   // Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state.
   name: 'cache',
