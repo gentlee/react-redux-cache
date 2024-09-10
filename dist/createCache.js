@@ -29,6 +29,9 @@ const createCache = (partialCache) => {
     partialCache.abortControllers = abortControllers;
     const cache = partialCache;
     // make selectors
+    const selectEntityById = (state, id, typename) => {
+        return id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id];
+    };
     const selectQueryState = (state, query, cacheKey) => {
         // @ts-expect-error fix later
         return cache.cacheStateSelector(state).queries[query][cacheKey];
@@ -77,9 +80,7 @@ const createCache = (partialCache) => {
                 return selectMutationState(state, mutation).error;
             },
             /** Selects entity by id and typename. */
-            selectEntityById: (state, id, typename) => {
-                return id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id];
-            },
+            selectEntityById,
             /** Selects all entities. */
             selectEntities: (state) => {
                 return cache.cacheStateSelector(state).entities;
@@ -114,6 +115,10 @@ const createCache = (partialCache) => {
             useQuery: (options) => (0, useQuery_1.useQuery)(cache, actions, options),
             /** Subscribes to provided mutation state and provides mutate function. */
             useMutation: (options) => (0, useMutation_1.useMutation)(cache, actions, options, abortControllers),
+            /** useSelector + selectEntityById. */
+            useSelectEntityById: (id, typename) => {
+                return (0, react_redux_1.useSelector)((state) => selectEntityById(state, id, typename));
+            },
         },
         utils: {
             /**

@@ -1,8 +1,7 @@
 import React, {useState} from 'react'
-import {useSelector} from 'react-redux'
 import {Link, useParams} from 'react-router-dom'
 
-import {selectEntityById, useMutation, useQuery} from './cache'
+import {useMutation, useQuery, useSelectEntityById} from './cache'
 
 export const UserScreen = () => {
   const {id: userIdParam} = useParams()
@@ -22,8 +21,8 @@ export const UserScreen = () => {
     mutation: 'updateUser',
   })
 
-  const user = useSelector((state) => selectEntityById(state, result, 'users'))
-  const bank = useSelector((state) => selectEntityById(state, user?.bankId, 'banks'))
+  const user = useSelectEntityById(result, 'users')
+  const bank = useSelectEntityById(user?.bankId, 'banks')
 
   console.debug('[UserScreen]', {
     result,

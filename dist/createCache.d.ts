@@ -87,7 +87,7 @@ export declare const createCache: <N extends string, T extends Typenames, QP, QR
                 mutationKeys: K_3[];
             };
             type: `@rrc/${N}/clearMutationState`;
-        }; /** Selects query latest result. */
+        };
     };
     selectors: {
         /** Selects query state. */
@@ -128,6 +128,8 @@ export declare const createCache: <N extends string, T extends Typenames, QP, QR
         useMutation: <MK_6 extends keyof MP | keyof MR>(options: {
             mutation: MK_6;
         }) => readonly [(params: MK_6 extends keyof MP & keyof MR ? MP[MK_6] : never) => Promise<MutationResult<MK_6 extends infer T_2 ? T_2 extends MK_6 ? T_2 extends keyof MP & keyof MR ? MR[T_2] : never : never : never>>, QueryMutationState<MK_6 extends keyof MP & keyof MR ? MP[MK_6] : never>, () => boolean];
+        /** useSelector + selectEntityById. */
+        useSelectEntityById: <TN_2 extends keyof T>(id: Key | null | undefined, typename: TN_2) => T[TN_2] | undefined;
     };
     utils: {
         /**

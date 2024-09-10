@@ -1,5 +1,5 @@
 import {useMemo} from 'react'
-import {useStore} from 'react-redux'
+import {useSelector, useStore} from 'react-redux'
 import {Store} from 'redux'
 
 import {createActions} from './createActions'
@@ -49,6 +49,14 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
   const cache = partialCache as TypedCache
 
   // make selectors
+
+  const selectEntityById = <TN extends keyof T>(
+    state: unknown,
+    id: Key | null | undefined,
+    typename: TN
+  ) => {
+    return id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id]
+  }
 
   const selectQueryState = <QK extends keyof (QP & QR)>(
     state: unknown,
@@ -114,13 +122,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
         return selectMutationState(state, mutation).error
       },
       /** Selects entity by id and typename. */
-      selectEntityById: <TN extends keyof T>(
-        state: unknown,
-        id: Key | null | undefined,
-        typename: TN
-      ) => {
-        return id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id]
-      },
+      selectEntityById,
       /** Selects all entities. */
       selectEntities: (state: unknown) => {
         return cache.cacheStateSelector(state).entities
@@ -187,6 +189,14 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
       useMutation: <MK extends keyof (MP & MR)>(
         options: Parameters<typeof useMutation<N, T, MP, MR, MK>>[2]
       ) => useMutation(cache, actions, options, abortControllers),
+
+      /** useSelector + selectEntityById. */
+      useSelectEntityById: <TN extends keyof T>(
+        id: Key | null | undefined,
+        typename: TN
+      ): T[TN] | undefined => {
+        return useSelector((state) => selectEntityById(state, id, typename))
+      },
     },
     utils: {
       /**
