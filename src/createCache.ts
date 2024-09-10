@@ -1,5 +1,5 @@
 import {useMemo} from 'react'
-import {useSelector, useStore} from 'react-redux'
+import {useStore} from 'react-redux'
 import {Store} from 'redux'
 
 import {createActions} from './createActions'
@@ -9,7 +9,6 @@ import {createCacheReducer} from './reducer'
 import type {
   Cache,
   CacheOptions,
-  EntitiesMap,
   Key,
   MutationResult,
   OptionalPartial,
@@ -51,18 +50,6 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
 
   // make selectors
 
-  const entitiesSelector = (state: unknown) => {
-    return cache.cacheStateSelector(state).entities
-  }
-
-  const enitityMapSelectorByTypename = Object.keys(partialCache.typenames).reduce(
-    (result, x: keyof T) => {
-      result[x] = (state: unknown) => cache.cacheStateSelector(state).entities[x]
-      return result
-    },
-    {} as {[K in keyof T]: (state: unknown) => EntitiesMap<T>[K]}
-  )
-
   const selectQueryState = <QK extends keyof (QP & QR)>(
     state: unknown,
     query: QK,
@@ -83,6 +70,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
   const actions = createActions<N, T, QR, MR>(cache.name)
 
   return {
+    /** Keeps all options, passed while creating the cache. */
     cache,
     /** Reducer of the cache, should be added to redux store. */
     reducer: createCacheReducer<N, T, QR, MR>(
@@ -93,10 +81,13 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
     ),
     actions,
     selectors: {
+      /** Selects query state. */
       selectQueryState,
+      /** Selects query latest result. */
       selectQueryResult: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
         return selectQueryState(state, query, cacheKey)?.result
       },
+      /** Selects query loading state. */
       selectQueryLoading: <QK extends keyof (QP & QR)>(
         state: unknown,
         query: QK,
@@ -104,28 +95,43 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
       ) => {
         return selectQueryState(state, query, cacheKey)?.loading
       },
+      /** Selects query latest error. */
       selectQueryError: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
         return selectQueryState(state, query, cacheKey)?.error
       },
+      /** Selects mutation state. */
       selectMutationState,
+      /** Selects mutation latest result. */
       selectMutationResult: <MK extends keyof (MP & MR)>(state: unknown, mutation: MK) => {
         return selectMutationState(state, mutation).result
       },
+      /** Selects mutation loading state. */
       selectMutationLoading: <MK extends keyof (MP & MR)>(state: unknown, mutation: MK) => {
         return selectMutationState(state, mutation).loading
       },
+      /** Selects mutation latest error. */
       selectMutationError: <MK extends keyof (MP & MR)>(state: unknown, mutation: MK) => {
         return selectMutationState(state, mutation).error
       },
-      /** Select all entities from the state. */
-      entitiesSelector,
-      /** Select all entities of provided typename. */
-      entitiesByTypenameSelector: <TN extends keyof T>(typename: TN) => {
-        return enitityMapSelectorByTypename[typename]
+      /** Selects entity by id and typename. */
+      selectEntityById: <TN extends keyof T>(
+        state: unknown,
+        id: Key | null | undefined,
+        typename: TN
+      ) => {
+        return id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id]
+      },
+      /** Selects all entities. */
+      selectEntities: (state: unknown) => {
+        return cache.cacheStateSelector(state).entities
+      },
+      /** Selects all entities of provided typename. */
+      selectEntitiesByTypename: <TN extends keyof T>(state: unknown, typename: TN) => {
+        return cache.cacheStateSelector(state).entities[typename]
       },
     },
     hooks: {
-      /** Returns client object with query function */
+      /** Returns client object with query and mutate functions. */
       useClient: () => {
         const store = useStore()
         return useMemo(() => {
@@ -181,19 +187,12 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
       useMutation: <MK extends keyof (MP & MR)>(
         options: Parameters<typeof useMutation<N, T, MP, MR, MK>>[2]
       ) => useMutation(cache, actions, options, abortControllers),
-
-      /** Selects entity by id and subscribes to the changes. */
-      useSelectEntityById: <TN extends keyof T>(
-        id: Key | null | undefined,
-        typename: TN
-      ): T[TN] | undefined => {
-        return useSelector((state) =>
-          // TODO move to selectors?
-          id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id]
-        )
-      },
     },
     utils: {
+      /**
+       * Apply changes to the entities map.
+       * @return `undefined` if nothing to change, otherwise new entities map with applied changes.
+       */
       applyEntityChanges: (
         entities: Parameters<typeof applyEntityChanges<T>>[0],
         changes: Parameters<typeof applyEntityChanges<T>>[1]

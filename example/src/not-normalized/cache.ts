@@ -1,9 +1,6 @@
 import {Cache, createCache, defaultGetCacheKey} from 'react-redux-cache'
 
-import {Bank} from '../normalized/api/types'
-import type {AppStore} from '../redux/store'
 import {getUser, getUsers, removeUser, updateUser} from './api/mocks'
-import {User} from './api/types'
 
 export type Typenames = typeof cacheNotNormalized extends Cache<
   string,
@@ -18,10 +15,7 @@ export type Typenames = typeof cacheNotNormalized extends Cache<
 
 export const cacheNotNormalized = createCache({
   name: 'cacheNotNormalized',
-  typenames: {
-    users: {} as User,
-    banks: {} as Bank,
-  },
+  typenames: {}, // without normalization we don't need typenames
   queries: {
     getUsers: {
       query: getUsers,

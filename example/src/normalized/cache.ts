@@ -17,9 +17,9 @@ export type Typenames = typeof cache extends Cache<
 export const {
   cache,
   reducer,
+  selectors: {selectEntityById, selectEntitiesByTypename},
   actions: {updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges},
-  selectors: {entitiesSelector, entitiesByTypenameSelector},
-  hooks: {useClient, useMutation, useQuery, useSelectEntityById},
+  hooks: {useClient, useMutation, useQuery},
 } = createCache({
   name: 'cache',
   typenames: {

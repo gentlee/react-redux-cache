@@ -44,8 +44,9 @@ test('createCache returns correct result', () => {
   expect(actions.clearQueryState).toBeDefined()
   expect(actions.clearMutationState).toBeDefined()
 
-  expect(selectors.entitiesSelector).toBeDefined()
-  expect(selectors.entitiesByTypenameSelector).toBeDefined()
+  expect(selectors.selectEntityById).toBeDefined()
+  expect(selectors.selectEntities).toBeDefined()
+  expect(selectors.selectEntitiesByTypename).toBeDefined()
   expect(selectors.selectQueryState).toBeDefined()
   expect(selectors.selectQueryResult).toBeDefined()
   expect(selectors.selectQueryLoading).toBeDefined()
@@ -57,7 +58,6 @@ test('createCache returns correct result', () => {
 
   expect(hooks.useQuery).toBeDefined()
   expect(hooks.useMutation).toBeDefined()
-  expect(hooks.useSelectEntityById).toBeDefined()
   expect(hooks.useClient).toBeDefined()
 
   expect(utils.applyEntityChanges).toBeDefined()
@@ -98,12 +98,12 @@ test('supports multiple cache reducers', () => {
 test('custom cacheStateSelector', () => {
   const {
     reducer,
-    selectors: {entitiesSelector},
+    selectors: {selectEntities},
   } = createTestingCache('cache', (state) => state)
   const store = createStore(reducer)
 
   // cacheStateSelector is used in all selectors
-  expect(entitiesSelector(store.getState())).toBe(store.getState().entities)
+  expect(selectEntities(store.getState())).toBe(store.getState().entities)
 })
 
 // utils & constants

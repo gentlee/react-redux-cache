@@ -28,10 +28,6 @@ const log = (tag, data) => {
     console.debug(`@${exports.PACKAGE_SHORT_NAME} [${tag}]`, data);
 };
 exports.log = log;
-/**
- * Apply changes to the entities map.
- * @return `undefined` if nothing to change, otherwise new entities map with applied changes.
- */
 const applyEntityChanges = (entities, changes, options) => {
     var _a, _b, _c;
     if (options.validateFunctionArguments) {

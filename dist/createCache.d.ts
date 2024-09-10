@@ -1,4 +1,4 @@
-import type { Cache, EntitiesMap, Key, MutationResult, OptionalPartial, QueryMutationState, QueryOptions, QueryResult, Typenames } from './types';
+import type { Cache, Key, MutationResult, OptionalPartial, QueryMutationState, QueryOptions, QueryResult, Typenames } from './types';
 import { useMutation } from './useMutation';
 import { useQuery } from './useQuery';
 import { applyEntityChanges } from './utilsAndConstants';
@@ -6,10 +6,11 @@ import { applyEntityChanges } from './utilsAndConstants';
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
  */
 export declare const createCache: <N extends string, T extends Typenames, QP, QR, MP, MR>(partialCache: OptionalPartial<Cache<N, T, QP, QR, MP, MR>, "options" | "queries" | "mutations" | "cacheStateSelector">) => {
+    /** Keeps all options, passed while creating the cache. */
     cache: Cache<N, T, QP, QR, MP, MR>;
     /** Reducer of the cache, should be added to redux store. */
     reducer: (state: {
-        entities: EntitiesMap<T>;
+        entities: import("./types").EntitiesMap<T>;
         queries: { [QK in keyof QR]: import("./types").Dict<QueryMutationState<QR[QK]>>; };
         mutations: { [MK in keyof MR]: QueryMutationState<MR[MK]>; };
     } | undefined, action: {
@@ -36,7 +37,7 @@ export declare const createCache: <N extends string, T extends Typenames, QP, QR
         type: `@rrc/${N}/clearMutationState`;
         mutationKeys: (keyof MR)[];
     }) => {
-        entities: EntitiesMap<T>;
+        entities: import("./types").EntitiesMap<T>;
         queries: { [QK in keyof QR]: import("./types").Dict<QueryMutationState<QR[QK]>>; };
         mutations: { [MK in keyof MR]: QueryMutationState<MR[MK]>; };
     };
@@ -86,24 +87,34 @@ export declare const createCache: <N extends string, T extends Typenames, QP, QR
                 mutationKeys: K_3[];
             };
             type: `@rrc/${N}/clearMutationState`;
-        };
+        }; /** Selects query latest result. */
     };
     selectors: {
+        /** Selects query state. */
         selectQueryState: <QK_1 extends keyof QR | keyof QP>(state: unknown, query: QK_1, cacheKey: Key) => QueryMutationState<QK_1 extends keyof QP & keyof QR ? QR[QK_1] : never> | undefined;
+        /** Selects query latest result. */
         selectQueryResult: <QK_2 extends keyof QR | keyof QP>(state: unknown, query: QK_2, cacheKey: Key) => (QK_2 extends keyof QP & keyof QR ? QR[QK_2] : never) | undefined;
+        /** Selects query loading state. */
         selectQueryLoading: <QK_3 extends keyof QR | keyof QP>(state: unknown, query: QK_3, cacheKey: Key) => boolean | undefined;
+        /** Selects query latest error. */
         selectQueryError: <QK_4 extends keyof QR | keyof QP>(state: unknown, query: QK_4, cacheKey: Key) => Error | undefined;
+        /** Selects mutation state. */
         selectMutationState: <MK_1 extends keyof MP | keyof MR>(state: unknown, mutation: MK_1) => QueryMutationState<MK_1 extends keyof MP & keyof MR ? MR[MK_1] : never>;
+        /** Selects mutation latest result. */
         selectMutationResult: <MK_2 extends keyof MP | keyof MR>(state: unknown, mutation: MK_2) => (MK_2 extends keyof MP & keyof MR ? MR[MK_2] : never) | undefined;
+        /** Selects mutation loading state. */
         selectMutationLoading: <MK_3 extends keyof MP | keyof MR>(state: unknown, mutation: MK_3) => boolean;
+        /** Selects mutation latest error. */
         selectMutationError: <MK_4 extends keyof MP | keyof MR>(state: unknown, mutation: MK_4) => Error | undefined;
-        /** Select all entities from the state. */
-        entitiesSelector: (state: unknown) => EntitiesMap<T>;
-        /** Select all entities of provided typename. */
-        entitiesByTypenameSelector: <TN extends keyof T>(typename: TN) => { [K_4 in keyof T]: (state: unknown) => EntitiesMap<T>[K_4]; }[TN];
+        /** Selects entity by id and typename. */
+        selectEntityById: <TN extends keyof T>(state: unknown, id: Key | null | undefined, typename: TN) => T[TN] | undefined;
+        /** Selects all entities. */
+        selectEntities: (state: unknown) => import("./types").EntitiesMap<T>;
+        /** Selects all entities of provided typename. */
+        selectEntitiesByTypename: <TN_1 extends keyof T>(state: unknown, typename: TN_1) => import("./types").EntitiesMap<T>[TN_1];
     };
     hooks: {
-        /** Returns client object with query function */
+        /** Returns client object with query and mutate functions. */
         useClient: () => {
             query: <QK_5 extends keyof QR | keyof QP>(options: Omit<QueryOptions<T, QP, QR, MR, QK_5>, "cachePolicy">) => Promise<QueryResult<QK_5 extends keyof QP & keyof QR ? QR[QK_5] : never>>;
             mutate: <MK_5 extends keyof MP | keyof MR>(options: {
@@ -117,10 +128,12 @@ export declare const createCache: <N extends string, T extends Typenames, QP, QR
         useMutation: <MK_6 extends keyof MP | keyof MR>(options: {
             mutation: MK_6;
         }) => readonly [(params: MK_6 extends keyof MP & keyof MR ? MP[MK_6] : never) => Promise<MutationResult<MK_6 extends infer T_2 ? T_2 extends MK_6 ? T_2 extends keyof MP & keyof MR ? MR[T_2] : never : never : never>>, QueryMutationState<MK_6 extends keyof MP & keyof MR ? MP[MK_6] : never>, () => boolean];
-        /** Selects entity by id and subscribes to the changes. */
-        useSelectEntityById: <TN_1 extends keyof T>(id: Key | null | undefined, typename: TN_1) => T[TN_1] | undefined;
     };
     utils: {
-        applyEntityChanges: (entities: EntitiesMap<T>, changes: import("./types").EntityChanges<T>) => EntitiesMap<T> | undefined;
+        /**
+         * Apply changes to the entities map.
+         * @return `undefined` if nothing to change, otherwise new entities map with applied changes.
+         */
+        applyEntityChanges: (entities: import("./types").EntitiesMap<T>, changes: import("./types").EntityChanges<T>) => import("./types").EntitiesMap<T> | undefined;
     };
 };

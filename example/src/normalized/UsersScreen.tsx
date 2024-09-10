@@ -2,7 +2,7 @@ import React from 'react'
 import {useSelector} from 'react-redux'
 import {Link} from 'react-router-dom'
 
-import {entitiesByTypenameSelector, useClient, useQuery} from './cache'
+import {selectEntitiesByTypename, useClient, useQuery} from './cache'
 
 export const UsersScreen = () => {
   const {query} = useClient()
@@ -14,7 +14,7 @@ export const UsersScreen = () => {
     },
   })
 
-  const usersMap = useSelector(entitiesByTypenameSelector('users'))
+  const usersMap = useSelector((state) => selectEntitiesByTypename(state, 'users'))
 
   console.debug('[UsersScreen]', {
     usersResult,

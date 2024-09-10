@@ -9,13 +9,12 @@ export {
 // Backlog
 
 // ! high
-// add not optimized not normalized example
+// add not optimized not normalized example, and not normalized state example to readme
 // try use skip for refreshing strategy?
 // optimistic response
-// make query key / cache key difference more clear in the docs, or remove queryKey at all?
+// make query key / cache key difference more clear in the docs, and/or rename queryKey -> query
 
 // ! medium
-// make named caches to produce named hooks, actions etc (same as slices in RTK)?
 // allow multiple mutation with same keys?
 // type extractors from cache
 // custom useStore
@@ -30,6 +29,7 @@ export {
 // don't cache result if resultSelector set? throw error if mergeResult set with resultSelector?
 
 // ! low
+// access to currently loading queries and mutations?
 // add params to the state?
 // cancellation to queries
 // if mutation & query alrady loading - make options: last, throttle, debounce, parallel?

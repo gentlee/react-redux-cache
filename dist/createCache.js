@@ -29,13 +29,6 @@ const createCache = (partialCache) => {
     partialCache.abortControllers = abortControllers;
     const cache = partialCache;
     // make selectors
-    const entitiesSelector = (state) => {
-        return cache.cacheStateSelector(state).entities;
-    };
-    const enitityMapSelectorByTypename = Object.keys(partialCache.typenames).reduce((result, x) => {
-        result[x] = (state) => cache.cacheStateSelector(state).entities[x];
-        return result;
-    }, {});
     const selectQueryState = (state, query, cacheKey) => {
         // @ts-expect-error fix later
         return cache.cacheStateSelector(state).queries[query][cacheKey];
@@ -46,43 +39,58 @@ const createCache = (partialCache) => {
     };
     const actions = (0, createActions_1.createActions)(cache.name);
     return {
+        /** Keeps all options, passed while creating the cache. */
         cache,
         /** Reducer of the cache, should be added to redux store. */
         reducer: (0, reducer_1.createCacheReducer)(actions, cache.typenames, Object.keys(cache.queries), cache.options),
         actions,
         selectors: {
+            /** Selects query state. */
             selectQueryState,
+            /** Selects query latest result. */
             selectQueryResult: (state, query, cacheKey) => {
                 var _a;
                 return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.result;
             },
+            /** Selects query loading state. */
             selectQueryLoading: (state, query, cacheKey) => {
                 var _a;
                 return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.loading;
             },
+            /** Selects query latest error. */
             selectQueryError: (state, query, cacheKey) => {
                 var _a;
                 return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.error;
             },
+            /** Selects mutation state. */
             selectMutationState,
+            /** Selects mutation latest result. */
             selectMutationResult: (state, mutation) => {
                 return selectMutationState(state, mutation).result;
             },
+            /** Selects mutation loading state. */
             selectMutationLoading: (state, mutation) => {
                 return selectMutationState(state, mutation).loading;
             },
+            /** Selects mutation latest error. */
             selectMutationError: (state, mutation) => {
                 return selectMutationState(state, mutation).error;
             },
-            /** Select all entities from the state. */
-            entitiesSelector,
-            /** Select all entities of provided typename. */
-            entitiesByTypenameSelector: (typename) => {
-                return enitityMapSelectorByTypename[typename];
+            /** Selects entity by id and typename. */
+            selectEntityById: (state, id, typename) => {
+                return id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id];
+            },
+            /** Selects all entities. */
+            selectEntities: (state) => {
+                return cache.cacheStateSelector(state).entities;
+            },
+            /** Selects all entities of provided typename. */
+            selectEntitiesByTypename: (state, typename) => {
+                return cache.cacheStateSelector(state).entities[typename];
             },
         },
         hooks: {
-            /** Returns client object with query function */
+            /** Returns client object with query and mutate functions. */
             useClient: () => {
                 const store = (0, react_redux_1.useStore)();
                 return (0, react_1.useMemo)(() => {
@@ -106,14 +114,12 @@ const createCache = (partialCache) => {
             useQuery: (options) => (0, useQuery_1.useQuery)(cache, actions, options),
             /** Subscribes to provided mutation state and provides mutate function. */
             useMutation: (options) => (0, useMutation_1.useMutation)(cache, actions, options, abortControllers),
-            /** Selects entity by id and subscribes to the changes. */
-            useSelectEntityById: (id, typename) => {
-                return (0, react_redux_1.useSelector)((state) => 
-                // TODO move to selectors?
-                id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id]);
-            },
         },
         utils: {
+            /**
+             * Apply changes to the entities map.
+             * @return `undefined` if nothing to change, otherwise new entities map with applied changes.
+             */
             applyEntityChanges: (entities, changes) => {
                 return (0, utilsAndConstants_1.applyEntityChanges)(entities, changes, cache.options);
             },

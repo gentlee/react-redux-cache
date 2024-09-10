@@ -7,8 +7,4 @@ export declare const DEFAULT_QUERY_MUTATION_STATE: {
 };
 export declare const defaultGetCacheKey: <P = unknown>(params: P) => Key;
 export declare const log: (tag: string, data?: unknown) => void;
-/**
- * Apply changes to the entities map.
- * @return `undefined` if nothing to change, otherwise new entities map with applied changes.
- */
 export declare const applyEntityChanges: <T extends Typenames>(entities: EntitiesMap<T>, changes: EntityChanges<T>, options: CacheOptions) => EntitiesMap<T> | undefined;

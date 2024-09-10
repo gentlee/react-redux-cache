@@ -29,10 +29,6 @@ export const log = (tag: string, data?: unknown) => {
   console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
 }
 
-/**
- * Apply changes to the entities map.
- * @return `undefined` if nothing to change, otherwise new entities map with applied changes.
- */
 export const applyEntityChanges = <T extends Typenames>(
   entities: EntitiesMap<T>,
   changes: EntityChanges<T>,
