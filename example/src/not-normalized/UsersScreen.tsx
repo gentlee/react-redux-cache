@@ -12,6 +12,7 @@ export const UsersScreen = () => {
 
   const [{result: usersResult, loading, error}] = useQuery({
     query: 'getUsers',
+    cachePolicy: 'cache-and-fetch',
     params: {
       page: 1,
     },

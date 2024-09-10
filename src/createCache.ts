@@ -50,11 +50,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
 
   // make selectors
 
-  const selectEntityById = <TN extends keyof T>(
-    state: unknown,
-    id: Key | null | undefined,
-    typename: TN
-  ) => {
+  const selectEntityById = <TN extends keyof T>(state: unknown, id: Key | null | undefined, typename: TN) => {
     return id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id]
   }
 
@@ -96,11 +92,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
         return selectQueryState(state, query, cacheKey)?.result
       },
       /** Selects query loading state. */
-      selectQueryLoading: <QK extends keyof (QP & QR)>(
-        state: unknown,
-        query: QK,
-        cacheKey: Key
-      ) => {
+      selectQueryLoading: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
         return selectQueryState(state, query, cacheKey)?.loading
       },
       /** Selects query latest error. */
@@ -149,15 +141,9 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
               // @ts-expect-error fix later
               const cacheKey = getCacheKey(params)
 
-              return queryImpl(
-                'query',
-                store,
-                cache,
-                actions,
-                queryKey,
-                cacheKey,
-                params
-              ) as Promise<QueryResult<R>>
+              return queryImpl('query', store, cache, actions, queryKey, cacheKey, params) as Promise<
+                QueryResult<R>
+              >
             },
             mutate: <MK extends keyof (MP & MR)>(options: {
               mutation: MK

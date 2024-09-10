@@ -9,7 +9,8 @@ export {
 // Backlog
 
 // ! high
-// add not optimized not normalized example, and not normalized state example to readme
+// determine refresh vs load next page
+// update readme with how to use mergeResults for invalidating / updating caches
 // try use skip for refreshing strategy?
 // optimistic response
 // make query key / cache key difference more clear in the docs, and/or rename queryKey -> query

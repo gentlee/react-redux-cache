@@ -1,10 +1,13 @@
-import React from 'react'
-import {useSelector} from 'react-redux'
 import {Link} from 'react-router-dom'
 
-import {selectEntitiesByTypename, useClient, useQuery} from './cache'
+import {User} from '../not-normalized/api/types'
+import {cacheNotNormalized} from './cache'
 
 export const UsersScreen = () => {
+  const {
+    hooks: {useQuery, useClient},
+  } = cacheNotNormalized
+
   const {query} = useClient()
 
   const [{result: usersResult, loading, error}] = useQuery({
@@ -14,9 +17,7 @@ export const UsersScreen = () => {
     },
   })
 
-  const usersMap = useSelector((state) => selectEntitiesByTypename(state, 'users'))
-
-  console.debug('[UsersScreen]', {
+  console.debug('[NotNormalizedOptimized/UsersScreen]', {
     usersResult,
     loading,
     error,
@@ -35,17 +36,18 @@ export const UsersScreen = () => {
       <p>
         getUsers result: '<span id="result">{JSON.stringify(usersResult)}</span>
       </p>
-      <p>
-        denormalized:{' '}
-        <span id="denormalized">{JSON.stringify(usersResult?.items.map((id) => usersMap[id]))}</span>
-      </p>
       <Link id="users-link" className={'link'} to={'/'}>
         home
       </Link>
-      {usersResult?.items.map((userId: number) => {
+      {usersResult?.items.map((user: User) => {
         return (
-          <Link id={'user-link-' + userId} key={userId} className={'link'} to={'/user/' + userId}>
-            {'user ' + userId}
+          <Link
+            id={'user-link-' + user.id}
+            key={user.id}
+            className={'link'}
+            to={'/not-normalized-optimized/user/' + user.id}
+          >
+            {'user ' + user.id}
           </Link>
         )
       })}

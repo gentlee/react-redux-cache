@@ -8,6 +8,8 @@ import {UserScreen} from '../normalized/UserScreen'
 import {UsersScreen} from '../normalized/UsersScreen'
 import {UserScreen as UserScreenNotNormalized} from '../not-normalized/UserScreen'
 import {UsersScreen as UsersScreenNotNormalized} from '../not-normalized/UsersScreen'
+import {UserScreen as UserScreenNotNormalizedOptimized} from '../not-normalized-optimized/UserScreen'
+import {UsersScreen as UsersScreenNotNormalizedOptimized} from '../not-normalized-optimized/UsersScreen'
 import {createReduxStore} from '../redux/store'
 import {RootScreen} from './RootScreen'
 
@@ -28,6 +30,8 @@ export const App = ({
         <Route path="/user/:id" element={<UserScreen />} />
         <Route path="/not-normalized/users" element={<UsersScreenNotNormalized />} />
         <Route path="/not-normalized/user/:id" element={<UserScreenNotNormalized />} />
+        <Route path="/not-normalized-optimized/users" element={<UsersScreenNotNormalizedOptimized />} />
+        <Route path="/not-normalized-optimized/user/:id" element={<UserScreenNotNormalizedOptimized />} />
       </Routes>
     </BrowserRouter>
   )

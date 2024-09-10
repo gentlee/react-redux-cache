@@ -23,8 +23,7 @@ export const createActions = <N extends string, T extends Typenames, QR, MR>(nam
   })
   updateQueryStateAndEntities.type = updateQueryStateAndEntitiesType
 
-  const updateMutationStateAndEntitiesType =
-    `${actionPrefix}updateMutationStateAndEntities` as const
+  const updateMutationStateAndEntitiesType = `${actionPrefix}updateMutationStateAndEntities` as const
   const updateMutationStateAndEntities = <K extends keyof MR>(
     mutationKey: K,
     state?: Partial<QueryMutationState<MR[K]>>,
