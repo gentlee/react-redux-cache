@@ -16,8 +16,8 @@ export const useQuery = <
   QK extends keyof (QP & QR)
 >(
   cache: Cache<N, T, QP, QR, MP, MR>,
-  actions: Pick<ActionMap<N, T, QR, MR>, 'updateQueryStateAndEntities'>,
-  options: UseQueryOptions<T, QP, QR, MR, QK>
+  actions: Pick<ActionMap<N, T, QP, QR, MP, MR>, 'updateQueryStateAndEntities'>,
+  options: UseQueryOptions<T, QP, QR, QK>
 ) => {
   type P = QK extends keyof (QP | QR) ? QP[QK] : never
   type R = QK extends keyof (QP | QR) ? QR[QK] : never
@@ -63,15 +63,15 @@ export const useQuery = <
 
   const queryStateFromSelector =
     useSelector((state: unknown) => {
-      const queryState = cacheStateSelector(state).queries[queryKey as keyof QR][cacheKey]
-      return queryState as QueryMutationState<R> | undefined // TODO proper type
-    }) ?? (DEFAULT_QUERY_MUTATION_STATE as QueryMutationState<R>)
+      const queryState = cacheStateSelector(state).queries[queryKey as keyof (QP | QR)][cacheKey]
+      return queryState as QueryMutationState<P, R> | undefined // TODO proper type
+    }) ?? (DEFAULT_QUERY_MUTATION_STATE as QueryMutationState<P, R>)
 
   const queryState = hasResultFromSelector
     ? ({
         ...queryStateFromSelector,
         result: resultFromSelector,
-      } satisfies QueryMutationState<R>)
+      } satisfies QueryMutationState<P, R>)
     : queryStateFromSelector
 
   useEffect(() => {

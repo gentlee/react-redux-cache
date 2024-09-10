@@ -2,16 +2,16 @@ import type {ActionMap} from './createActions'
 import type {CacheOptions, Dict, EntitiesMap, QueryMutationState, Typenames} from './types'
 import {applyEntityChanges, DEFAULT_QUERY_MUTATION_STATE, log} from './utilsAndConstants'
 
-export type ReduxCacheState<T extends Typenames, QR, MR> = ReturnType<
-  ReturnType<typeof createCacheReducer<string, T, QR, MR>>
+export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
+  ReturnType<typeof createCacheReducer<string, T, QP, QR, MP, MR>>
 >
 
 const EMPTY_QUERY_STATE = Object.freeze({})
 
-export const createCacheReducer = <N extends string, T extends Typenames, QR, MR>(
-  actions: ActionMap<N, T, QR, MR>,
+export const createCacheReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
+  actions: ActionMap<N, T, QP, QR, MP, MR>,
   typenames: T,
-  queryKeys: (keyof QR)[],
+  queryKeys: (keyof (QP | QR))[],
   cacheOptions: CacheOptions
 ) => {
   const entitiesMap = {} as EntitiesMap<T>
@@ -19,12 +19,12 @@ export const createCacheReducer = <N extends string, T extends Typenames, QR, MR
     entitiesMap[key] = EMPTY_QUERY_STATE
   }
 
-  const queryStateMap = {} as {[QK in keyof QR]: Dict<QueryMutationState<QR[QK]>>}
+  const queryStateMap = {} as {[QK in keyof (QP | QR)]: Dict<QueryMutationState<QP[QK], QR[QK]>>}
   for (const key of queryKeys) {
     queryStateMap[key] = {}
   }
 
-  const mutationStateMap = {} as {[MK in keyof MR]: QueryMutationState<MR[MK]>}
+  const mutationStateMap = {} as {[MK in keyof (MP | MR)]: QueryMutationState<MP[MK], MR[MK]>}
 
   const initialState = {
     entities: entitiesMap,
@@ -52,8 +52,7 @@ export const createCacheReducer = <N extends string, T extends Typenames, QR, MR
           entityChagnes,
         } = action as ReturnType<typeof actions.updateQueryStateAndEntities>
 
-        const newEntities =
-          entityChagnes && applyEntityChanges(state.entities, entityChagnes, cacheOptions)
+        const newEntities = entityChagnes && applyEntityChanges(state.entities, entityChagnes, cacheOptions)
 
         if (!queryState && !newEntities) {
           return state
@@ -81,8 +80,7 @@ export const createCacheReducer = <N extends string, T extends Typenames, QR, MR
           entityChagnes,
         } = action as ReturnType<typeof actions.updateMutationStateAndEntities>
 
-        const newEntities =
-          entityChagnes && applyEntityChanges(state.entities, entityChagnes, cacheOptions)
+        const newEntities = entityChagnes && applyEntityChanges(state.entities, entityChagnes, cacheOptions)
 
         if (!mutationState && !newEntities) {
           return state

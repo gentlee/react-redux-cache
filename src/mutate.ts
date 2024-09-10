@@ -16,7 +16,9 @@ export const mutate = async <
   logTag: string,
   store: Store,
   cache: Cache<N, T, QP, QR, MP, MR>,
-  {updateMutationStateAndEntities}: Pick<ActionMap<N, T, QR, MR>, 'updateMutationStateAndEntities'>,
+  {
+    updateMutationStateAndEntities,
+  }: Pick<ActionMap<N, T, unknown, unknown, MP, MR>, 'updateMutationStateAndEntities'>,
   mutationKey: MK,
   params: MK extends keyof (MP | MR) ? MP[MK] : never,
   abortControllers: WeakMap<Store, Record<Key, AbortController>>
@@ -41,8 +43,9 @@ export const mutate = async <
       abortController.abort()
     } else {
       store.dispatch(
-        updateMutationStateAndEntities(mutationKey as keyof MR, {
+        updateMutationStateAndEntities(mutationKey as keyof (MP | MR), {
           loading: true,
+          params,
           result: undefined,
         })
       )
@@ -80,7 +83,7 @@ export const mutate = async <
 
   if (error) {
     store.dispatch(
-      updateMutationStateAndEntities(mutationKey as keyof MR, {
+      updateMutationStateAndEntities(mutationKey as keyof (MP | MR), {
         error: error as Error,
         loading: false,
       })
@@ -91,7 +94,7 @@ export const mutate = async <
   if (response) {
     store.dispatch(
       updateMutationStateAndEntities(
-        mutationKey as keyof MR,
+        mutationKey as keyof (MP | MR),
         {
           error: undefined,
           loading: false,

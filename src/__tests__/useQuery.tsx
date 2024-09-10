@@ -10,6 +10,7 @@ import {GET_USERS_ONE_PAGE_STATE} from '../testing/constants'
 import {
   selectQueryError,
   selectQueryLoading,
+  selectQueryParams,
   selectQueryResult,
   selectQueryState,
   updateQueryStateAndEntities,
@@ -63,6 +64,7 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
       {
         result: {items: [0, 1, 2], page: 1},
         error: undefined,
+        params: {page: 1},
         loading: false,
       },
       {merge: generateTestEntitiesMap(3)}
@@ -106,20 +108,18 @@ test('loads three pages sequentially, query selectors work', async () => {
   })
   await act(advanceApiTimeout)
   const finalState = {items: [0, 1, 2, 3, 4, 5, 6, 7, 8], page: 3}
-  assertEventLog([
-    'render: loading',
-    'merge results: next page',
-    'render: ' + JSON.stringify(finalState),
-  ])
+  assertEventLog(['render: loading', 'merge results: next page', 'render: ' + JSON.stringify(finalState)])
 
   expect(getUsers).toBeCalledTimes(2)
   expect(selectQueryState(store.getState(), 'getUsers', 'all-pages')).toStrictEqual({
     ...defaultQueryMutationState,
     result: finalState,
+    params: {page: 3},
   })
   expect(selectQueryResult(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(finalState)
   expect(selectQueryLoading(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(false)
   expect(selectQueryError(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(undefined)
+  expect(selectQueryParams(store.getState(), 'getUsers', 'all-pages')).toStrictEqual({page: 3})
 })
 
 test.each(['getUser', 'getUserNoSelector'] as const)(
@@ -147,14 +147,17 @@ test.each(['getUser', 'getUserNoSelector'] as const)(
             0: {
               ...DEFAULT_QUERY_MUTATION_STATE,
               result: query === 'getUser' ? undefined : 0,
+              params: 0,
             },
             1: {
               ...DEFAULT_QUERY_MUTATION_STATE,
               result: query === 'getUser' ? undefined : 1,
+              params: 1,
             },
             2: {
               ...DEFAULT_QUERY_MUTATION_STATE,
               result: query === 'getUser' ? undefined : 2,
+              params: 2,
             },
           },
         },
@@ -182,12 +185,7 @@ test.each([
   {query: 'getUserNoSelector', result: 0},
 ] as const)('fetch on mount having cache with cache-and-fetch policy', async ({query, result}) => {
   store.dispatch(
-    updateQueryStateAndEntities(
-      query,
-      defaultGetCacheKey(0),
-      {result},
-      {merge: generateTestEntitiesMap(1)}
-    )
+    updateQueryStateAndEntities(query, defaultGetCacheKey(0), {result}, {merge: generateTestEntitiesMap(1)})
   )
 
   render({query, params: 0, cachePolicy: 'cache-and-fetch'})
@@ -262,6 +260,7 @@ test.each([
       getUser: {
         0: {
           result: undefined,
+          params: 0,
           loading: false,
           error: undefined,
         },
@@ -274,6 +273,7 @@ test.each([
       getUserNoSelector: {
         0: {
           result: 0,
+          params: 0,
           loading: false,
           error: undefined,
         },
@@ -306,13 +306,7 @@ test.each([
   })
   expect(shouldBeCancelledResult).toStrictEqual({cancelled: true})
   expect(refetchResult).toStrictEqual({result: 0})
-  assertEventLog([
-    'render: undefined',
-    'render: loading',
-    'render: 0',
-    'render: loading',
-    'render: 0',
-  ])
+  assertEventLog(['render: undefined', 'render: loading', 'render: 0', 'render: loading', 'render: 0'])
 })
 
 // components

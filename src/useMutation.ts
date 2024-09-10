@@ -7,15 +7,9 @@ import {mutate as mutateImpl} from './mutate'
 import {Cache, Key, QueryMutationState, Typenames} from './types'
 import {DEFAULT_QUERY_MUTATION_STATE, log} from './utilsAndConstants'
 
-export const useMutation = <
-  N extends string,
-  T extends Typenames,
-  MP,
-  MR,
-  MK extends keyof (MP & MR)
->(
+export const useMutation = <N extends string, T extends Typenames, MP, MR, MK extends keyof (MP & MR)>(
   cache: Cache<N, T, unknown, unknown, MP, MR>,
-  actions: Pick<ActionMap<N, T, unknown, MR>, 'updateMutationStateAndEntities'>,
+  actions: Pick<ActionMap<N, T, unknown, unknown, MP, MR>, 'updateMutationStateAndEntities'>,
   options: {
     mutation: MK
   },
@@ -38,7 +32,7 @@ export const useMutation = <
             state,
             cacheState: cache.cacheStateSelector(state),
           })
-        return cache.cacheStateSelector(state).mutations[mutationKey as keyof MR]
+        return cache.cacheStateSelector(state).mutations[mutationKey as keyof (MP | MR)]
       },
       // mutate
       async (params: P) => {
@@ -60,7 +54,7 @@ export const useMutation = <
         }
         abortController.abort()
         store.dispatch(
-          actions.updateMutationStateAndEntities(mutationKey as keyof MR, {
+          actions.updateMutationStateAndEntities(mutationKey as keyof (MP | MR), {
             loading: false,
           })
         )
@@ -71,7 +65,7 @@ export const useMutation = <
   }, [mutationKey, store])
 
   // @ts-expect-error fix later
-  const mutationState: QueryMutationState<R> =
+  const mutationState: QueryMutationState<P, R> =
     useSelector(mutationStateSelector) ?? DEFAULT_QUERY_MUTATION_STATE
 
   cache.options.logsEnabled &&

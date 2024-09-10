@@ -1,18 +1,18 @@
 import type {EntityChanges, Key, QueryMutationState, Typenames} from './types'
 import {PACKAGE_SHORT_NAME} from './utilsAndConstants'
 
-export type ActionMap<N extends string, T extends Typenames, QR, MR> = ReturnType<
-  typeof createActions<N, T, QR, MR>
+export type ActionMap<N extends string, T extends Typenames, QP, QR, MP, MR> = ReturnType<
+  typeof createActions<N, T, QP, QR, MP, MR>
 >
 
-export const createActions = <N extends string, T extends Typenames, QR, MR>(name: N) => {
+export const createActions = <N extends string, T extends Typenames, QP, QR, MP, MR>(name: N) => {
   const actionPrefix = `@${PACKAGE_SHORT_NAME}/${name}/` as const
 
   const updateQueryStateAndEntitiesType = `${actionPrefix}updateQueryStateAndEntities` as const
-  const updateQueryStateAndEntities = <K extends keyof QR>(
+  const updateQueryStateAndEntities = <K extends keyof (QP | QR)>(
     queryKey: K,
     queryCacheKey: Key,
-    state?: Partial<QueryMutationState<QR[K]>>,
+    state?: Partial<QueryMutationState<QP[K], QR[K]>>,
     entityChagnes?: EntityChanges<T>
   ) => ({
     type: updateQueryStateAndEntitiesType,
@@ -24,9 +24,9 @@ export const createActions = <N extends string, T extends Typenames, QR, MR>(nam
   updateQueryStateAndEntities.type = updateQueryStateAndEntitiesType
 
   const updateMutationStateAndEntitiesType = `${actionPrefix}updateMutationStateAndEntities` as const
-  const updateMutationStateAndEntities = <K extends keyof MR>(
+  const updateMutationStateAndEntities = <K extends keyof (MP | MR)>(
     mutationKey: K,
-    state?: Partial<QueryMutationState<MR[K]>>,
+    state?: Partial<QueryMutationState<MP[K], MR[K]>>,
     entityChagnes?: EntityChanges<T>
   ) => ({
     type: updateMutationStateAndEntitiesType,
@@ -44,14 +44,14 @@ export const createActions = <N extends string, T extends Typenames, QR, MR>(nam
   mergeEntityChanges.type = mergeEntityChangesType
 
   const clearQueryStateType = `${actionPrefix}clearQueryState` as const
-  const clearQueryState = <K extends keyof QR>(queryKeys: {key: K; cacheKey?: Key}[]) => ({
+  const clearQueryState = <K extends keyof (QP | QR)>(queryKeys: {key: K; cacheKey?: Key}[]) => ({
     type: clearQueryStateType,
     queryKeys,
   })
   clearQueryState.type = clearQueryStateType
 
   const clearMutationStateType = `${actionPrefix}clearMutationState` as const
-  const clearMutationState = <K extends keyof MR>(mutationKeys: K[]) => ({
+  const clearMutationState = <K extends keyof (MP | MR)>(mutationKeys: K[]) => ({
     type: clearMutationStateType,
     mutationKeys,
   })

@@ -65,6 +65,11 @@ const createCache = (partialCache) => {
                 var _a;
                 return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.error;
             },
+            /** Selects query latest params. */
+            selectQueryParams: (state, query, cacheKey) => {
+                var _a;
+                return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.params;
+            },
             /** Selects mutation state. */
             selectMutationState,
             /** Selects mutation latest result. */
@@ -78,6 +83,10 @@ const createCache = (partialCache) => {
             /** Selects mutation latest error. */
             selectMutationError: (state, mutation) => {
                 return selectMutationState(state, mutation).error;
+            },
+            /** Selects mutation latest params. */
+            selectMutationParams: (state, mutation) => {
+                return selectMutationState(state, mutation).params;
             },
             /** Selects entity by id and typename. */
             selectEntityById,

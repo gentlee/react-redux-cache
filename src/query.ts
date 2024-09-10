@@ -16,7 +16,9 @@ export const query = async <
   logTag: string,
   store: Store,
   cache: Cache<N, T, QP, QR, MP, MR>,
-  {updateQueryStateAndEntities}: Pick<ActionMap<N, T, QR, MR>, 'updateQueryStateAndEntities'>,
+  {
+    updateQueryStateAndEntities,
+  }: Pick<ActionMap<N, T, QP, QR, unknown, unknown>, 'updateQueryStateAndEntities'>,
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never
@@ -26,7 +28,7 @@ export const query = async <
   const cacheResultSelector = cache.queries[queryKey].resultSelector
   const mergeResults = cache.queries[queryKey].mergeResults
 
-  const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey as keyof QR][
+  const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey as keyof (QP | QR)][
     cacheKey
   ]
 
@@ -42,8 +44,9 @@ export const query = async <
   }
 
   store.dispatch(
-    updateQueryStateAndEntities(queryKey as keyof QR, cacheKey, {
+    updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, {
       loading: true,
+      params,
     })
   )
 
@@ -58,7 +61,7 @@ export const query = async <
     )
   } catch (error) {
     store.dispatch(
-      updateQueryStateAndEntities(queryKey as keyof QR, cacheKey, {
+      updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, {
         error: error as Error,
         loading: false,
       })
@@ -74,7 +77,7 @@ export const query = async <
       : mergeResults
       ? mergeResults(
           // @ts-expect-error fix later
-          cacheStateSelector(store.getState()).queries[queryKey as keyof QR][cacheKey]?.result,
+          cacheStateSelector(store.getState()).queries[queryKey as keyof (QP | QR)][cacheKey]?.result,
           response,
           params,
           store
@@ -82,7 +85,7 @@ export const query = async <
       : response.result,
   }
 
-  store.dispatch(updateQueryStateAndEntities(queryKey as keyof QR, cacheKey, newState, response))
+  store.dispatch(updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, newState, response))
 
   return {
     // @ts-expect-error fix types

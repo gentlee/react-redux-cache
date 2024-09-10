@@ -45,6 +45,7 @@ test('should update mutation state and return result', async () => {
       mutations: {
         updateUser: {
           ...DEFAULT_QUERY_MUTATION_STATE,
+          params: {id: 0, name: 'New name'},
           result: 0,
         },
       },
@@ -96,6 +97,7 @@ test('mutate should cancel previous not finished mutation', async () => {
         updateUser: {
           ...DEFAULT_QUERY_MUTATION_STATE,
           result: 1,
+          params: {id: 0, name: 'New name'},
         },
       },
       entities: {

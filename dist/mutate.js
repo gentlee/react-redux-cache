@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mutate = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const mutate = (logTag, store, cache, { updateMutationStateAndEntities }, mutationKey, params, abortControllers) => __awaiter(void 0, void 0, void 0, function* () {
+const mutate = (logTag, store, cache, { updateMutationStateAndEntities, }, mutationKey, params, abortControllers) => __awaiter(void 0, void 0, void 0, function* () {
     let abortControllersOfStore = abortControllers.get(store);
     if (abortControllersOfStore === undefined) {
         abortControllersOfStore = {};
@@ -31,6 +31,7 @@ const mutate = (logTag, store, cache, { updateMutationStateAndEntities }, mutati
         else {
             store.dispatch(updateMutationStateAndEntities(mutationKey, {
                 loading: true,
+                params,
                 result: undefined,
             }));
         }

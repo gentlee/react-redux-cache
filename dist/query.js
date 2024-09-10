@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.query = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const query = (logTag, store, cache, { updateQueryStateAndEntities }, queryKey, cacheKey, params) => __awaiter(void 0, void 0, void 0, function* () {
+const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey, cacheKey, params) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const logsEnabled = cache.options.logsEnabled;
     const cacheStateSelector = cache.cacheStateSelector;
@@ -29,6 +29,7 @@ const query = (logTag, store, cache, { updateQueryStateAndEntities }, queryKey, 
     }
     store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, {
         loading: true,
+        params,
     }));
     logsEnabled && (0, utilsAndConstants_1.log)(`${logTag} started`, { queryStateOnStart, params, cacheKey });
     let response;

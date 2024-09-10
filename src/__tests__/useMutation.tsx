@@ -2,16 +2,12 @@ import {act, render as renderImpl} from '@testing-library/react'
 import React from 'react'
 import {Provider} from 'react-redux'
 
-import {
-  assertEventLog,
-  generateTestEntitiesMap,
-  generateTestUser,
-  logEvent,
-} from '../testing/api/utils'
+import {assertEventLog, generateTestEntitiesMap, generateTestUser, logEvent} from '../testing/api/utils'
 import {EMPTY_STATE} from '../testing/constants'
 import {
   selectMutationError,
   selectMutationLoading,
+  selectMutationParams,
   selectMutationResult,
   selectMutationState,
   useMutation,
@@ -67,6 +63,7 @@ test('should be able to abort started mutation, mutation selectors work', async 
         updateUser: {
           ...DEFAULT_QUERY_MUTATION_STATE,
           result: undefined,
+          params: {id: 0, name: 'New name 2'},
         },
       },
       entities: {
@@ -78,10 +75,12 @@ test('should be able to abort started mutation, mutation selectors work', async 
   expect(selectMutationState(store.getState(), 'updateUser')).toStrictEqual({
     ...DEFAULT_QUERY_MUTATION_STATE,
     result: undefined,
+    params: {id: 0, name: 'New name 2'},
   })
   expect(selectMutationResult(store.getState(), 'updateUser')).toStrictEqual(undefined)
   expect(selectMutationLoading(store.getState(), 'updateUser')).toStrictEqual(false)
   expect(selectMutationError(store.getState(), 'updateUser')).toStrictEqual(undefined)
+  expect(selectMutationParams(store.getState(), 'updateUser')).toStrictEqual({id: 0, name: 'New name 2'})
   assertEventLog([
     '@rrc/cache/mergeEntityChanges',
     'render: loading: false, result: undefined',

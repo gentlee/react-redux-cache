@@ -13,6 +13,7 @@ export const GET_USERS_ONE_PAGE_STATE = {
           items: [0, 1, 2],
           page: 1,
         },
+        params: {page: 1},
         loading: false,
         error: undefined,
       },

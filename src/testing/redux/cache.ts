@@ -25,10 +25,12 @@ export const {
     selectQueryResult,
     selectQueryLoading,
     selectQueryError,
+    selectQueryParams,
     selectMutationState,
     selectMutationResult,
     selectMutationLoading,
     selectMutationError,
+    selectMutationParams,
     selectEntityById,
     selectEntities,
     selectEntitiesByTypename,
@@ -83,13 +85,20 @@ export const {
   },
 })
 
+// Comments for manual type checks:
+
 // updateQueryStateAndEntities('getUser', 'a', {
 //   result: 0,
+//   params: 0,
 // })
 
 // const state = reducer({} as ReturnType<typeof reducer>, null)
 // state.entities.banks.a
 // state.queries.getUser.a.result
+// state.queries.getUser.a.params
 // state.queries.getUsers.a.result
+// state.queries.getUsers.a.params
 // state.mutations.removeUser.result
+// state.mutations.removeUser.params
 // state.mutations.updateUser.result
+// state.mutations.updateUser.params
