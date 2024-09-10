@@ -7,12 +7,15 @@ import {selectEntitiesByTypename, useClient, useQuery} from './cache'
 export const UsersScreen = () => {
   const {query} = useClient()
 
-  const [{result: usersResult, loading, error}] = useQuery({
+  const [{result: usersResult, loading, error, params}] = useQuery({
     query: 'getUsers',
     params: {
       page: 1,
     },
   })
+
+  const refreshing = loading && params.page === 1
+  const loadingNextPage = loading && !refreshing
 
   const usersMap = useSelector((state) => selectEntitiesByTypename(state, 'users'))
 
@@ -32,6 +35,9 @@ export const UsersScreen = () => {
 
   return (
     <div className="screen">
+      <Link id="users-link" className={'link'} to={'/'}>
+        home
+      </Link>
       <p>
         getUsers result: '<span id="result">{JSON.stringify(usersResult)}</span>
       </p>
@@ -39,9 +45,7 @@ export const UsersScreen = () => {
         denormalized:{' '}
         <span id="denormalized">{JSON.stringify(usersResult?.items.map((id) => usersMap[id]))}</span>
       </p>
-      <Link id="users-link" className={'link'} to={'/'}>
-        home
-      </Link>
+      {refreshing && <div className="spinner" />}
       {usersResult?.items.map((userId: number) => {
         return (
           <Link id={'user-link-' + userId} key={userId} className={'link'} to={'/user/' + userId}>
@@ -49,7 +53,7 @@ export const UsersScreen = () => {
           </Link>
         )
       })}
-      {loading ? (
+      {loadingNextPage ? (
         <div className="spinner" />
       ) : (
         <button

@@ -10,13 +10,16 @@ export const UsersScreen = () => {
 
   const {query} = useClient()
 
-  const [{result: usersResult, loading, error}] = useQuery({
+  const [{result: usersResult, loading, error, params}] = useQuery({
     query: 'getUsers',
     cachePolicy: 'cache-and-fetch',
     params: {
       page: 1,
     },
   })
+
+  const refreshing = loading && params.page === 1
+  const loadingNextPage = loading && !refreshing
 
   console.debug('[NotNormalized/UsersScreen]', {
     usersResult,
@@ -34,12 +37,13 @@ export const UsersScreen = () => {
 
   return (
     <div className="screen">
-      <p>
-        getUsers result: '<span id="result">{JSON.stringify(usersResult)}</span>
-      </p>
       <Link id="users-link" className={'link'} to={'/'}>
         home
       </Link>
+      <p>
+        getUsers result: '<span id="result">{JSON.stringify(usersResult)}</span>
+      </p>
+      {refreshing && <div className="spinner" />}
       {usersResult?.items.map((user: User) => {
         return (
           <Link
@@ -52,7 +56,7 @@ export const UsersScreen = () => {
           </Link>
         )
       })}
-      {loading ? (
+      {loadingNextPage ? (
         <div className="spinner" />
       ) : (
         <button

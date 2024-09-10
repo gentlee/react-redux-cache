@@ -9,6 +9,7 @@ export {
 // Backlog
 
 // ! high
+// useQuery refresh with params use as client.query?
 // determine refresh vs load next page
 // update readme with how to use mergeResults for invalidating / updating caches
 // try use skip for refreshing strategy?
