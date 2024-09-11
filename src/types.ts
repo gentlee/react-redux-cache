@@ -32,7 +32,7 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
   /** Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state. */
   name: N
   /**
-   * Mapping of all typenames to their entity types, which is needed for proper normalization. Can be empty If normalization not needed.
+   * Mapping of all typenames to their entity types, which is needed for proper normalization. Should be empty if normalization is not needed.
    * @key Typename.
    * @value Object with proper type of the typename. Empty objects with type casting can be used.
    * @example

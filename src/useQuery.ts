@@ -38,6 +38,7 @@ export const useQuery = <
   // @ts-expect-error fix types later
   const cacheKey = getCacheKey(params)
 
+  /** Fetch query with the new parameters, or refetch with the same if parameters not provided. */
   const fetch = useCallback(
     async (options?: {params: P}) => {
       return await queryImpl(
@@ -55,6 +56,7 @@ export const useQuery = <
     [store, queryKey, cacheKey]
   )
 
+  /** Query state */
   const queryState =
     useSelector((state: unknown) => {
       const queryState = cacheStateSelector(state).queries[queryKey as keyof (QP | QR)][cacheKey]
@@ -86,10 +88,5 @@ export const useQuery = <
       queryState,
     })
 
-  return [
-    /** Query state */
-    queryState,
-    /** Refetch query with the same parameters */
-    fetch,
-  ] as const
+  return [queryState, fetch] as const
 }

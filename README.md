@@ -146,7 +146,7 @@ export const {
 } = createCache({
   // Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state.
   name: 'cache',
-  // Typenames provide a mapping of all typenames to their entity types, which is needed for proper typing and normalization.
+  // Mapping of all typenames to their entity types, which is needed for proper normalization. Should be empty if normalization is not needed.
   // Empty objects with type casting can be used as values.
   typenames: {
     users: {} as User, // here `users` entities will have type `User`
