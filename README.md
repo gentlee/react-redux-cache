@@ -254,6 +254,8 @@ export const UserScreen = () => {
 
 ```typescript
 export const UserScreen = () => {
+  ...
+
   const user = useSelectEntityById(userId, 'users')
 
   const [{loading, error}] = useQuery({
@@ -266,13 +268,13 @@ export const UserScreen = () => {
 }
 ```
 
-We can additional check that entity is full enough:
+We can additionally check that entity is full enough:
 
 ```typescript
-  skip: !!user && isFullUser(user)
+skip: !!user && isFullUser(user)
 ```
 
-Other approach is to set `skip: true` and manually run `fetch` when needed:
+Another approach is to set `skip: true` and manually run `fetch` when needed:
 
 ```typescript
 export const UserScreen = () => {
@@ -289,6 +291,7 @@ export const UserScreen = () => {
       fetchUser()
     }
   }, [screenIsVisible])
+
   ...
 }
 ```
