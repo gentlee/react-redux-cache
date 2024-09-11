@@ -23,9 +23,8 @@ Object.defineProperty(exports, "defaultGetCacheKey", { enumerable: true, get: fu
 Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, get: function () { return utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE; } });
 // Backlog
 // ! high
-// determine refresh vs load next page
-// update readme with how to use mergeResults for invalidating / updating caches
-// try use skip for refreshing strategy?
+// useQuery refresh with params use as client.query?
+// update readme with how to use mergeResults for invalidating / updating caches?
 // optimistic response
 // make query key / cache key difference more clear in the docs, and/or rename queryKey -> query
 // ! medium
@@ -33,14 +32,12 @@ Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, 
 // type extractors from cache
 // custom useStore
 // return back deserialize selector?
-// resultSelector - return also boolean that result is full enough or make cache policy as a function
 // selector for entities by typename
 // callback option on error / success?
 // refetch queries on mutation success
 // remove query/mutation state when it finished without errors
 // deep equal entities while merging state
 // make error type generic
-// don't cache result if resultSelector set? throw error if mergeResult set with resultSelector?
 // ! low
 // access to currently loading queries and mutations?
 // add params to the state?

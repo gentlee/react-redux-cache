@@ -19,32 +19,18 @@ const useQuery = (cache, actions, options) => {
     const { query: queryKey, skip, params, cachePolicy = (_a = cache.queries[queryKey].cachePolicy) !== null && _a !== void 0 ? _a : 'cache-first', } = options;
     const logsEnabled = cache.options.logsEnabled;
     const getCacheKey = (_b = cache.queries[queryKey].getCacheKey) !== null && _b !== void 0 ? _b : (utilsAndConstants_1.defaultGetCacheKey);
-    const cacheResultSelector = cache.queries[queryKey].resultSelector;
     const cacheStateSelector = cache.cacheStateSelector;
     const store = (0, react_redux_1.useStore)();
     // @ts-expect-error fix types later
     const cacheKey = getCacheKey(params);
-    const resultSelector = (0, react_1.useMemo)(() => {
-        return (cacheResultSelector &&
-            ((state) => cacheResultSelector(cacheStateSelector(state), 
-            // @ts-expect-error fix types later
-            params)));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cacheKey]);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const resultFromSelector = (resultSelector && (0, react_redux_1.useSelector)(resultSelector));
-    const hasResultFromSelector = resultFromSelector !== undefined;
     const fetch = (0, react_1.useCallback)(() => __awaiter(void 0, void 0, void 0, function* () {
         return yield (0, query_1.query)('useQuery.fetch', store, cache, actions, queryKey, cacheKey, params);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [store, queryKey, cacheKey]);
-    const queryStateFromSelector = (_c = (0, react_redux_1.useSelector)((state) => {
+    const queryState = (_c = (0, react_redux_1.useSelector)((state) => {
         const queryState = cacheStateSelector(state).queries[queryKey][cacheKey];
         return queryState; // TODO proper type
     })) !== null && _c !== void 0 ? _c : utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE;
-    const queryState = hasResultFromSelector
-        ? (Object.assign(Object.assign({}, queryStateFromSelector), { result: resultFromSelector }))
-        : queryStateFromSelector;
     (0, react_1.useEffect)(() => {
         if (skip) {
             logsEnabled && (0, utilsAndConstants_1.log)('useQuery.useEffect skip fetch', { skip, cacheKey });
@@ -65,7 +51,6 @@ const useQuery = (cache, actions, options) => {
         (0, utilsAndConstants_1.log)('useQuery', {
             cacheKey,
             options,
-            resultFromSelector,
             queryState,
         });
     return [

@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo} from 'react'
+import {useCallback, useEffect} from 'react'
 import {useSelector, useStore} from 'react-redux'
 
 import {ActionMap} from './createActions'
@@ -31,7 +31,6 @@ export const useQuery = <
 
   const logsEnabled = cache.options.logsEnabled
   const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
-  const cacheResultSelector = cache.queries[queryKey].resultSelector
   const cacheStateSelector = cache.cacheStateSelector
 
   const store = useStore()
@@ -39,40 +38,16 @@ export const useQuery = <
   // @ts-expect-error fix types later
   const cacheKey = getCacheKey(params)
 
-  const resultSelector = useMemo(() => {
-    return (
-      cacheResultSelector &&
-      ((state: unknown) =>
-        cacheResultSelector(
-          cacheStateSelector(state),
-          // @ts-expect-error fix types later
-          params
-        ))
-    )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cacheKey])
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const resultFromSelector = (resultSelector && useSelector(resultSelector)) as R | undefined
-  const hasResultFromSelector = resultFromSelector !== undefined
-
   const fetch = useCallback(async () => {
     return await queryImpl('useQuery.fetch', store, cache, actions, queryKey, cacheKey, params)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, queryKey, cacheKey])
 
-  const queryStateFromSelector =
+  const queryState =
     useSelector((state: unknown) => {
       const queryState = cacheStateSelector(state).queries[queryKey as keyof (QP | QR)][cacheKey]
       return queryState as QueryMutationState<P, R> | undefined // TODO proper type
     }) ?? (DEFAULT_QUERY_MUTATION_STATE as QueryMutationState<P, R>)
-
-  const queryState = hasResultFromSelector
-    ? ({
-        ...queryStateFromSelector,
-        result: resultFromSelector,
-      } satisfies QueryMutationState<P, R>)
-    : queryStateFromSelector
 
   useEffect(() => {
     if (skip) {
@@ -96,7 +71,6 @@ export const useQuery = <
     log('useQuery', {
       cacheKey,
       options,
-      resultFromSelector,
       queryState,
     })
 

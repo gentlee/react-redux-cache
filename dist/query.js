@@ -15,7 +15,6 @@ const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey,
     var _a;
     const logsEnabled = cache.options.logsEnabled;
     const cacheStateSelector = cache.cacheStateSelector;
-    const cacheResultSelector = cache.queries[queryKey].resultSelector;
     const mergeResults = cache.queries[queryKey].mergeResults;
     const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey][cacheKey];
     if (queryStateOnStart === null || queryStateOnStart === void 0 ? void 0 : queryStateOnStart.loading) {
@@ -49,22 +48,16 @@ const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey,
     const newState = {
         error: undefined,
         loading: false,
-        result: cacheResultSelector
-            ? undefined
-            : mergeResults
-                ? mergeResults(
-                // @ts-expect-error fix later
-                (_a = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _a === void 0 ? void 0 : _a.result, response, params, store)
-                : response.result,
+        result: mergeResults
+            ? mergeResults(
+            // @ts-expect-error fix later
+            (_a = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _a === void 0 ? void 0 : _a.result, response, params, store)
+            : response.result,
     };
     store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, newState, response));
     return {
         // @ts-expect-error fix types
-        result: cacheResultSelector
-            ? cacheResultSelector(cacheStateSelector(store.getState()), 
-            // @ts-expect-error fix types
-            params)
-            : newState === null || newState === void 0 ? void 0 : newState.result,
+        result: newState === null || newState === void 0 ? void 0 : newState.result,
     };
 });
 exports.query = query;

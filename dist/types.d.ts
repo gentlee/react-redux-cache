@@ -32,7 +32,7 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
     } */
     typenames: T;
     queries: {
-        [QK in keyof (QP & QR)]: QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK], ReduxCacheState<T, QP, QR, MP, MR>> : never;
+        [QK in keyof (QP & QR)]: QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK]> : never;
     };
     mutations: {
         [MK in keyof (MP & MR)]: MK extends keyof (MP | MR) ? MutationInfo<T, MP[MK], MR[MK]> : never;
@@ -63,19 +63,13 @@ export type EntityIds<T extends Typenames> = {
     [K in keyof T]?: Key[];
 };
 export type Query<T extends Typenames, P, R> = (params: P) => Promise<QueryResponse<T, R>>;
-export type QueryInfo<T extends Typenames, P, R, S> = {
+export type QueryInfo<T extends Typenames, P, R> = {
     query: Query<T, P, R>;
     /**
      * Cache policy.
      * @default cache-first
      */
     cachePolicy?: QueryCachePolicy;
-    /**
-     * Selector for query result from redux state.
-     * Can prevent hook from doing unnecessary fetches.
-     * Needed when query result may already be in the cache, e.g. for single entity query by id.
-     * */
-    resultSelector?: (state: S, params: P) => R | undefined;
     /** Merges results before saving to the store. Default implementation is using the latest result. */
     mergeResults?: (oldResult: R | undefined, response: QueryResponse<T, R>, params: P | undefined, store: Store) => R;
     /**
@@ -89,7 +83,7 @@ export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & 
     query: QK;
     params: QK extends keyof (QP | QR) ? QP[QK] : never;
     skip?: boolean;
-} & Pick<QueryInfo<T, unknown, unknown, unknown>, 'cachePolicy'>;
+} & Pick<QueryInfo<T, unknown, unknown>, 'cachePolicy'>;
 /**
  * @param cache-first for each params key fetch is not called if cache exists.
  * @param cache-and-fetch for each params key result is taken from cache and fetch is called.

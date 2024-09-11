@@ -25,7 +25,6 @@ export const query = async <
 ): Promise<QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>> => {
   const logsEnabled = cache.options.logsEnabled
   const cacheStateSelector = cache.cacheStateSelector
-  const cacheResultSelector = cache.queries[queryKey].resultSelector
   const mergeResults = cache.queries[queryKey].mergeResults
 
   const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey as keyof (QP | QR)][
@@ -72,9 +71,7 @@ export const query = async <
   const newState = {
     error: undefined,
     loading: false,
-    result: cacheResultSelector
-      ? undefined
-      : mergeResults
+    result: mergeResults
       ? mergeResults(
           // @ts-expect-error fix later
           cacheStateSelector(store.getState()).queries[queryKey as keyof (QP | QR)][cacheKey]?.result,
@@ -89,13 +86,7 @@ export const query = async <
 
   return {
     // @ts-expect-error fix types
-    result: cacheResultSelector
-      ? cacheResultSelector(
-          cacheStateSelector(store.getState()),
-          // @ts-expect-error fix types
-          params
-        )
-      : newState?.result,
+    result: newState?.result,
   }
 }
 
