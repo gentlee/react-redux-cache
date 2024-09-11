@@ -38,10 +38,22 @@ export const useQuery = <
   // @ts-expect-error fix types later
   const cacheKey = getCacheKey(params)
 
-  const fetch = useCallback(async () => {
-    return await queryImpl('useQuery.fetch', store, cache, actions, queryKey, cacheKey, params)
+  const fetch = useCallback(
+    async (options?: {params: P}) => {
+      return await queryImpl(
+        'useQuery.fetch',
+        store,
+        cache,
+        actions,
+        queryKey,
+        // @ts-expect-error fix later
+        options ? getCacheKey(options.params) : cacheKey,
+        options ? options.params : params
+      )
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, queryKey, cacheKey])
+    [store, queryKey, cacheKey]
+  )
 
   const queryState =
     useSelector((state: unknown) => {

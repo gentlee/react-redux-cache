@@ -330,9 +330,7 @@ Here is an example of `getUsers` query configuration with pagination support. Yo
 // Component
 
 export const GetUsersScreen = () => {
-  const {query} = useClient()
-
-  const [{result: usersResult, loading, error, params}, refetch] = useQuery({
+  const [{result: usersResult, loading, error, params}, fetchUsers] = useQuery({
     query: 'getUsers',
     params: 1 // page
   })
@@ -342,7 +340,7 @@ export const GetUsersScreen = () => {
 
   const onLoadNextPage = () => {
     const lastLoadedPage = usersResult?.page ?? 0
-    query({
+    fetchUsers({
       query: 'getUsers',
       params: lastLoadedPage + 1,
     })
@@ -358,7 +356,7 @@ export const GetUsersScreen = () => {
     <div>
       {refreshing && <div className="spinner" />}
       {usersResult?.items.map(renderUser)}
-      <button onClick={refetch}>Refresh</button>
+      <button onClick={() => fetchUsers()}>Refresh</button>
       {loadingNextPage ? (
         <div className="spinner" />
       ) : (

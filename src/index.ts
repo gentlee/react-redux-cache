@@ -9,7 +9,7 @@ export {
 // Backlog
 
 // ! high
-// useQuery refresh with params use as client.query?
+// add full api docs
 // update readme with how to use mergeResults for invalidating / updating caches?
 // optimistic response
 // make query key / cache key difference more clear in the docs, and/or rename queryKey -> query

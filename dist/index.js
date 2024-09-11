@@ -23,7 +23,7 @@ Object.defineProperty(exports, "defaultGetCacheKey", { enumerable: true, get: fu
 Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, get: function () { return utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE; } });
 // Backlog
 // ! high
-// useQuery refresh with params use as client.query?
+// add full api docs
 // update readme with how to use mergeResults for invalidating / updating caches?
 // optimistic response
 // make query key / cache key difference more clear in the docs, and/or rename queryKey -> query

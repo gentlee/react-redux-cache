@@ -23,10 +23,13 @@ const useQuery = (cache, actions, options) => {
     const store = (0, react_redux_1.useStore)();
     // @ts-expect-error fix types later
     const cacheKey = getCacheKey(params);
-    const fetch = (0, react_1.useCallback)(() => __awaiter(void 0, void 0, void 0, function* () {
-        return yield (0, query_1.query)('useQuery.fetch', store, cache, actions, queryKey, cacheKey, params);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }), [store, queryKey, cacheKey]);
+    const fetch = (0, react_1.useCallback)((options) => __awaiter(void 0, void 0, void 0, function* () {
+        return yield (0, query_1.query)('useQuery.fetch', store, cache, actions, queryKey, 
+        // @ts-expect-error fix later
+        options ? getCacheKey(options.params) : cacheKey, options ? options.params : params);
+    }), 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [store, queryKey, cacheKey]);
     const queryState = (_c = (0, react_redux_1.useSelector)((state) => {
         const queryState = cacheStateSelector(state).queries[queryKey][cacheKey];
         return queryState; // TODO proper type

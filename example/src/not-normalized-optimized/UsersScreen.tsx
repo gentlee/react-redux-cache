@@ -5,12 +5,10 @@ import {cacheNotNormalized} from './cache'
 
 export const UsersScreen = () => {
   const {
-    hooks: {useQuery, useClient},
+    hooks: {useQuery},
   } = cacheNotNormalized
 
-  const {query} = useClient()
-
-  const [{result: usersResult, loading, error, params}] = useQuery({
+  const [{result: usersResult, loading, error, params}, fetchUsers] = useQuery({
     query: 'getUsers',
     params: {
       page: 1,
@@ -62,8 +60,7 @@ export const UsersScreen = () => {
           id="load-next-page"
           onClick={() => {
             const lastLoadedPage = usersResult?.page ?? 0
-            query({
-              query: 'getUsers',
+            fetchUsers({
               params: {page: lastLoadedPage + 1},
             })
           }}

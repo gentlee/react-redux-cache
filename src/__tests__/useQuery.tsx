@@ -84,11 +84,11 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
 
 test('no fetch on mount if has cache', setCacheAndMountAndCheckNoRefetch)
 
-test('loads three pages sequentially, query selectors work', async () => {
+test('loads three pages sequentially with useQuery, refetch and client; query selectors work', async () => {
   await setCacheAndMountAndCheckNoRefetch()
 
   act(() => {
-    client.query({
+    refetch({
       query: 'getUsers',
       params: {page: 2},
     })
