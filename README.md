@@ -7,7 +7,7 @@
   <b>DOGE:</b> D7GMQdKhKC9ymbT9PtcetSFTQjyPRRfkwT <br>
 </details>
 
-# react-redux-cache
+# react-redux-cache (RRC)
 
 **Powerful** yet **lightweight** data fetching and caching library that supports **normalization** unlike `react-query` and `rtk-query`, while having similar but very simple interface. Built on top of `redux`, covered with tests, fully typed and written on Typescript.
 
