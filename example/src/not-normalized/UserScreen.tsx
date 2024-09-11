@@ -81,9 +81,6 @@ export const UserScreen = () => {
         <label>skip</label>
       </div>
       <p>
-        getUser result: <span id="result">{JSON.stringify(user)}</span>
-      </p>
-      <p>
         user: <span id="user">{JSON.stringify(user)}</span>
       </p>
       <p>

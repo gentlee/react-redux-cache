@@ -11,21 +11,20 @@ export const UserScreen = () => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const userId = +userIdParam!
 
-  const [{result, loading, error}] = useQuery({
+  const user = useSelectEntityById(userId, 'users')
+  const bank = useSelectEntityById(user?.bankId, 'banks')
+
+  const [{loading, error}] = useQuery({
     query: 'getUser',
     params: userId,
-    skip: skip || isNaN(userId),
+    skip: skip || isNaN(userId) || !!user,
   })
 
   const [updateUser, {loading: updatingUser}] = useMutation({
     mutation: 'updateUser',
   })
 
-  const user = useSelectEntityById(result, 'users')
-  const bank = useSelectEntityById(user?.bankId, 'banks')
-
   console.debug('[UserScreen]', {
-    result,
     loading,
     error,
     user,
@@ -70,9 +69,6 @@ export const UserScreen = () => {
         <input id="skip" type="checkbox" checked={skip} onChange={() => setSkip(!skip)} />
         <label>skip</label>
       </div>
-      <p>
-        getUser result: <span id="result">{JSON.stringify(result)}</span>
-      </p>
       <p>
         user: <span id="user">{JSON.stringify(user)}</span>
       </p>

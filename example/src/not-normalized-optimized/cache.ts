@@ -27,6 +27,7 @@ export const cacheNotNormalized = createCache({
             store.dispatch(
               cacheNotNormalized.actions.updateQueryStateAndEntities('getUser', defaultGetCacheKey(user.id), {
                 result: user,
+                params: user.id,
               })
             )
           })

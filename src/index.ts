@@ -10,8 +10,7 @@ export {
 
 // ! high
 // useQuery refresh with params use as client.query?
-// determine refresh vs load next page
-// update readme with how to use mergeResults for invalidating / updating caches
+// update readme with how to use mergeResults for invalidating / updating caches?
 // try use skip for refreshing strategy?
 // optimistic response
 // make query key / cache key difference more clear in the docs, and/or rename queryKey -> query
