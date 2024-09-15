@@ -162,6 +162,24 @@ export const {
   },
 })
 ```
+
+For normalization two things are required:
+- Set proper typenames while creating the cache - mapping of all entities and their corresponding TS types.
+- Return an object from queries and mutations, that contains the following fields (besides `result`):
+
+```typescript
+type EntityChanges<T extends Typenames> = {  
+  /** Entities that will be merged with existing. */
+  merge?: PartialEntitiesMap<T>
+  /** Entities that will replace existing. */
+  replace?: Partial<EntitiesMap<T>>
+  /** Ids of entities that will be removed. */
+  remove?: EntityIds<T>
+  /** Alias for `merge` to support normalizr. */
+  entities?: EntityChanges<T>['merge']
+}
+```
+
 #### store.ts
 ```typescript
 // Create store as usual, passing the new cache reducer under the name of the cache.
@@ -248,7 +266,7 @@ export const UserScreen = () => {
 
 ### Advanced
 
-#### Advanced cache policy
+#### Extended cache policy
 
 `cache-first` cache policy skips fetching if result is already cached, but sometimes it can't determine that we already have result in some other's query result or in normalized entities cache. In that case we can use `skip` parameter of a query:
 
@@ -268,7 +286,7 @@ export const UserScreen = () => {
 }
 ```
 
-We can additionally check that entity is full enough:
+We can additionally check that entity is full or "fresh" enough:
 
 ```typescript
 skip: !!user && isFullUser(user)
@@ -417,6 +435,6 @@ As example, can be overriden when implementing pagination.
 
 #### How mutation fetching differs from queries?
 
-**Queries:** For each cache key (= unique params by default) of each query fetch is running in parallel. If fetch is already running for specific cache key, all next fetches are cancelled until it finishes.
+**Queries:** Queries are throttled: query with the same cache key (generated from params by default) is cancelled if is already running.
 
-**Mutations:** Only one mutation can be run for each mutation key at a time. If another one called, previous is aborted.
+**Mutations:** Mutations are debounced: previous similar mutation is aborted if it was running when the new one started. Second argument in mutations is `AbortSignal`, which can be used e.g. for cancelling http requests.
