@@ -40,7 +40,7 @@ export const {
 } = createCache({
   name: 'cache',
   options: {
-    logsEnabled: false,
+    logsEnabled: true,
     validateFunctionArguments: true,
   },
   typenames: {

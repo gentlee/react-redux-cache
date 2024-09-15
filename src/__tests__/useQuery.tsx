@@ -291,6 +291,35 @@ test('cancel manual refetch when currently loading same params', async () => {
   assertEventLog(['render: undefined', 'render: loading', 'render: 0', 'render: loading', 'render: 0'])
 })
 
+test('deep comparison opimizes re-renders', async () => {
+  render({
+    query: 'getUser',
+    params: 0,
+  })
+
+  await act(advanceApiTimeout)
+
+  // this act should not cause re-render
+  act(() =>
+    store.dispatch(
+      updateQueryStateAndEntities(
+        'getUser',
+        0,
+        {
+          result: 0,
+          params: 0,
+          loading: false,
+        },
+        {
+          merge: generateTestEntitiesMap(1),
+        }
+      )
+    )
+  )
+
+  assertEventLog(['render: undefined', 'render: loading', 'render: 0'])
+})
+
 // components
 
 const TestUseQueryComponent = ({options}: {options: Parameters<typeof useQuery>[0]}) => {

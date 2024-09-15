@@ -8,7 +8,11 @@ export const optionalUtils: {
 } = {
   deepEqual: undefined,
 }
-import('fast-deep-equal/es6').then((x) => (optionalUtils.deepEqual = x.default))
+try {
+  optionalUtils.deepEqual = require('fast-deep-equal/es6')
+} catch {
+  console.debug(PACKAGE_SHORT_NAME + ': fast-deep-equal optional dependency was not installed')
+}
 
 export const IS_DEV: boolean = (() => {
   try {

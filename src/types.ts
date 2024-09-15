@@ -66,7 +66,8 @@ export type CacheOptions = {
   logsEnabled: boolean
   /**
    * Enables deep comparison before merging entities to the state.
-   * Re-rendering is a heavier operation than deep comparison, so disabling it can lead to performance drop.
+   * Re-rendering is a heavier operation than comparison, so disabling it can lead to performance drop.
+   * Makes sense to disable only if merging equal results & entities to the state is a rare case.
    * @default true
    */
   deepComparisonEnabled: boolean
