@@ -56,14 +56,20 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
 export type CacheOptions = {
   /**
    * Enables validation of package function arguments. Recommened to enable in dev/testing mode.
-   * Default is true in dev mode.
+   * @default true in dev mode.
    * */
   validateFunctionArguments: boolean
   /**
-   * Enable console logs.
-   * Default is false.
+   * Enables console logs.
+   * @default false
    */
   logsEnabled: boolean
+  /**
+   * Enables deep comparison before merging entities to the state.
+   * Re-rendering is a heavier operation than deep comparison, so disabling it can lead to performance drop.
+   * @default true
+   */
+  deepComparisonEnabled: boolean
 }
 
 export type PartialEntitiesMap<T extends Typenames> = {[K in keyof T]?: Dict<Partial<T[K]>>}
@@ -159,5 +165,5 @@ export type QueryMutationState<P, R> = {
   /** Error of the latest response. */
   error?: Error
   /** Parameters of the latest request. */
-  params: P
+  params?: P
 }

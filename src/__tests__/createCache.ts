@@ -13,6 +13,7 @@ test('createCache returns correct result', () => {
     options: {
       logsEnabled: false,
       validateFunctionArguments: true,
+      deepComparisonEnabled: true,
     },
     typenames,
     queries: {

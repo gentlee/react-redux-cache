@@ -62,6 +62,7 @@ test('should be able to abort started mutation, mutation selectors work', async 
       mutations: {
         updateUser: {
           ...DEFAULT_QUERY_MUTATION_STATE,
+          error: undefined,
           result: undefined,
           params: {id: 0, name: 'New name 2'},
         },
@@ -74,6 +75,7 @@ test('should be able to abort started mutation, mutation selectors work', async 
   })
   expect(selectMutationState(store.getState(), 'updateUser')).toStrictEqual({
     ...DEFAULT_QUERY_MUTATION_STATE,
+    error: undefined,
     result: undefined,
     params: {id: 0, name: 'New name 2'},
   })

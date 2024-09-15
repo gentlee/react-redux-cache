@@ -2,6 +2,14 @@ import type {CacheOptions, EntitiesMap, EntityChanges, Key, Typenames} from './t
 
 export const PACKAGE_SHORT_NAME = 'rrc'
 
+export const optionalUtils: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  deepEqual?: (a: any, b: any) => boolean
+} = {
+  deepEqual: undefined,
+}
+import('fast-deep-equal/es6').then((x) => (optionalUtils.deepEqual = x.default))
+
 export const IS_DEV: boolean = (() => {
   try {
     // @ts-expect-error __DEV__ is only for React Native
@@ -11,7 +19,7 @@ export const IS_DEV: boolean = (() => {
   }
 })()
 
-export const DEFAULT_QUERY_MUTATION_STATE = {loading: false, error: undefined} as const
+export const DEFAULT_QUERY_MUTATION_STATE = {loading: false} as const
 
 export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
   switch (typeof params) {
@@ -47,6 +55,8 @@ export const applyEntityChanges = <T extends Typenames>(
     return undefined
   }
 
+  const deepEqual = options.deepComparisonEnabled ? optionalUtils.deepEqual : undefined
+
   let result: EntitiesMap<T> | undefined
 
   for (const typename in entities) {
@@ -74,23 +84,42 @@ export const applyEntityChanges = <T extends Typenames>(
       }
     }
 
-    const newEntities = {...entities[typename]}
+    const oldEntities = entities[typename]
+    let newEntities: EntitiesMap<T>[typeof typename] | undefined
 
     // remove
-    entitiesToRemove?.forEach((id) => delete newEntities[id])
+    entitiesToRemove?.forEach((id) => {
+      if (oldEntities[id]) {
+        newEntities ??= {...oldEntities}
+        delete newEntities![id]
+      }
+    })
 
     // replace
     if (entitiesToReplace) {
       for (const id in entitiesToReplace) {
-        newEntities[id] = entitiesToReplace[id]
+        const newEntity = entitiesToReplace[id]
+        if (!deepEqual?.(oldEntities[id], newEntity)) {
+          newEntities ??= {...oldEntities}
+          newEntities[id] = newEntity
+        }
       }
     }
 
     // merge
     if (entitiesToMerge) {
       for (const id in entitiesToMerge) {
-        newEntities[id] = {...newEntities[id], ...entitiesToMerge[id]}
+        const oldEntity = oldEntities[id]
+        const newEntity = {...oldEntity, ...entitiesToMerge[id]}
+        if (!deepEqual?.(oldEntity, newEntity)) {
+          newEntities ??= {...oldEntities}
+          newEntities[id] = newEntity
+        }
       }
+    }
+
+    if (!newEntities) {
+      continue
     }
 
     result ??= {...entities}
@@ -100,8 +129,11 @@ export const applyEntityChanges = <T extends Typenames>(
   options.logsEnabled &&
     log('applyEntityChanges', {
       entities,
-      changes,
-      result,
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      changes: require('util').inspect(changes, {depth: 4}),
+      options,
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      result: require('util').inspect(result, {depth: 4}),
     })
 
   return result
