@@ -279,7 +279,7 @@ export const UserScreen = () => {
   const [{loading, error}] = useQuery({
     query: 'getUser',
     params: userId,
-    skip: !!user // we skip fetching if we already have user cached by some other query, e.g. getUsers
+    skip: !!user // skip fetching if we already have user cached by some other query, e.g. getUsers
   })
 
   ...
@@ -435,6 +435,6 @@ As example, can be overriden when implementing pagination.
 
 #### How mutation fetching differs from queries?
 
-**Queries:** Queries are throttled: query with the same cache key (generated from params by default) is cancelled if is already running.
+**Queries:** Queries are throttled: query with the same cache key (generated from params by default) is cancelled if already running.
 
 **Mutations:** Mutations are debounced: previous similar mutation is aborted if it was running when the new one started. Second argument in mutations is `AbortSignal`, which can be used e.g. for cancelling http requests.
