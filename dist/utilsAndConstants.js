@@ -109,11 +109,9 @@ const applyEntityChanges = (entities, changes, options) => {
     options.logsEnabled &&
         (0, exports.log)('applyEntityChanges', {
             entities,
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            changes: require('util').inspect(changes, { depth: 4 }),
+            changes,
             options,
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            result: require('util').inspect(result, { depth: 4 }),
+            result,
         });
     return result;
 };
