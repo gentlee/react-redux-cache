@@ -8,6 +8,7 @@ import {assertEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/
 import {EMPTY_STATE} from '../testing/constants'
 import {GET_USERS_ONE_PAGE_STATE} from '../testing/constants'
 import {
+  cache,
   selectQueryError,
   selectQueryLoading,
   selectQueryParams,
@@ -291,13 +292,16 @@ test('cancel manual refetch when currently loading same params', async () => {
   assertEventLog(['render: undefined', 'render: loading', 'render: 0', 'render: loading', 'render: 0'])
 })
 
-test('deep comparison opimizes re-renders', async () => {
+// skipping if deep comparison disabled
+;(cache.options.deepComparisonEnabled ? test : test.skip)('deep comparison opimizes re-renders', async () => {
   render({
     query: 'getUser',
     params: 0,
   })
 
   await act(advanceApiTimeout)
+
+  assertEventLog(['render: undefined', 'render: loading', 'render: 0'])
 
   // this act should not cause re-render
   act(() =>
@@ -317,7 +321,7 @@ test('deep comparison opimizes re-renders', async () => {
     )
   )
 
-  assertEventLog(['render: undefined', 'render: loading', 'render: 0'])
+  assertEventLog([])
 })
 
 // components

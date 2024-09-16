@@ -42,6 +42,7 @@ export const {
   options: {
     logsEnabled: true,
     validateFunctionArguments: true,
+    // deepComparisonEnabled: false,
   },
   typenames: {
     users: {} as User,
