@@ -5,20 +5,20 @@ const utilsAndConstants_1 = require("./utilsAndConstants");
 const createActions = (name) => {
     const actionPrefix = `@${utilsAndConstants_1.PACKAGE_SHORT_NAME}/${name}/`;
     const updateQueryStateAndEntitiesType = `${actionPrefix}updateQueryStateAndEntities`;
-    const updateQueryStateAndEntities = (queryKey, queryCacheKey, state, entityChagnes) => ({
+    const updateQueryStateAndEntities = (queryKey, queryCacheKey, state, entityChanges) => ({
         type: updateQueryStateAndEntitiesType,
         queryKey,
         queryCacheKey,
         state,
-        entityChagnes,
+        entityChanges,
     });
     updateQueryStateAndEntities.type = updateQueryStateAndEntitiesType;
     const updateMutationStateAndEntitiesType = `${actionPrefix}updateMutationStateAndEntities`;
-    const updateMutationStateAndEntities = (mutationKey, state, entityChagnes) => ({
+    const updateMutationStateAndEntities = (mutationKey, state, entityChanges) => ({
         type: updateMutationStateAndEntitiesType,
         mutationKey,
         state,
-        entityChagnes,
+        entityChanges,
     });
     updateMutationStateAndEntities.type = updateMutationStateAndEntitiesType;
     const mergeEntityChangesType = `${actionPrefix}mergeEntityChanges`;

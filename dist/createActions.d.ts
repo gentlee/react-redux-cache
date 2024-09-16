@@ -3,22 +3,22 @@ export type ActionMap<N extends string, T extends Typenames, QP, QR, MP, MR> = R
 export declare const createActions: <N extends string, T extends Typenames, QP, QR, MP, MR>(name: N) => {
     /** Updates query state, and optionally merges entity changes in a single action. */
     updateQueryStateAndEntities: {
-        <K extends keyof QP & keyof QR>(queryKey: K, queryCacheKey: Key, state?: Partial<QueryMutationState<QP[K], QR[K]>> | undefined, entityChagnes?: EntityChanges<T> | undefined): {
+        <K extends keyof QP & keyof QR>(queryKey: K, queryCacheKey: Key, state?: Partial<QueryMutationState<QP[K], QR[K]>> | undefined, entityChanges?: EntityChanges<T> | undefined): {
             type: `@rrc/${N}/updateQueryStateAndEntities`;
             queryKey: K;
             queryCacheKey: Key;
             state: Partial<QueryMutationState<QP[K], QR[K]>> | undefined;
-            entityChagnes: EntityChanges<T> | undefined;
+            entityChanges: EntityChanges<T> | undefined;
         };
         type: `@rrc/${N}/updateQueryStateAndEntities`;
     };
     /** Updates mutation state, and optionally merges entity changes in a single action. */
     updateMutationStateAndEntities: {
-        <K_1 extends keyof MP & keyof MR>(mutationKey: K_1, state?: Partial<QueryMutationState<MP[K_1], MR[K_1]>> | undefined, entityChagnes?: EntityChanges<T> | undefined): {
+        <K_1 extends keyof MP & keyof MR>(mutationKey: K_1, state?: Partial<QueryMutationState<MP[K_1], MR[K_1]>> | undefined, entityChanges?: EntityChanges<T> | undefined): {
             type: `@rrc/${N}/updateMutationStateAndEntities`;
             mutationKey: K_1;
             state: Partial<QueryMutationState<MP[K_1], MR[K_1]>> | undefined;
-            entityChagnes: EntityChanges<T> | undefined;
+            entityChanges: EntityChanges<T> | undefined;
         };
         type: `@rrc/${N}/updateMutationStateAndEntities`;
     };

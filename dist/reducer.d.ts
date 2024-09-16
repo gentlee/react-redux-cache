@@ -10,12 +10,12 @@ export declare const createCacheReducer: <N extends string, T extends Typenames,
     queryKey: keyof QP & keyof QR;
     queryCacheKey: import("./types").Key;
     state: Partial<QueryMutationState<QP[keyof QP & keyof QR], QR[keyof QP & keyof QR]>> | undefined;
-    entityChagnes: import("./types").EntityChanges<T> | undefined;
+    entityChanges: import("./types").EntityChanges<T> | undefined;
 } | {
     type: `@rrc/${N}/updateMutationStateAndEntities`;
     mutationKey: keyof MP & keyof MR;
     state: Partial<QueryMutationState<MP[keyof MP & keyof MR], MR[keyof MP & keyof MR]>> | undefined;
-    entityChagnes: import("./types").EntityChanges<T> | undefined;
+    entityChanges: import("./types").EntityChanges<T> | undefined;
 } | {
     type: `@rrc/${N}/mergeEntityChanges`;
     changes: import("./types").EntityChanges<T>;

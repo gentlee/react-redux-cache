@@ -1,7 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.applyEntityChanges = exports.log = exports.defaultGetCacheKey = exports.DEFAULT_QUERY_MUTATION_STATE = exports.IS_DEV = exports.PACKAGE_SHORT_NAME = void 0;
+exports.applyEntityChanges = exports.log = exports.defaultGetCacheKey = exports.DEFAULT_QUERY_MUTATION_STATE = exports.IS_DEV = exports.optionalUtils = exports.PACKAGE_SHORT_NAME = void 0;
 exports.PACKAGE_SHORT_NAME = 'rrc';
+exports.optionalUtils = {
+    deepEqual: undefined,
+};
+try {
+    exports.optionalUtils.deepEqual = require('fast-deep-equal/es6');
+}
+catch (_a) {
+    console.debug(exports.PACKAGE_SHORT_NAME + ': fast-deep-equal optional dependency was not installed');
+}
 exports.IS_DEV = (() => {
     try {
         // @ts-expect-error __DEV__ is only for React Native
@@ -11,7 +20,7 @@ exports.IS_DEV = (() => {
         return process.env.NODE_ENV === 'development';
     }
 })();
-exports.DEFAULT_QUERY_MUTATION_STATE = { loading: false, error: undefined };
+exports.DEFAULT_QUERY_MUTATION_STATE = { loading: false };
 const defaultGetCacheKey = (params) => {
     switch (typeof params) {
         case 'string':
@@ -40,6 +49,7 @@ const applyEntityChanges = (entities, changes, options) => {
     if (!merge && !replace && !remove) {
         return undefined;
     }
+    const deepEqual = options.deepComparisonEnabled ? exports.optionalUtils.deepEqual : undefined;
     let result;
     for (const typename in entities) {
         const entitiesToMerge = merge === null || merge === void 0 ? void 0 : merge[typename];
@@ -60,20 +70,38 @@ const applyEntityChanges = (entities, changes, options) => {
                 throw new Error('Merge, replace and remove changes have intersections for: ' + typename);
             }
         }
-        const newEntities = Object.assign({}, entities[typename]);
+        const oldEntities = entities[typename];
+        let newEntities;
         // remove
-        entitiesToRemove === null || entitiesToRemove === void 0 ? void 0 : entitiesToRemove.forEach((id) => delete newEntities[id]);
+        entitiesToRemove === null || entitiesToRemove === void 0 ? void 0 : entitiesToRemove.forEach((id) => {
+            if (oldEntities[id]) {
+                newEntities !== null && newEntities !== void 0 ? newEntities : (newEntities = Object.assign({}, oldEntities));
+                delete newEntities[id];
+            }
+        });
         // replace
         if (entitiesToReplace) {
             for (const id in entitiesToReplace) {
-                newEntities[id] = entitiesToReplace[id];
+                const newEntity = entitiesToReplace[id];
+                if (!(deepEqual === null || deepEqual === void 0 ? void 0 : deepEqual(oldEntities[id], newEntity))) {
+                    newEntities !== null && newEntities !== void 0 ? newEntities : (newEntities = Object.assign({}, oldEntities));
+                    newEntities[id] = newEntity;
+                }
             }
         }
         // merge
         if (entitiesToMerge) {
             for (const id in entitiesToMerge) {
-                newEntities[id] = Object.assign(Object.assign({}, newEntities[id]), entitiesToMerge[id]);
+                const oldEntity = oldEntities[id];
+                const newEntity = Object.assign(Object.assign({}, oldEntity), entitiesToMerge[id]);
+                if (!(deepEqual === null || deepEqual === void 0 ? void 0 : deepEqual(oldEntity, newEntity))) {
+                    newEntities !== null && newEntities !== void 0 ? newEntities : (newEntities = Object.assign({}, oldEntities));
+                    newEntities[id] = newEntity;
+                }
             }
+        }
+        if (!newEntities) {
+            continue;
         }
         result !== null && result !== void 0 ? result : (result = Object.assign({}, entities));
         result[typename] = newEntities;
@@ -81,8 +109,11 @@ const applyEntityChanges = (entities, changes, options) => {
     options.logsEnabled &&
         (0, exports.log)('applyEntityChanges', {
             entities,
-            changes,
-            result,
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            changes: require('util').inspect(changes, { depth: 4 }),
+            options,
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            result: require('util').inspect(result, { depth: 4 }),
         });
     return result;
 };

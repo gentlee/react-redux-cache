@@ -14,17 +14,18 @@ const utilsAndConstants_1 = require("./utilsAndConstants");
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
  */
 const createCache = (partialCache) => {
-    var _a, _b, _c, _d, _e, _f;
-    var _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g;
+    var _h, _j, _k;
     const abortControllers = new WeakMap();
     // provide all optional fields
     (_a = partialCache.options) !== null && _a !== void 0 ? _a : (partialCache.options = {});
-    (_b = (_g = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_g.logsEnabled = false);
-    (_c = (_h = partialCache.options).validateFunctionArguments) !== null && _c !== void 0 ? _c : (_h.validateFunctionArguments = utilsAndConstants_1.IS_DEV);
-    (_d = partialCache.queries) !== null && _d !== void 0 ? _d : (partialCache.queries = {});
-    (_e = partialCache.mutations) !== null && _e !== void 0 ? _e : (partialCache.mutations = {});
+    (_b = (_h = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_h.logsEnabled = false);
+    (_c = (_j = partialCache.options).validateFunctionArguments) !== null && _c !== void 0 ? _c : (_j.validateFunctionArguments = utilsAndConstants_1.IS_DEV);
+    (_d = (_k = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_k.deepComparisonEnabled = true);
+    (_e = partialCache.queries) !== null && _e !== void 0 ? _e : (partialCache.queries = {});
+    (_f = partialCache.mutations) !== null && _f !== void 0 ? _f : (partialCache.mutations = {});
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (_f = partialCache.cacheStateSelector) !== null && _f !== void 0 ? _f : (partialCache.cacheStateSelector = (state) => state[cache.name]);
+    (_g = partialCache.cacheStateSelector) !== null && _g !== void 0 ? _g : (partialCache.cacheStateSelector = (state) => state[cache.name]);
     // @ts-expect-error private field for testing
     partialCache.abortControllers = abortControllers;
     const cache = partialCache;
@@ -33,12 +34,14 @@ const createCache = (partialCache) => {
         return id == null ? undefined : cache.cacheStateSelector(state).entities[typename][id];
     };
     const selectQueryState = (state, query, cacheKey) => {
+        var _a;
         // @ts-expect-error fix later
-        return cache.cacheStateSelector(state).queries[query][cacheKey];
+        return (_a = cache.cacheStateSelector(state).queries[query][cacheKey]) !== null && _a !== void 0 ? _a : utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE;
     };
     const selectMutationState = (state, mutation) => {
+        var _a;
         // @ts-expect-error fix later
-        return cache.cacheStateSelector(state).mutations[mutation];
+        return (_a = cache.cacheStateSelector(state).mutations[mutation]) !== null && _a !== void 0 ? _a : utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE;
     };
     const actions = (0, createActions_1.createActions)(cache.name);
     return {
@@ -52,23 +55,19 @@ const createCache = (partialCache) => {
             selectQueryState,
             /** Selects query latest result. */
             selectQueryResult: (state, query, cacheKey) => {
-                var _a;
-                return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.result;
+                return selectQueryState(state, query, cacheKey).result;
             },
             /** Selects query loading state. */
             selectQueryLoading: (state, query, cacheKey) => {
-                var _a;
-                return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.loading;
+                return selectQueryState(state, query, cacheKey).loading;
             },
             /** Selects query latest error. */
             selectQueryError: (state, query, cacheKey) => {
-                var _a;
-                return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.error;
+                return selectQueryState(state, query, cacheKey).error;
             },
             /** Selects query latest params. */
             selectQueryParams: (state, query, cacheKey) => {
-                var _a;
-                return (_a = selectQueryState(state, query, cacheKey)) === null || _a === void 0 ? void 0 : _a.params;
+                return selectQueryState(state, query, cacheKey).params;
             },
             /** Selects mutation state. */
             selectMutationState,

@@ -23,6 +23,7 @@ const useQuery = (cache, actions, options) => {
     const store = (0, react_redux_1.useStore)();
     // @ts-expect-error fix types later
     const cacheKey = getCacheKey(params);
+    /** Fetch query with the new parameters, or refetch with the same if parameters not provided. */
     const fetch = (0, react_1.useCallback)((options) => __awaiter(void 0, void 0, void 0, function* () {
         return yield (0, query_1.query)('useQuery.fetch', store, cache, actions, queryKey, 
         // @ts-expect-error fix later
@@ -30,6 +31,7 @@ const useQuery = (cache, actions, options) => {
     }), 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [store, queryKey, cacheKey]);
+    /** Query state */
     const queryState = (_c = (0, react_redux_1.useSelector)((state) => {
         const queryState = cacheStateSelector(state).queries[queryKey][cacheKey];
         return queryState; // TODO proper type
@@ -56,11 +58,6 @@ const useQuery = (cache, actions, options) => {
             options,
             queryState,
         });
-    return [
-        /** Query state */
-        queryState,
-        /** Refetch query with the same parameters */
-        fetch,
-    ];
+    return [queryState, fetch];
 };
 exports.useQuery = useQuery;
