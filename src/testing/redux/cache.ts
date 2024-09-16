@@ -40,8 +40,9 @@ export const {
 } = createCache({
   name: 'cache',
   options: {
-    logsEnabled: false,
+    logsEnabled: true,
     validateFunctionArguments: true,
+    // deepComparisonEnabled: false,
   },
   typenames: {
     users: {} as User,

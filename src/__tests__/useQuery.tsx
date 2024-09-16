@@ -8,6 +8,7 @@ import {assertEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/
 import {EMPTY_STATE} from '../testing/constants'
 import {GET_USERS_ONE_PAGE_STATE} from '../testing/constants'
 import {
+  cache,
   selectQueryError,
   selectQueryLoading,
   selectQueryParams,
@@ -113,6 +114,7 @@ test('loads three pages sequentially with useQuery, refetch and client; query se
   expect(getUsers).toBeCalledTimes(2)
   expect(selectQueryState(store.getState(), 'getUsers', 'all-pages')).toStrictEqual({
     ...defaultQueryMutationState,
+    error: undefined,
     result: finalState,
     params: {page: 3},
   })
@@ -144,16 +146,19 @@ test('should not cancel current loading query on refetch with different params',
         getUser: {
           0: {
             ...DEFAULT_QUERY_MUTATION_STATE,
+            error: undefined,
             result: 0,
             params: 0,
           },
           1: {
             ...DEFAULT_QUERY_MUTATION_STATE,
+            error: undefined,
             result: 1,
             params: 1,
           },
           2: {
             ...DEFAULT_QUERY_MUTATION_STATE,
+            error: undefined,
             result: 2,
             params: 2,
           },
@@ -285,6 +290,38 @@ test('cancel manual refetch when currently loading same params', async () => {
   expect(shouldBeCancelledResult).toStrictEqual({cancelled: true})
   expect(refetchResult).toStrictEqual({result: 0})
   assertEventLog(['render: undefined', 'render: loading', 'render: 0', 'render: loading', 'render: 0'])
+})
+
+// skipping if deep comparison disabled
+;(cache.options.deepComparisonEnabled ? test : test.skip)('deep comparison opimizes re-renders', async () => {
+  render({
+    query: 'getUser',
+    params: 0,
+  })
+
+  await act(advanceApiTimeout)
+
+  assertEventLog(['render: undefined', 'render: loading', 'render: 0'])
+
+  // this act should not cause re-render
+  act(() =>
+    store.dispatch(
+      updateQueryStateAndEntities(
+        'getUser',
+        0,
+        {
+          result: 0,
+          params: 0,
+          loading: false,
+        },
+        {
+          merge: generateTestEntitiesMap(1),
+        }
+      )
+    )
+  )
+
+  assertEventLog([])
 })
 
 // components

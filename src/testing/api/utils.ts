@@ -1,5 +1,5 @@
 import type {EntitiesMap} from '../..'
-import type {TestTypenames} from '../redux/cache'
+import {cache, TestTypenames} from '../redux/cache'
 import type {Bank, User} from './types'
 
 // event log
@@ -7,6 +7,7 @@ import type {Bank, User} from './types'
 const eventLog: string[] = []
 
 export const logEvent = (event: string) => {
+  cache.options.logsEnabled && console.debug(event)
   eventLog.push(event)
 }
 

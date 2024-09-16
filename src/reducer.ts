@@ -1,6 +1,6 @@
 import type {ActionMap} from './createActions'
 import type {CacheOptions, Dict, EntitiesMap, QueryMutationState, Typenames} from './types'
-import {applyEntityChanges, DEFAULT_QUERY_MUTATION_STATE, log} from './utilsAndConstants'
+import {applyEntityChanges, DEFAULT_QUERY_MUTATION_STATE, log, optionalUtils} from './utilsAndConstants'
 
 export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
   ReturnType<typeof createCacheReducer<string, T, QP, QR, MP, MR>>
@@ -39,6 +39,8 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
       initialState,
     })
 
+  const deepEqual = cacheOptions.deepComparisonEnabled ? optionalUtils.deepEqual : undefined
+
   return (
     state = initialState,
     action: ReturnType<(typeof actions)[keyof typeof actions]>
@@ -49,54 +51,70 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
           queryKey,
           queryCacheKey,
           state: queryState,
-          entityChagnes,
+          entityChanges,
         } = action as ReturnType<typeof actions.updateQueryStateAndEntities>
 
-        const newEntities = entityChagnes && applyEntityChanges(state.entities, entityChagnes, cacheOptions)
-
-        if (!queryState && !newEntities) {
-          return state
+        const oldQueryState = state.queries[queryKey][queryCacheKey] ?? DEFAULT_QUERY_MUTATION_STATE
+        let newQueryState = queryState && {
+          ...oldQueryState,
+          ...queryState,
+        }
+        if (deepEqual?.(oldQueryState, newQueryState)) {
+          newQueryState = undefined
         }
 
-        return {
-          ...state,
-          ...(newEntities ? {entities: newEntities} : null),
-          queries: {
+        const newEntities = entityChanges && applyEntityChanges(state.entities, entityChanges, cacheOptions)
+
+        let newState
+        if (newEntities) {
+          newState ??= {...state}
+          newState.entities = newEntities
+        }
+        if (newQueryState) {
+          newState ??= {...state}
+          newState.queries = {
             ...state.queries,
             [queryKey]: {
               ...state.queries[queryKey],
-              [queryCacheKey]: {
-                ...(state.queries[queryKey][queryCacheKey] ?? DEFAULT_QUERY_MUTATION_STATE),
-                ...queryState,
-              },
+              [queryCacheKey]: newQueryState,
             },
-          },
+          }
         }
+
+        return newState ?? state
       }
       case actions.updateMutationStateAndEntities.type: {
         const {
           mutationKey,
           state: mutationState,
-          entityChagnes,
+          entityChanges,
         } = action as ReturnType<typeof actions.updateMutationStateAndEntities>
 
-        const newEntities = entityChagnes && applyEntityChanges(state.entities, entityChagnes, cacheOptions)
-
-        if (!mutationState && !newEntities) {
-          return state
+        const oldMutationState = state.mutations[mutationKey] ?? DEFAULT_QUERY_MUTATION_STATE
+        let newMutationState = mutationState && {
+          ...oldMutationState,
+          ...mutationState,
+        }
+        if (deepEqual?.(oldMutationState, newMutationState)) {
+          newMutationState = undefined
         }
 
-        return {
-          ...state,
-          ...(newEntities ? {entities: newEntities} : null),
-          mutations: {
+        const newEntities = entityChanges && applyEntityChanges(state.entities, entityChanges, cacheOptions)
+
+        let newState
+        if (newEntities) {
+          newState ??= {...state}
+          newState.entities = newEntities
+        }
+        if (newMutationState) {
+          newState ??= {...state}
+          newState.mutations = {
             ...state.mutations,
-            [mutationKey]: {
-              ...(state.mutations[mutationKey] ?? DEFAULT_QUERY_MUTATION_STATE),
-              ...mutationState,
-            },
-          },
+            [mutationKey]: newMutationState,
+          }
         }
+
+        return newState ?? state
       }
       case actions.mergeEntityChanges.type: {
         const {changes} = action as ReturnType<typeof actions.mergeEntityChanges>
@@ -114,28 +132,29 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
         let newQueries = undefined
 
         for (const query of queryKeysToClear) {
+          const queryState = (newQueries ?? state.queries)[query.key]
           if (query.cacheKey != null) {
-            if ((newQueries ?? state.queries)[query.key][query.cacheKey]) {
+            if (queryState[query.cacheKey]) {
               newQueries ??= {...state.queries}
-              newQueries[query.key] = {
-                ...newQueries[query.key],
+              if (state.queries[query.key] === newQueries[query.key]) {
+                newQueries[query.key] = {
+                  ...newQueries[query.key],
+                }
               }
               delete newQueries[query.key][query.cacheKey]
             }
-          } else if ((newQueries ?? state.queries)[query.key] !== EMPTY_QUERY_STATE) {
+          } else if (queryState !== EMPTY_QUERY_STATE) {
             newQueries ??= {...state.queries}
             newQueries[query.key] = EMPTY_QUERY_STATE
           }
         }
 
-        if (!newQueries) {
-          return state
-        }
-
-        return {
-          ...state,
-          queries: newQueries,
-        }
+        return !newQueries
+          ? state
+          : {
+              ...state,
+              queries: newQueries,
+            }
       }
       case actions.clearMutationState.type: {
         const {mutationKeys} = action as ReturnType<typeof actions.clearMutationState>
@@ -153,14 +172,12 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
           }
         }
 
-        if (!newMutations) {
-          return state
-        }
-
-        return {
-          ...state,
-          mutations: newMutations,
-        }
+        return !newMutations
+          ? state
+          : {
+              ...state,
+              mutations: newMutations,
+            }
       }
     }
     return state

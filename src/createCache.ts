@@ -19,7 +19,12 @@ import type {
 } from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
-import {applyEntityChanges, defaultGetCacheKey, IS_DEV} from './utilsAndConstants'
+import {
+  applyEntityChanges,
+  DEFAULT_QUERY_MUTATION_STATE,
+  defaultGetCacheKey,
+  IS_DEV,
+} from './utilsAndConstants'
 
 /**
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
@@ -39,6 +44,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
   partialCache.options ??= {} as CacheOptions
   partialCache.options.logsEnabled ??= false
   partialCache.options.validateFunctionArguments ??= IS_DEV
+  partialCache.options.deepComparisonEnabled ??= true
   partialCache.queries ??= {} as TypedCache['queries']
   partialCache.mutations ??= {} as TypedCache['mutations']
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,14 +64,12 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
     state: unknown,
     query: QK,
     cacheKey: Key
-  ):
-    | QueryMutationState<
-        QK extends keyof (QP | QR) ? QP[QK] : never,
-        QK extends keyof (QP | QR) ? QR[QK] : never
-      >
-    | undefined => {
+  ): QueryMutationState<
+    QK extends keyof (QP | QR) ? QP[QK] : never,
+    QK extends keyof (QP | QR) ? QR[QK] : never
+  > => {
     // @ts-expect-error fix later
-    return cache.cacheStateSelector(state).queries[query][cacheKey]
+    return cache.cacheStateSelector(state).queries[query][cacheKey] ?? DEFAULT_QUERY_MUTATION_STATE
   }
 
   const selectMutationState = <MK extends keyof (MP & MR)>(
@@ -76,7 +80,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
     MK extends keyof (MP | MR) ? MR[MK] : never
   > => {
     // @ts-expect-error fix later
-    return cache.cacheStateSelector(state).mutations[mutation]
+    return cache.cacheStateSelector(state).mutations[mutation] ?? DEFAULT_QUERY_MUTATION_STATE
   }
 
   const actions = createActions<N, T, QP, QR, MP, MR>(cache.name)
@@ -97,19 +101,19 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
       selectQueryState,
       /** Selects query latest result. */
       selectQueryResult: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
-        return selectQueryState(state, query, cacheKey)?.result
+        return selectQueryState(state, query, cacheKey).result
       },
       /** Selects query loading state. */
       selectQueryLoading: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
-        return selectQueryState(state, query, cacheKey)?.loading
+        return selectQueryState(state, query, cacheKey).loading
       },
       /** Selects query latest error. */
       selectQueryError: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
-        return selectQueryState(state, query, cacheKey)?.error
+        return selectQueryState(state, query, cacheKey).error
       },
       /** Selects query latest params. */
       selectQueryParams: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
-        return selectQueryState(state, query, cacheKey)?.params
+        return selectQueryState(state, query, cacheKey).params
       },
       /** Selects mutation state. */
       selectMutationState,

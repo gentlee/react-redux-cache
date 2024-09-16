@@ -5,7 +5,7 @@ import {cache, reducer} from './cache'
 
 export const createReduxStore = (
   eventLogEnabled: boolean,
-  consoleLoggerEnabled = cache.options.logsEnabled
+  consoleLoggerEnabled = false //cache.options.logsEnabled
 ) => {
   const middlewares: Middleware[] = []
   if (consoleLoggerEnabled) {

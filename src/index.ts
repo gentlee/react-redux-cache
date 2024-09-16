@@ -9,13 +9,15 @@ export {
 // Backlog
 
 // ! high
+// optimistic response
+// type extractors?
 // skip -> enabled?
 // add full api docs
 // update readme with how to use mergeResults for invalidating / updating caches?
-// optimistic response
-// make query key / cache key difference more clear in the docs, and/or rename queryKey -> query
+// make query key / cache key difference more clear in the docs, and/or rename queryKey -> query?
 
 // ! medium
+// check type of function arguments in dev
 // allow multiple mutation with same keys?
 // type extractors from cache
 // custom useStore
