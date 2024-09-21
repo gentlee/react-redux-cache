@@ -9,10 +9,12 @@ export {
 // Backlog
 
 // ! high
-// optimistic response
+// error handling. choose strategy - return result or throw error? by default only thrown error
 // type extractors?
+// queryies/mutations return optional array of actions
+// optimistic response
 // skip -> enabled?
-// add full api docs
+// generate full api docs
 // update readme with how to use mergeResults for invalidating / updating caches?
 // make query key / cache key difference more clear in the docs, and/or rename queryKey -> query?
 

@@ -62,6 +62,7 @@ export const mutate = async <
     response = await fetchFn(
       // @ts-expect-error fix later
       params,
+      store,
       abortController.signal
     )
   } catch (e) {

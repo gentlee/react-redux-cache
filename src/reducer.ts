@@ -1,23 +1,23 @@
 import type {ActionMap} from './createActions'
 import type {CacheOptions, Dict, EntitiesMap, QueryMutationState, Typenames} from './types'
-import {applyEntityChanges, DEFAULT_QUERY_MUTATION_STATE, log, optionalUtils} from './utilsAndConstants'
+import {
+  applyEntityChanges,
+  DEFAULT_QUERY_MUTATION_STATE,
+  EMPTY_OBJECT,
+  log,
+  optionalUtils,
+} from './utilsAndConstants'
 
 export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
   ReturnType<typeof createCacheReducer<string, T, QP, QR, MP, MR>>
 >
 
-const EMPTY_QUERY_STATE = Object.freeze({})
-
 export const createCacheReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
   actions: ActionMap<N, T, QP, QR, MP, MR>,
-  typenames: T,
   queryKeys: (keyof (QP | QR))[],
   cacheOptions: CacheOptions
 ) => {
   const entitiesMap = {} as EntitiesMap<T>
-  for (const key in typenames) {
-    entitiesMap[key] = EMPTY_QUERY_STATE
-  }
 
   const queryStateMap = {} as {[QK in keyof (QP | QR)]: Dict<QueryMutationState<QP[QK], QR[QK]>>}
   for (const key of queryKeys) {
@@ -34,7 +34,6 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
 
   cacheOptions.logsEnabled &&
     log('createCacheReducer', {
-      typenames,
       queryKeys,
       initialState,
     })
@@ -143,9 +142,9 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
               }
               delete newQueries[query.key][query.cacheKey]
             }
-          } else if (queryState !== EMPTY_QUERY_STATE) {
+          } else if (queryState !== EMPTY_OBJECT) {
             newQueries ??= {...state.queries}
-            newQueries[query.key] = EMPTY_QUERY_STATE
+            newQueries[query.key] = EMPTY_OBJECT
           }
         }
 

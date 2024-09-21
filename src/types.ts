@@ -31,16 +31,6 @@ export type Typenames = Record<string, object>
 export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
   /** Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state. */
   name: N
-  /**
-   * Mapping of all typenames to their entity types, which is needed for proper normalization. Should be empty if normalization is not needed.
-   * @key Typename.
-   * @value Object with proper type of the typename. Empty objects with type casting can be used.
-   * @example
-   * typenames: {
-      users: {} as User, // here `users` entities will have type `User`
-      banks: {} as Bank,
-  } */
-  typenames: T
   queries: {
     [QK in keyof (QP & QR)]: QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK]> : never
   }
@@ -75,16 +65,21 @@ export type CacheOptions = {
 
 export type PartialEntitiesMap<T extends Typenames> = {[K in keyof T]?: Dict<Partial<T[K]>>}
 
-export type EntitiesMap<T extends Typenames> = {[K in keyof T]: Dict<T[K]>}
+export type EntitiesMap<T extends Typenames> = {[K in keyof T]?: Dict<T[K]>}
 
 export type EntityIds<T extends Typenames> = {[K in keyof T]?: Key[]}
 
 // Query
 
-export type Query<T extends Typenames, P, R> = (params: P) => Promise<QueryResponse<T, R>>
+export type Query<P, T extends Typenames = Typenames, R = unknown> = (
+  /** Query parameters */
+  params: P,
+  /** Redux store */
+  store: Store
+) => Promise<QueryResponse<T, R>>
 
 export type QueryInfo<T extends Typenames, P, R> = {
-  query: Query<T, P, R>
+  query: Query<P, T, R>
   /**
    * Cache policy.
    * @default cache-first
@@ -135,14 +130,17 @@ export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)
 
 // Mutation
 
-export type Mutation<T extends Typenames, P, R> = (
+export type Mutation<P, T extends Typenames = Typenames, R = unknown> = (
+  /** Mutation parameters */
   params: P,
+  /** Redux store */
+  store: Store,
   /** Signal is aborted for current mutation when the same mutation was called once again. */
   abortSignal: AbortSignal
 ) => Promise<MutationResponse<T, R>>
 
 export type MutationInfo<T extends Typenames, P, R> = {
-  mutation: Mutation<T, P, R>
+  mutation: Mutation<P, T, R>
 }
 
 export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {

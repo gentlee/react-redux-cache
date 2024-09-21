@@ -37,16 +37,12 @@ export const {
   },
   hooks: {useClient, useMutation, useQuery},
   utils: {applyEntityChanges},
-} = createCache({
+} = createCache<TestTypenames>()({
   name: 'cache',
   options: {
-    logsEnabled: true,
+    logsEnabled: false,
     validateFunctionArguments: true,
     // deepComparisonEnabled: false,
-  },
-  typenames: {
-    users: {} as User,
-    banks: {} as Bank,
   },
   queries: {
     getUsers: {
@@ -90,7 +86,7 @@ export const {
 // })
 
 // const state = reducer({} as ReturnType<typeof reducer>, null)
-// state.entities.banks.a
+// state.entities.banks?.a
 // state.queries.getUser.a.result
 // state.queries.getUser.a.params
 // state.queries.getUsers.a.result

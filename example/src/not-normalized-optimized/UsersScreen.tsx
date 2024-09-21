@@ -15,7 +15,7 @@ export const UsersScreen = () => {
     },
   })
 
-  const refreshing = loading && params.page === 1
+  const refreshing = loading && params?.page === 1
   const loadingNextPage = loading && !refreshing
 
   console.debug('[NotNormalizedOptimized/UsersScreen]', {

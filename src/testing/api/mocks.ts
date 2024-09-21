@@ -1,8 +1,10 @@
+import {Mutation, Query} from '../../types'
+import {TestTypenames} from '../redux/cache'
 import {apiTimeout} from '../utils'
 import {User} from './types'
 import {generateTestBank, generateTestUser} from './utils'
 
-export const getUser = jest.fn(async (id: number) => {
+export const getUser = jest.fn(async (id) => {
   await apiTimeout()
   return {
     result: id,
@@ -15,9 +17,9 @@ export const getUser = jest.fn(async (id: number) => {
       },
     },
   }
-})
+}) satisfies Query<number, TestTypenames>
 
-export const getUsers = jest.fn(async ({page = 1}: {page: number}) => {
+export const getUsers = jest.fn(async ({page = 1}) => {
   const pageSize = 3
   const items = Array.from({length: pageSize}, (_, i) => pageSize * (page - 1) + i)
   await apiTimeout()
@@ -39,18 +41,18 @@ export const getUsers = jest.fn(async ({page = 1}: {page: number}) => {
       },
     },
   }
-})
+}) satisfies Query<{page: number}, TestTypenames>
 
-export const removeUser = jest.fn(async (id: User['id']) => {
+export const removeUser = jest.fn(async (id) => {
   await apiTimeout()
   return {
     remove: {
       users: [id],
     },
   }
-})
+}) satisfies Mutation<User['id'], TestTypenames>
 
-export const updateUser = jest.fn(async (user: Partial<Omit<User, 'bank'>> & Pick<User, 'id'>) => {
+export const updateUser = jest.fn(async (user) => {
   await apiTimeout()
   return {
     result: user.id,
@@ -60,4 +62,4 @@ export const updateUser = jest.fn(async (user: Partial<Omit<User, 'bank'>> & Pic
       },
     },
   }
-})
+}) satisfies Mutation<Partial<Omit<User, 'bank'>> & Pick<User, 'id'>, TestTypenames>

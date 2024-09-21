@@ -15,7 +15,6 @@ test('createCache returns correct result', () => {
       validateFunctionArguments: true,
       deepComparisonEnabled: true,
     },
-    typenames,
     queries: {
       getUser: {
         query: getUser,
@@ -30,9 +29,7 @@ test('createCache returns correct result', () => {
 
   // @ts-expect-error test type not supported
   expect(reducer(undefined, {type: 'test'})).toStrictEqual({
-    entities: {
-      users: {},
-    },
+    entities: {},
     queries: {
       getUser: {},
     },
@@ -112,10 +109,6 @@ test('custom cacheStateSelector', () => {
 
 // utils & constants
 
-const typenames = {
-  users: {} as {id: number},
-}
-
 const getUser = async (id: number) => ({
   result: id,
   merge: {
@@ -131,13 +124,14 @@ const createTestingCache = <N extends string>(
   name: N,
   cacheStateSelector?: Cache<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateSelector']
 ) => {
-  return createCache({
+  return createCache<{
+    users: {id: number}
+  }>()({
     name,
     options: {
       logsEnabled: false,
       validateFunctionArguments: true,
     },
-    typenames,
     queries: {
       getUser: {
         query: getUser,
