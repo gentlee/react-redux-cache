@@ -12,7 +12,7 @@ export const UsersScreen = () => {
     },
   })
 
-  const refreshing = loading && params.page === 1
+  const refreshing = loading && params?.page === 1
   const loadingNextPage = loading && !refreshing
 
   const usersMap = useSelector((state) => selectEntitiesByTypename(state, 'users'))

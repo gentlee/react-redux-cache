@@ -56,7 +56,8 @@ export const query = async <
   try {
     response = await fetchFn(
       // @ts-expect-error fix later
-      params
+      params,
+      store
     )
   } catch (error) {
     store.dispatch(

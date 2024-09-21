@@ -81,10 +81,15 @@ export type EntityIds<T extends Typenames> = {[K in keyof T]?: Key[]}
 
 // Query
 
-export type Query<T extends Typenames, P, R> = (params: P) => Promise<QueryResponse<T, R>>
+export type Query<P, T extends Typenames = Typenames, R = unknown> = (
+  /** Query parameters */
+  params: P,
+  /** Redux store */
+  store: Store
+) => Promise<QueryResponse<T, R>>
 
 export type QueryInfo<T extends Typenames, P, R> = {
-  query: Query<T, P, R>
+  query: Query<P, T, R>
   /**
    * Cache policy.
    * @default cache-first
@@ -135,14 +140,17 @@ export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)
 
 // Mutation
 
-export type Mutation<T extends Typenames, P, R> = (
+export type Mutation<P, T extends Typenames = Typenames, R = unknown> = (
+  /** Mutation parameters */
   params: P,
+  /** Redux store */
+  store: Store,
   /** Signal is aborted for current mutation when the same mutation was called once again. */
   abortSignal: AbortSignal
 ) => Promise<MutationResponse<T, R>>
 
 export type MutationInfo<T extends Typenames, P, R> = {
-  mutation: Mutation<T, P, R>
+  mutation: Mutation<P, T, R>
 }
 
 export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
