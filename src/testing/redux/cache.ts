@@ -8,8 +8,6 @@ export type TestTypenames = {
   banks: Bank
 }
 
-export type ReduxState = ReturnType<typeof reducer>
-
 export const {
   cache,
   reducer,
