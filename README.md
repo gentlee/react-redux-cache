@@ -266,7 +266,7 @@ export const UserScreen = () => {
 
 #### Error handling
 
-Queries and mutations are wrapped in try/catch, so any error will lead to cancelling of any updates to the state except `loading: false` and the caught error. If you still want to make some state updates, or just want to use thrown erorrs only for unexpected cases, consider returning expected errors as a part of the result:
+Queries and mutations are wrapped in try/catch, so any error will lead to cancelling of any updates to the state except `loading: false` and the caught error. If you still want to make some state updates, or just want to use thrown errors only for unexpected cases, consider returning expected errors as a part of the result:
 
 ```typescript
 export const updateBank = (bank) => {
