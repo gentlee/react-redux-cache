@@ -285,7 +285,7 @@ export const updateBank = (bank) => {
 
 #### Extended cache policy
 
-`cache-first` cache policy skips fetching on component mount if result is already cached, but sometimes it can't determine that we already have result in some other's query result or in normalized entities cache. In that case we can use `skip` parameter of a query:
+`cache-first` cache policy (default) skips fetching on component mount if result is already cached, but sometimes it can't determine that we already have result in some other's query result or in normalized entities cache. In that case we can use `skip` parameter of a query:
 
 ```typescript
 export const UserScreen = () => {
