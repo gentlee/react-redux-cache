@@ -263,6 +263,25 @@ export const UserScreen = () => {
 
 ### Advanced
 
+#### Error handling
+
+Queries and mutations are wrapped in try/catch, so any error will lead to cancelling of any updates to the state except `loading: false` and the caught error. If you still want to make some state updates, or just want to use thrown erorrs only for unexpected cases, consider returning expected errors as a part of the result:
+
+```typescript
+export const updateBank = (bank) => {
+  const {httpError, response} = ...
+  return {
+    result: {
+      // Error is a part of the result, containing e.g. map of not valid fields and threir error messages
+      httpError,
+      // Bank still can be returned from the backend with error e.g. when only some of fields were udpated
+      bank: response?.bank
+    }
+  }
+} satisfies Mutation<Partial<Bank>>
+
+```
+
 #### Extended cache policy
 
 `cache-first` cache policy skips fetching if result is already cached, but sometimes it can't determine that we already have result in some other's query result or in normalized entities cache. In that case we can use `skip` parameter of a query:
