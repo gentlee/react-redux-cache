@@ -1,8 +1,8 @@
 // Common
 
-import {Store} from 'redux'
+import {Action, Store} from 'redux'
 
-import type {ReduxCacheState} from './reducer'
+import type {ReduxCacheState} from './createCacheReducer'
 
 export type Key = string | number | symbol
 
@@ -95,6 +95,8 @@ export type QueryInfo<T extends Typenames, P, R> = {
    * @default cache-first
    */
   cachePolicy?: QueryCachePolicy
+  /** If set, this value updates expiresAt value of query state when query resut is received. */
+  secondsToLive?: number
   /** Merges results before saving to the store. Default implementation is using the latest result. */
   mergeResults?: (
     oldResult: R | undefined,
@@ -110,9 +112,14 @@ export type QueryInfo<T extends Typenames, P, R> = {
   getCacheKey?: (params?: P) => Key
 }
 
+export type QueryState<P, R> = MutationState<P, R> & {
+  expiresAt?: number
+}
+
 export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = {
   query: QK
   params: QK extends keyof (QP | QR) ? QP[QK] : never
+  /** When true fetch is not performed. When switches to false fetch is always performed, no matter what cache policy is used. */
   skip?: boolean
 } & Pick<QueryInfo<T, unknown, unknown>, 'cachePolicy'>
 
@@ -123,8 +130,11 @@ export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & 
 export type QueryCachePolicy = 'cache-first' | 'cache-and-fetch'
 
 export type QueryResponse<T extends Typenames, R> = EntityChanges<T> & {
-  /** Normalized result of a query. */
   result: R
+  /** If defined, overrides this value for query state. */
+  expiresAt?: number
+  /** Additional actions that should be performed in the same redux transacion. Can be used for invalidation or additional state updates. */
+  actions?: Action[]
 }
 
 export type QueryResult<R> = {
@@ -135,8 +145,11 @@ export type QueryResult<R> = {
 
 export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = Omit<
   UseQueryOptions<T, QP, QR, QK>,
-  'skip'
->
+  'skip' | 'cachePolicy'
+> & {
+  /** If set to true, query will run only if it is expired. */
+  onlyIfExpired?: boolean
+}
 
 // Mutation
 
@@ -153,10 +166,10 @@ export type MutationInfo<T extends Typenames, P, R> = {
   mutation: Mutation<P, T, R>
 }
 
-export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
-  /** Normalized result of a mutation. */
-  result?: R
-}
+export type MutationResponse<T extends Typenames, R> = EntityChanges<T> &
+  Pick<QueryResponse<T, R>, 'actions'> & {
+    result?: R
+  }
 
 export type MutationResult<R> = {
   error?: unknown
@@ -166,7 +179,7 @@ export type MutationResult<R> = {
 
 // Query & Mutation
 
-export type QueryMutationState<P, R> = {
+export type MutationState<P, R> = {
   /** `true` when query or mutation is currently in progress. */
   loading: boolean
   /** Result of the latest successfull response. */

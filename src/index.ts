@@ -1,5 +1,5 @@
 export {createCache} from './createCache'
-export type {ReduxCacheState} from './reducer'
+export type {ReduxCacheState} from './createCacheReducer'
 export * from './types'
 export {
   defaultGetCacheKey,
@@ -8,21 +8,21 @@ export {
 
 // Backlog
 
-// ! high
-// error handling. choose strategy - return result or throw error? by default only thrown error
-// type extractors?
-// queryies/mutations return optional array of actions
-// optimistic response
+// ! high (1.0.0)
+// invalidation, ttl
+// remove cachePolicy, make a function
+// remove mergeResults?
+// typenames typing
 // skip -> enabled?
+// custom useStore
+// remove undefined optional fields & emtpy states
 // generate full api docs
-// update readme with how to use mergeResults for invalidating / updating caches?
-// make query key / cache key difference more clear in the docs, and/or rename queryKey -> query?
 
 // ! medium
+// optimistic response
+// make query key / cache key difference more clear in the docs
 // check type of function arguments in dev
 // allow multiple mutation with same keys?
-// type extractors from cache
-// custom useStore
 // return back deserialize selector?
 // selector for entities by typename
 // callback option on error / success?

@@ -38,7 +38,7 @@ export const {
 } = createCache({
   name: 'cache',
   options: {
-    logsEnabled: true,
+    logsEnabled: false,
     validateFunctionArguments: true,
     // deepComparisonEnabled: false,
   },

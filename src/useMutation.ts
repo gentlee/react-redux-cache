@@ -4,7 +4,7 @@ import {Store} from 'redux'
 
 import {ActionMap} from './createActions'
 import {mutate as mutateImpl} from './mutate'
-import {Cache, Key, QueryMutationState, Typenames} from './types'
+import {Cache, Key, MutationState, Typenames} from './types'
 import {DEFAULT_QUERY_MUTATION_STATE, log} from './utilsAndConstants'
 
 export const useMutation = <N extends string, T extends Typenames, MP, MR, MK extends keyof (MP & MR)>(
@@ -65,7 +65,7 @@ export const useMutation = <N extends string, T extends Typenames, MP, MR, MK ex
   }, [mutationKey, store])
 
   // @ts-expect-error fix later
-  const mutationState: QueryMutationState<P, R> =
+  const mutationState: MutationState<P, R> =
     useSelector(mutationStateSelector) ?? DEFAULT_QUERY_MUTATION_STATE
 
   cache.options.logsEnabled &&

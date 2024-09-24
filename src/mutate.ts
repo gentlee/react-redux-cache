@@ -105,6 +105,7 @@ export const mutate = async <
         response
       )
     )
+    response.actions?.forEach(store.dispatch)
     // @ts-expect-error fix later
     return {result: response.result}
   }

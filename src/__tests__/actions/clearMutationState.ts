@@ -20,10 +20,6 @@ test('should clear mutation state', () => {
       ...DEFAULT_QUERY_MUTATION_STATE,
       result: 0,
     },
-    removeUser: {
-      ...DEFAULT_QUERY_MUTATION_STATE,
-      result: undefined,
-    },
   })
 
   store.dispatch(clearMutationState(['updateUser']))

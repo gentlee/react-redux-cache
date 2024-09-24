@@ -21,11 +21,12 @@ export const query = async <
   }: Pick<ActionMap<N, T, QP, QR, unknown, unknown>, 'updateQueryStateAndEntities'>,
   queryKey: QK,
   cacheKey: Key,
-  params: QK extends keyof (QP | QR) ? QP[QK] : never
+  params: QK extends keyof (QP | QR) ? QP[QK] : never,
+  onlyIfExpired: boolean | undefined
 ): Promise<QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>> => {
   const logsEnabled = cache.options.logsEnabled
   const cacheStateSelector = cache.cacheStateSelector
-  const mergeResults = cache.queries[queryKey].mergeResults
+  const {mergeResults, secondsToLive} = cache.queries[queryKey]
 
   const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey as keyof (QP | QR)][
     cacheKey
@@ -39,6 +40,17 @@ export const query = async <
         cacheKey,
       })
 
+    return CANCELLED_RESULT
+  }
+
+  if (onlyIfExpired && queryStateOnStart.expiresAt != null && queryStateOnStart.expiresAt > Date.now()) {
+    logsEnabled &&
+      log(`${logTag} cancelled: not expired yet`, {
+        queryStateOnStart,
+        params,
+        cacheKey,
+        onlyIfExpired,
+      })
     return CANCELLED_RESULT
   }
 
@@ -72,6 +84,7 @@ export const query = async <
   const newState = {
     error: undefined,
     loading: false,
+    expiresAt: response.expiresAt ?? (secondsToLive != null ? Date.now() + secondsToLive * 1000 : undefined),
     result: mergeResults
       ? mergeResults(
           // @ts-expect-error fix later
@@ -84,6 +97,7 @@ export const query = async <
   }
 
   store.dispatch(updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, newState, response))
+  response.actions?.forEach(store.dispatch)
 
   return {
     // @ts-expect-error fix types

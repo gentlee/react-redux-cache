@@ -114,7 +114,6 @@ test('loads three pages sequentially with useQuery, refetch and client; query se
   expect(getUsers).toBeCalledTimes(2)
   expect(selectQueryState(store.getState(), 'getUsers', 'all-pages')).toStrictEqual({
     ...defaultQueryMutationState,
-    error: undefined,
     result: finalState,
     params: {page: 3},
   })
@@ -146,19 +145,16 @@ test('should not cancel current loading query on refetch with different params',
         getUser: {
           0: {
             ...DEFAULT_QUERY_MUTATION_STATE,
-            error: undefined,
             result: 0,
             params: 0,
           },
           1: {
             ...DEFAULT_QUERY_MUTATION_STATE,
-            error: undefined,
             result: 1,
             params: 1,
           },
           2: {
             ...DEFAULT_QUERY_MUTATION_STATE,
-            error: undefined,
             result: 2,
             params: 2,
           },
@@ -281,7 +277,6 @@ test('cancel manual refetch when currently loading same params', async () => {
             result: 0,
             params: 0,
             loading: false,
-            error: undefined,
           },
         },
       },
