@@ -298,7 +298,8 @@ const updateUser = (user: Partial<User>) => {
   const response = ...
   return {
     result: response.result,
-    actions: [invalidateQuery([{ key: 'getUsers' }])] // this action sets `expiresAt` field of `getUsers` states to Date.now()
+    expiresAt: Date.now() + 10000, // optional, expiration time of current response
+    actions: [invalidateQuery([{ key: 'getUsers' }])] // optional, this action sets `expiresAt` field of `getUsers` states to Date.now()
   }
 }
 ```
@@ -329,7 +330,7 @@ We can additionally check that entity is full or "fresh" enough:
 skip: !!user && isFullUser(user)
 ```
 
-Another approach is to set `skip: true` and manually run `fetch` when needed:
+Another approach is to set `skip: true` and manually run `fetch`. `onlyIfExpired` option can be also used:
 
 ```typescript
 export const UserScreen = () => {
@@ -343,24 +344,12 @@ export const UserScreen = () => {
 
   useEffect(() => {
     if (screenIsVisible) {
-      fetchUser()
+      fetchUser({ onlyIfExpired: true }) // expiration happens if expiresAt was set before e.g. by secondsToLive option or invalidateQuery action. If result is not cached yet, it is also considered as expired.
     }
   }, [screenIsVisible])
 
   ...
 }
-```
-
-Or even shorter with:
-
-```typescript
-  const screenIsVisible = useScreenIsVisible()
-
-  const [{result, loading, error}, fetchUser] = useQuery({
-    query: 'getUser',
-    params: userId,
-    skip: !screenIsVisible // fetch is performed every time skip becomes falsy
-  })
 ```
 
 #### Infinite scroll pagination

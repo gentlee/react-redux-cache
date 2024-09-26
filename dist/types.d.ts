@@ -1,5 +1,5 @@
-import { Store } from 'redux';
-import type { ReduxCacheState } from './reducer';
+import { Action, Store } from 'redux';
+import type { ReduxCacheState } from './createCacheReducer';
 export type Key = string | number | symbol;
 export type Dict<T> = Record<Key, T>;
 export type OptionalPartial<T, K extends keyof T> = Partial<{
@@ -69,14 +69,20 @@ export type EntitiesMap<T extends Typenames> = {
 export type EntityIds<T extends Typenames> = {
     [K in keyof T]?: Key[];
 };
-export type Query<T extends Typenames, P, R> = (params: P) => Promise<QueryResponse<T, R>>;
+export type Query<P, T extends Typenames = Typenames, R = unknown> = (
+/** Query parameters */
+params: P, 
+/** Redux store */
+store: Store) => Promise<QueryResponse<T, R>>;
 export type QueryInfo<T extends Typenames, P, R> = {
-    query: Query<T, P, R>;
+    query: Query<P, T, R>;
     /**
      * Cache policy.
      * @default cache-first
      */
     cachePolicy?: QueryCachePolicy;
+    /** If set, this value updates expiresAt value of query state when query resut is received. */
+    secondsToLive?: number;
     /** Merges results before saving to the store. Default implementation is using the latest result. */
     mergeResults?: (oldResult: R | undefined, response: QueryResponse<T, R>, params: P | undefined, store: Store) => R;
     /**
@@ -86,9 +92,13 @@ export type QueryInfo<T extends Typenames, P, R> = {
      * */
     getCacheKey?: (params?: P) => Key;
 };
+export type QueryState<P, R> = MutationState<P, R> & {
+    expiresAt?: number;
+};
 export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = {
     query: QK;
     params: QK extends keyof (QP | QR) ? QP[QK] : never;
+    /** When true fetch is not performed. When switches to false fetch is performed depending on cache policy. */
     skip?: boolean;
 } & Pick<QueryInfo<T, unknown, unknown>, 'cachePolicy'>;
 /**
@@ -97,23 +107,32 @@ export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & 
  */
 export type QueryCachePolicy = 'cache-first' | 'cache-and-fetch';
 export type QueryResponse<T extends Typenames, R> = EntityChanges<T> & {
-    /** Normalized result of a query. */
     result: R;
+    /** If defined, overrides this value for query state. */
+    expiresAt?: number;
+    /** Additional actions that should be performed in the same redux transacion. Can be used for invalidation or additional state updates. */
+    actions?: Action[];
 };
 export type QueryResult<R> = {
     error?: unknown;
     cancelled?: true;
     result?: R;
 };
-export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = Omit<UseQueryOptions<T, QP, QR, QK>, 'skip'>;
-export type Mutation<T extends Typenames, P, R> = (params: P, 
+export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = Omit<UseQueryOptions<T, QP, QR, QK>, 'skip' | 'cachePolicy'> & {
+    /** If set to true, query will run only if it is expired or result not yet cached. */
+    onlyIfExpired?: boolean;
+};
+export type Mutation<P, T extends Typenames = Typenames, R = unknown> = (
+/** Mutation parameters */
+params: P, 
+/** Redux store */
+store: Store, 
 /** Signal is aborted for current mutation when the same mutation was called once again. */
 abortSignal: AbortSignal) => Promise<MutationResponse<T, R>>;
 export type MutationInfo<T extends Typenames, P, R> = {
-    mutation: Mutation<T, P, R>;
+    mutation: Mutation<P, T, R>;
 };
-export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
-    /** Normalized result of a mutation. */
+export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & Pick<QueryResponse<T, R>, 'actions'> & {
     result?: R;
 };
 export type MutationResult<R> = {
@@ -121,7 +140,7 @@ export type MutationResult<R> = {
     aborted?: true;
     result?: R;
 };
-export type QueryMutationState<P, R> = {
+export type MutationState<P, R> = {
     /** `true` when query or mutation is currently in progress. */
     loading: boolean;
     /** Result of the latest successfull response. */

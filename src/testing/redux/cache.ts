@@ -2,6 +2,7 @@ import {createCache} from '../../createCache'
 import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
 import type {Bank, User} from '../api/types'
 import {logEvent} from '../api/utils'
+import {TTL_TIMEOUT} from '../utils'
 
 export type TestTypenames = {
   users: User
@@ -15,6 +16,7 @@ export const {
     updateQueryStateAndEntities,
     updateMutationStateAndEntities,
     mergeEntityChanges,
+    invalidateQuery,
     clearQueryState,
     clearMutationState,
   },
@@ -24,6 +26,7 @@ export const {
     selectQueryLoading,
     selectQueryError,
     selectQueryParams,
+    selectQueryExpiresAt,
     selectMutationState,
     selectMutationResult,
     selectMutationLoading,
@@ -68,6 +71,14 @@ export const {
     },
     getUser: {
       query: getUser,
+    },
+    getUserTtl: {
+      query: getUser,
+      secondsToLive: TTL_TIMEOUT / 1000,
+    },
+    getUserExpires: {
+      query: (id: number) => getUser(id).then((x) => ({...x, expiresAt: Date.now() + TTL_TIMEOUT})),
+      secondsToLive: Infinity,
     },
   },
   mutations: {

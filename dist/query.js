@@ -11,11 +11,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.query = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey, cacheKey, params) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const logsEnabled = cache.options.logsEnabled;
+const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey, cacheKey, params, onlyIfExpired) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    const logsEnabled = true; //cache.options.logsEnabled
     const cacheStateSelector = cache.cacheStateSelector;
-    const mergeResults = cache.queries[queryKey].mergeResults;
+    const { mergeResults, secondsToLive } = cache.queries[queryKey];
     const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey][cacheKey];
     if (queryStateOnStart === null || queryStateOnStart === void 0 ? void 0 : queryStateOnStart.loading) {
         logsEnabled &&
@@ -23,6 +23,16 @@ const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey,
                 queryStateOnStart,
                 params,
                 cacheKey,
+            });
+        return CANCELLED_RESULT;
+    }
+    if (onlyIfExpired && (queryStateOnStart === null || queryStateOnStart === void 0 ? void 0 : queryStateOnStart.expiresAt) != null && queryStateOnStart.expiresAt > Date.now()) {
+        logsEnabled &&
+            (0, utilsAndConstants_1.log)(`${logTag} cancelled: not expired yet`, {
+                queryStateOnStart,
+                params,
+                cacheKey,
+                onlyIfExpired,
             });
         return CANCELLED_RESULT;
     }
@@ -36,7 +46,7 @@ const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey,
     try {
         response = yield fetchFn(
         // @ts-expect-error fix later
-        params);
+        params, store);
     }
     catch (error) {
         store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, {
@@ -48,13 +58,16 @@ const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey,
     const newState = {
         error: undefined,
         loading: false,
+        expiresAt: (_a = response.expiresAt) !== null && _a !== void 0 ? _a : (secondsToLive != null ? Date.now() + secondsToLive * 1000 : undefined),
         result: mergeResults
             ? mergeResults(
             // @ts-expect-error fix later
-            (_a = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _a === void 0 ? void 0 : _a.result, response, params, store)
+            (_b = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _b === void 0 ? void 0 : _b.result, response, params, store)
             : response.result,
     };
+    // React 18 automatically batches all state updates, no need for optimization here
     store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, newState, response));
+    (_c = response.actions) === null || _c === void 0 ? void 0 : _c.forEach(store.dispatch);
     return {
         // @ts-expect-error fix types
         result: newState === null || newState === void 0 ? void 0 : newState.result,

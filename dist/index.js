@@ -22,18 +22,18 @@ var utilsAndConstants_1 = require("./utilsAndConstants");
 Object.defineProperty(exports, "defaultGetCacheKey", { enumerable: true, get: function () { return utilsAndConstants_1.defaultGetCacheKey; } });
 Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, get: function () { return utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE; } });
 // Backlog
-// ! high
-// optimistic response
-// type extractors?
-// skip -> enabled?
-// add full api docs
-// update readme with how to use mergeResults for invalidating / updating caches?
-// make query key / cache key difference more clear in the docs, and/or rename queryKey -> query?
+// ! high (1.0.0)
+// remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
+// optional typenames: {} as Typenames
+// remove mergeResults? bcs store is passed to queries/mutations
+// remove undefined optional fields & emtpy states
+// generate full api docs
 // ! medium
+// custom useStore & useSelector to support multiple stores
+// optimistic response
+// make query key / cache key difference more clear in the docs
 // check type of function arguments in dev
 // allow multiple mutation with same keys?
-// type extractors from cache
-// custom useStore
 // return back deserialize selector?
 // selector for entities by typename
 // callback option on error / success?

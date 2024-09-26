@@ -26,6 +26,7 @@ export const useQuery = <
     query: queryKey,
     skip,
     params,
+    secondsToLive,
     cachePolicy = cache.queries[queryKey].cachePolicy ?? 'cache-first',
   } = options
 
@@ -41,6 +42,7 @@ export const useQuery = <
   /** Fetch query with the new parameters, or refetch with the same if parameters not provided. */
   const fetch = useCallback(
     async (options?: Partial<Pick<QueryOptions<T, QP, QR, QK>, 'params' | 'onlyIfExpired'>>) => {
+      const paramsPassed = options && 'params' in options
       return await queryImpl(
         'useQuery.fetch',
         store,
@@ -48,8 +50,9 @@ export const useQuery = <
         actions,
         queryKey,
         // @ts-expect-error fix later
-        options ? getCacheKey(options.params) : cacheKey,
-        options && 'params' in options ? options.params! : params, // params type can also have null | undefined, thats why we don't check for it here
+        paramsPassed ? getCacheKey(options.params) : cacheKey,
+        paramsPassed ? options.params! : params, // params type can also have null | undefined, thats why we don't check for it here
+        secondsToLive,
         options?.onlyIfExpired
       )
     },
@@ -62,7 +65,7 @@ export const useQuery = <
     useSelector((state: unknown) => {
       const queryState = cacheStateSelector(state).queries[queryKey as keyof (QP | QR)][cacheKey]
       return queryState as QueryState<P, R> | undefined // TODO proper type
-    }) ?? (DEFAULT_QUERY_MUTATION_STATE as QueryState<P, R>)
+    }, useQueryStateComparer<P, R>) ?? (DEFAULT_QUERY_MUTATION_STATE as QueryState<P, R>)
 
   useEffect(() => {
     if (skip) {
@@ -76,7 +79,7 @@ export const useQuery = <
       (queryState.expiresAt == null || queryState.expiresAt > Date.now())
     ) {
       logsEnabled &&
-        log('useQuery.useEffect don`t fetch due to cache policy', {
+        log('useQuery.useEffect no fetch due to cache policy', {
           result: queryState.result,
           expiresAt: queryState.expiresAt,
           now: Date.now(),
@@ -96,5 +99,24 @@ export const useQuery = <
       queryState,
     })
 
-  return [queryState, fetch] as const
+  return [queryState as Omit<QueryState<P, R>, 'expiresAt'>, fetch] as const
+}
+
+/** Omit `expiresAt` from comparison */
+const useQueryStateComparer = <P, R>(
+  state1: QueryState<P, R> | undefined,
+  state2: QueryState<P, R> | undefined
+) => {
+  if (state1 === state2) {
+    return true
+  }
+  if (state1 === undefined || state2 === undefined) {
+    return false
+  }
+  return (
+    state1.error === state2.error &&
+    state1.loading === state2.loading &&
+    state1.params === state2.params &&
+    state1.result === state2.result
+  )
 }

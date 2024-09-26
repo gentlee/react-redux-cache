@@ -156,7 +156,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
               type P = QK extends keyof (QP | QR) ? QP[QK] : never
               type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
-              const {query: queryKey, params, onlyIfExpired} = options
+              const {query: queryKey, params, onlyIfExpired, secondsToLive} = options
               const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
               // @ts-expect-error fix later
               const cacheKey = getCacheKey(params)
@@ -169,6 +169,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
                 queryKey,
                 cacheKey,
                 params,
+                secondsToLive,
                 onlyIfExpired
               ) as Promise<QueryResult<R>>
             },
@@ -193,7 +194,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
         }, [store])
       },
 
-      /** Fetches query when params change and subscribes to query state. */
+      /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
       useQuery: <QK extends keyof (QP & QR)>(
         options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[2]
       ) => useQuery(cache, actions, options),

@@ -93,19 +93,16 @@ export const mutate = async <
   }
 
   if (response) {
-    store.dispatch(
-      updateMutationStateAndEntities(
-        mutationKey as keyof (MP | MR),
-        {
-          error: undefined,
-          loading: false,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          result: response.result,
-        },
-        response
-      )
-    )
+    const newState = {
+      error: undefined,
+      loading: false,
+      result: response.result,
+    }
+
+    // React 18 automatically batches all state updates, no need for optimization here
+    store.dispatch(updateMutationStateAndEntities(mutationKey as keyof (MP | MR), newState, response))
     response.actions?.forEach(store.dispatch)
+
     // @ts-expect-error fix later
     return {result: response.result}
   }

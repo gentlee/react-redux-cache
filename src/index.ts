@@ -9,12 +9,9 @@ export {
 // Backlog
 
 // ! high (1.0.0)
-// invalidation, ttl
-// remove cachePolicy, make a function
-// remove mergeResults?
-// typenames typing
-// skip -> enabled?
-// custom useStore
+// remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
+// optional typenames: {} as Typenames
+// remove mergeResults? bcs store is passed to queries/mutations
 // remove undefined optional fields & emtpy states
 // generate full api docs
 
@@ -32,6 +29,7 @@ export {
 // make error type generic
 
 // ! low
+// custom useStore & useSelector to support multiple stores?
 // access to currently loading queries and mutations?
 // add params to the state?
 // cancellation to queries

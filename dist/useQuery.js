@@ -17,7 +17,7 @@ const utilsAndConstants_1 = require("./utilsAndConstants");
 const useQuery = (cache, actions, options) => {
     var _a, _b, _c;
     const { query: queryKey, skip, params, cachePolicy = (_a = cache.queries[queryKey].cachePolicy) !== null && _a !== void 0 ? _a : 'cache-first', } = options;
-    const logsEnabled = cache.options.logsEnabled;
+    const logsEnabled = true; //cache.options.logsEnabled
     const getCacheKey = (_b = cache.queries[queryKey].getCacheKey) !== null && _b !== void 0 ? _b : (utilsAndConstants_1.defaultGetCacheKey);
     const cacheStateSelector = cache.cacheStateSelector;
     const store = (0, react_redux_1.useStore)();
@@ -27,7 +27,8 @@ const useQuery = (cache, actions, options) => {
     const fetch = (0, react_1.useCallback)((options) => __awaiter(void 0, void 0, void 0, function* () {
         return yield (0, query_1.query)('useQuery.fetch', store, cache, actions, queryKey, 
         // @ts-expect-error fix later
-        options ? getCacheKey(options.params) : cacheKey, options ? options.params : params);
+        options ? getCacheKey(options.params) : cacheKey, options && 'params' in options ? options.params : params, // params type can also have null | undefined, thats why we don't check for it here
+        options === null || options === void 0 ? void 0 : options.onlyIfExpired);
     }), 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [store, queryKey, cacheKey]);
@@ -41,10 +42,14 @@ const useQuery = (cache, actions, options) => {
             logsEnabled && (0, utilsAndConstants_1.log)('useQuery.useEffect skip fetch', { skip, cacheKey });
             return;
         }
-        if (queryState.result != null && cachePolicy === 'cache-first') {
+        if (queryState.result != null &&
+            cachePolicy === 'cache-first' &&
+            (queryState.expiresAt == null || queryState.expiresAt > Date.now())) {
             logsEnabled &&
-                (0, utilsAndConstants_1.log)('useQuery.useEffect don`t fetch due to cache policy', {
+                (0, utilsAndConstants_1.log)('useQuery.useEffect no fetch due to cache policy', {
                     result: queryState.result,
+                    expiresAt: queryState.expiresAt,
+                    now: Date.now(),
                     cachePolicy,
                 });
             return;

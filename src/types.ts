@@ -119,9 +119,9 @@ export type QueryState<P, R> = MutationState<P, R> & {
 export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = {
   query: QK
   params: QK extends keyof (QP | QR) ? QP[QK] : never
-  /** When true fetch is not performed. When switches to false fetch is always performed, no matter what cache policy is used. */
+  /** When true fetch is not performed. When switches to false fetch is performed depending on cache policy. */
   skip?: boolean
-} & Pick<QueryInfo<T, unknown, unknown>, 'cachePolicy'>
+} & Pick<QueryInfo<T, unknown, unknown>, 'cachePolicy' | 'secondsToLive'>
 
 /**
  * @param cache-first for each params key fetch is not called if cache exists.
@@ -131,7 +131,7 @@ export type QueryCachePolicy = 'cache-first' | 'cache-and-fetch'
 
 export type QueryResponse<T extends Typenames, R> = EntityChanges<T> & {
   result: R
-  /** If defined, overrides this value for query state. */
+  /** If defined, overrides this value for query state, ignoring `secondsToLive`. */
   expiresAt?: number
   /** Additional actions that should be performed in the same redux transacion. Can be used for invalidation or additional state updates. */
   actions?: Action[]
@@ -147,7 +147,7 @@ export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)
   UseQueryOptions<T, QP, QR, QK>,
   'skip' | 'cachePolicy'
 > & {
-  /** If set to true, query will run only if it is expired. */
+  /** If set to true, query will run only if it is expired or result not yet cached. */
   onlyIfExpired?: boolean
 }
 

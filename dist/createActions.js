@@ -27,10 +27,16 @@ const createActions = (name) => {
         changes,
     });
     mergeEntityChanges.type = mergeEntityChangesType;
+    const invalidateQueryType = `${actionPrefix}invalidateQuery`;
+    const invalidateQuery = (queries) => ({
+        type: invalidateQueryType,
+        queries,
+    });
+    invalidateQuery.type = invalidateQueryType;
     const clearQueryStateType = `${actionPrefix}clearQueryState`;
-    const clearQueryState = (queryKeys) => ({
+    const clearQueryState = (queries) => ({
         type: clearQueryStateType,
-        queryKeys,
+        queries,
     });
     clearQueryState.type = clearQueryStateType;
     const clearMutationStateType = `${actionPrefix}clearMutationState`;
@@ -46,6 +52,8 @@ const createActions = (name) => {
         updateMutationStateAndEntities,
         /** Merge EntityChanges to the state. */
         mergeEntityChanges,
+        /** Invalidates query states */
+        invalidateQuery,
         /** Clear states for provided query keys and cache keys.
          * If cache key for query key is not provided, the whole state for query key is cleared. */
         clearQueryState,

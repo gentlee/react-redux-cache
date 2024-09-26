@@ -23,7 +23,7 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
     entitiesMap[key] = EMPTY_QUERY_STATE
   }
 
-  const queryStateMap = {} as {[QK in keyof (QP | QR)]: Dict<QueryState<QP[QK], QR[QK]>>}
+  const queryStateMap = {} as {[QK in keyof (QP | QR)]: Dict<QueryState<QP[QK], QR[QK]> | undefined>}
   for (const key of queryKeys) {
     queryStateMap[key] = {}
   }
@@ -174,7 +174,7 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
                   expiresAt,
                 }
                 if (expiresAt === undefined) {
-                  delete newQueries[key][cacheKey].expiresAt
+                  delete newQueries[key][cacheKey]!.expiresAt
                 }
               }
             }
@@ -193,7 +193,7 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
                   expiresAt,
                 }
                 if (expiresAt === undefined) {
-                  delete newQueries[key][cacheKey].expiresAt
+                  delete newQueries[key][cacheKey]!.expiresAt
                 }
               }
             }

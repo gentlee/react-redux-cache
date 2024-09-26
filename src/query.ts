@@ -22,11 +22,12 @@ export const query = async <
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never,
+  secondsToLive: number | undefined = cache.queries[queryKey].secondsToLive,
   onlyIfExpired: boolean | undefined
 ): Promise<QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>> => {
   const logsEnabled = cache.options.logsEnabled
   const cacheStateSelector = cache.cacheStateSelector
-  const {mergeResults, secondsToLive} = cache.queries[queryKey]
+  const {mergeResults} = cache.queries[queryKey]
 
   const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey as keyof (QP | QR)][
     cacheKey
@@ -43,7 +44,7 @@ export const query = async <
     return CANCELLED_RESULT
   }
 
-  if (onlyIfExpired && queryStateOnStart.expiresAt != null && queryStateOnStart.expiresAt > Date.now()) {
+  if (onlyIfExpired && queryStateOnStart?.expiresAt != null && queryStateOnStart.expiresAt > Date.now()) {
     logsEnabled &&
       log(`${logTag} cancelled: not expired yet`, {
         queryStateOnStart,
@@ -61,7 +62,7 @@ export const query = async <
     })
   )
 
-  logsEnabled && log(`${logTag} started`, {queryStateOnStart, params, cacheKey})
+  logsEnabled && log(`${logTag} started`, {queryKey, params, cacheKey, queryStateOnStart, onlyIfExpired})
 
   let response
   const fetchFn = cache.queries[queryKey].query
@@ -96,6 +97,7 @@ export const query = async <
       : response.result,
   }
 
+  // React 18 automatically batches all state updates, no need for optimization here
   store.dispatch(updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, newState, response))
   response.actions?.forEach(store.dispatch)
 
