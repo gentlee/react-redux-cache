@@ -14,9 +14,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defaultQueryMutationState = exports.defaultGetCacheKey = exports.createCache = void 0;
+exports.defaultQueryMutationState = exports.defaultGetCacheKey = exports.withTypenames = exports.createCache = void 0;
 var createCache_1 = require("./createCache");
 Object.defineProperty(exports, "createCache", { enumerable: true, get: function () { return createCache_1.createCache; } });
+Object.defineProperty(exports, "withTypenames", { enumerable: true, get: function () { return createCache_1.withTypenames; } });
 __exportStar(require("./types"), exports);
 var utilsAndConstants_1 = require("./utilsAndConstants");
 Object.defineProperty(exports, "defaultGetCacheKey", { enumerable: true, get: function () { return utilsAndConstants_1.defaultGetCacheKey; } });
@@ -26,7 +27,6 @@ Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, 
 // rca -> vite
 // defaults
 // remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
-// optional typenames: {} as Typenames
 // remove mergeResults? bcs store is passed to queries/mutations
 // remove undefined optional fields & emtpy states
 // generate full api docs

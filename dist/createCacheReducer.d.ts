@@ -1,7 +1,7 @@
 import type { ActionMap } from './createActions';
 import type { CacheOptions, Dict, EntitiesMap, MutationState, QueryState, Typenames } from './types';
 export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<ReturnType<typeof createCacheReducer<string, T, QP, QR, MP, MR>>>;
-export declare const createCacheReducer: <N extends string, T extends Typenames, QP, QR, MP, MR>(actions: ActionMap<N, T, QP, QR, MP, MR>, typenames: T, queryKeys: (keyof QP & keyof QR)[], cacheOptions: CacheOptions) => (state: {
+export declare const createCacheReducer: <N extends string, T extends Typenames, QP, QR, MP, MR>(actions: ActionMap<N, T, QP, QR, MP, MR>, queryKeys: (keyof QP & keyof QR)[], cacheOptions: CacheOptions) => (state: {
     entities: EntitiesMap<T>;
     queries: QP | QR extends infer T_1 ? { [QK in keyof T_1]: Dict<QueryState<QP[QK], QR[QK]> | undefined>; } : never;
     mutations: MP | MR extends infer T_2 ? { [MK in keyof T_2]: MutationState<MP[MK], MR[MK]>; } : never;

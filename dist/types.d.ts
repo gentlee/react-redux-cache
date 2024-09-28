@@ -21,16 +21,6 @@ export type Typenames = Record<string, object>;
 export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
     /** Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state. */
     name: N;
-    /**
-     * Mapping of all typenames to their entity types, which is needed for proper normalization. Should be empty if normalization is not needed.
-     * @key Typename.
-     * @value Object with proper type of the typename. Empty objects with type casting can be used.
-     * @example
-     * typenames: {
-        users: {} as User, // here `users` entities will have type `User`
-        banks: {} as Bank,
-    } */
-    typenames: T;
     queries: {
         [QK in keyof (QP & QR)]: QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK]> : never;
     };
@@ -64,7 +54,7 @@ export type PartialEntitiesMap<T extends Typenames> = {
     [K in keyof T]?: Dict<Partial<T[K]>>;
 };
 export type EntitiesMap<T extends Typenames> = {
-    [K in keyof T]: Dict<T[K]>;
+    [K in keyof T]?: Dict<T[K]>;
 };
 export type EntityIds<T extends Typenames> = {
     [K in keyof T]?: Key[];
