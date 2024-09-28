@@ -12,6 +12,8 @@
     "lint": "yarn eslint src",
     "build": "yarn clean && yarn lint && tsc",
     "test": "node node_modules/jest/bin/jest.js",
+    "preminor-rc": "npm version preminor --preid rc",
+    "publish-rc": "npm publish --tag rc",
     "prepublishOnly": "yarn build && yarn test"
   },
   "peerDependencies": {
