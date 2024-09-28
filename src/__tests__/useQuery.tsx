@@ -387,7 +387,7 @@ test('no re-render on expiresAt change', async () => {
   await act(advanceApiTimeout)
   clearEventLog()
 
-  act(() => store.dispatch(invalidateQuery([{key: 'getUserTtl', expiresAt: Date.now() + 1000}])))
+  act(() => store.dispatch(invalidateQuery([{query: 'getUserTtl', expiresAt: Date.now() + 1000}])))
   assertEventLog([]) // update of expiresAt should not cause re-render
 })
 

@@ -30,14 +30,14 @@ export declare const createCache: <N extends string, T extends Typenames, QP, QR
     } | {
         type: `@rrc/${N}/invalidateQuery`;
         queries: {
-            key: keyof QP & keyof QR;
+            query: keyof QP & keyof QR;
             cacheKey?: Key | undefined;
             expiresAt?: number | undefined;
         }[];
     } | {
         type: `@rrc/${N}/clearQueryState`;
         queries: {
-            key: keyof QP & keyof QR;
+            query: keyof QP & keyof QR;
             cacheKey?: Key | undefined;
         }[];
     } | {
@@ -77,13 +77,13 @@ export declare const createCache: <N extends string, T extends Typenames, QP, QR
         };
         invalidateQuery: {
             <K_2 extends keyof QP & keyof QR>(queries: {
-                key: K_2;
+                query: K_2;
                 cacheKey?: Key | undefined;
                 expiresAt?: number | undefined;
             }[]): {
                 type: `@rrc/${N}/invalidateQuery`;
                 queries: {
-                    key: K_2;
+                    query: K_2;
                     cacheKey?: Key | undefined;
                     expiresAt?: number | undefined;
                 }[];
@@ -92,12 +92,12 @@ export declare const createCache: <N extends string, T extends Typenames, QP, QR
         };
         clearQueryState: {
             <K_3 extends keyof QP & keyof QR>(queries: {
-                key: K_3;
+                query: K_3;
                 cacheKey?: Key | undefined;
             }[]): {
                 type: `@rrc/${N}/clearQueryState`;
                 queries: {
-                    key: K_3;
+                    query: K_3;
                     cacheKey?: Key | undefined;
                 }[];
             };

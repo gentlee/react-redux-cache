@@ -34,7 +34,7 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
     invalidateQuery: {
         <K_2 extends keyof QP & keyof QR>(queries: {
             /** Query key */
-            key: K_2;
+            query: K_2;
             /** Query cache key */
             cacheKey?: Key | undefined;
             /** Unix timestamp at which query expires. Is set to the query state. @default Date.now() */
@@ -43,7 +43,7 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
             type: `@rrc/${N}/invalidateQuery`;
             queries: {
                 /** Query key */
-                key: K_2;
+                query: K_2;
                 /** Query cache key */
                 cacheKey?: Key | undefined;
                 /** Unix timestamp at which query expires. Is set to the query state. @default Date.now() */
@@ -57,14 +57,14 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
     clearQueryState: {
         <K_3 extends keyof QP & keyof QR>(queries: {
             /** Query key */
-            key: K_3;
+            query: K_3;
             /** Query cache key */
             cacheKey?: Key | undefined;
         }[]): {
             type: `@rrc/${N}/clearQueryState`;
             queries: {
                 /** Query key */
-                key: K_3;
+                query: K_3;
                 /** Query cache key */
                 cacheKey?: Key | undefined;
             }[];

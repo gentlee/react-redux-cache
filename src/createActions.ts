@@ -47,7 +47,7 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
   const invalidateQuery = <K extends keyof (QP | QR)>(
     queries: {
       /** Query key */
-      key: K
+      query: K
       /** Query cache key */
       cacheKey?: Key
       /** Unix timestamp at which query expires. Is set to the query state. @default Date.now() */
@@ -63,7 +63,7 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
   const clearQueryState = <K extends keyof (QP | QR)>(
     queries: {
       /** Query key */
-      key: K
+      query: K
       /** Query cache key */
       cacheKey?: Key
     }[]

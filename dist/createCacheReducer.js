@@ -96,20 +96,20 @@ const createCacheReducer = (actions, typenames, queryKeys, cacheOptions) => {
                 }
                 const now = Date.now();
                 let newQueries = undefined;
-                for (const { key, cacheKey, expiresAt = now } of queriesToInvalidate) {
-                    const queryStates = (newQueries !== null && newQueries !== void 0 ? newQueries : state.queries)[key];
+                for (const { query: queryKey, cacheKey, expiresAt = now } of queriesToInvalidate) {
+                    const queryStates = (newQueries !== null && newQueries !== void 0 ? newQueries : state.queries)[queryKey];
                     if (cacheKey != null) {
                         if (queryStates[cacheKey]) {
                             const queryState = queryStates[cacheKey];
                             if (queryState && queryState.expiresAt !== expiresAt) {
                                 newQueries !== null && newQueries !== void 0 ? newQueries : (newQueries = Object.assign({}, state.queries));
-                                if (state.queries[key] === newQueries[key]) {
-                                    newQueries[key] = Object.assign({}, newQueries[key]);
+                                if (state.queries[queryKey] === newQueries[queryKey]) {
+                                    newQueries[queryKey] = Object.assign({}, newQueries[queryKey]);
                                 }
                                 // @ts-expect-error fix type later
-                                newQueries[key][cacheKey] = Object.assign(Object.assign({}, queryState), { expiresAt });
+                                newQueries[queryKey][cacheKey] = Object.assign(Object.assign({}, queryState), { expiresAt });
                                 if (expiresAt === undefined) {
-                                    delete newQueries[key][cacheKey].expiresAt;
+                                    delete newQueries[queryKey][cacheKey].expiresAt;
                                 }
                             }
                         }
@@ -119,12 +119,12 @@ const createCacheReducer = (actions, typenames, queryKeys, cacheOptions) => {
                             const queryState = queryStates[cacheKey];
                             if (queryState && queryState.expiresAt !== expiresAt) {
                                 newQueries !== null && newQueries !== void 0 ? newQueries : (newQueries = Object.assign({}, state.queries));
-                                if (state.queries[key] === newQueries[key]) {
-                                    newQueries[key] = Object.assign({}, newQueries[key]);
+                                if (state.queries[queryKey] === newQueries[queryKey]) {
+                                    newQueries[queryKey] = Object.assign({}, newQueries[queryKey]);
                                 }
-                                newQueries[key][cacheKey] = Object.assign(Object.assign({}, queryState), { expiresAt });
+                                newQueries[queryKey][cacheKey] = Object.assign(Object.assign({}, queryState), { expiresAt });
                                 if (expiresAt === undefined) {
-                                    delete newQueries[key][cacheKey].expiresAt;
+                                    delete newQueries[queryKey][cacheKey].expiresAt;
                                 }
                             }
                         }
@@ -140,20 +140,20 @@ const createCacheReducer = (actions, typenames, queryKeys, cacheOptions) => {
                     return state;
                 }
                 let newQueries = undefined;
-                for (const { key, cacheKey } of queriesToClear) {
-                    const queryStates = (newQueries !== null && newQueries !== void 0 ? newQueries : state.queries)[key];
+                for (const { query: queryKey, cacheKey } of queriesToClear) {
+                    const queryStates = (newQueries !== null && newQueries !== void 0 ? newQueries : state.queries)[queryKey];
                     if (cacheKey != null) {
                         if (queryStates[cacheKey]) {
                             newQueries !== null && newQueries !== void 0 ? newQueries : (newQueries = Object.assign({}, state.queries));
-                            if (state.queries[key] === newQueries[key]) {
-                                newQueries[key] = Object.assign({}, newQueries[key]);
+                            if (state.queries[queryKey] === newQueries[queryKey]) {
+                                newQueries[queryKey] = Object.assign({}, newQueries[queryKey]);
                             }
-                            delete newQueries[key][cacheKey];
+                            delete newQueries[queryKey][cacheKey];
                         }
                     }
                     else if (queryStates !== EMPTY_QUERY_STATE) {
                         newQueries !== null && newQueries !== void 0 ? newQueries : (newQueries = Object.assign({}, state.queries));
-                        newQueries[key] = EMPTY_QUERY_STATE;
+                        newQueries[queryKey] = EMPTY_QUERY_STATE;
                     }
                 }
                 return !newQueries

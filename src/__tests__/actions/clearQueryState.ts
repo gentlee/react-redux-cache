@@ -13,9 +13,9 @@ test('should clear query state with and without cache key', () => {
 
   store.dispatch(
     clearQueryState([
-      {key: 'getUser', cacheKey: 0},
-      {key: 'getUser', cacheKey: 0},
-      {key: 'getUser', cacheKey: 2},
+      {query: 'getUser', cacheKey: 0},
+      {query: 'getUser', cacheKey: 0},
+      {query: 'getUser', cacheKey: 2},
     ])
   )
   expect(store.getState().cache.queries.getUser).toStrictEqual({
@@ -24,7 +24,7 @@ test('should clear query state with and without cache key', () => {
 
   // clear all cache keys
 
-  store.dispatch(clearQueryState([{key: 'getUser'}]))
+  store.dispatch(clearQueryState([{query: 'getUser'}]))
   expect(store.getState().cache.queries.getUser).toStrictEqual({})
 })
 
@@ -33,12 +33,12 @@ test('should work if cache key missing', () => {
 
   store.dispatch(
     clearQueryState([
-      {key: 'getUser'},
-      {key: 'getUser', cacheKey: 0},
-      {key: 'getUser', cacheKey: 0},
-      {key: 'getUser', cacheKey: 2},
-      {key: 'getUser'},
-      {key: 'getUser', cacheKey: 0},
+      {query: 'getUser'},
+      {query: 'getUser', cacheKey: 0},
+      {query: 'getUser', cacheKey: 0},
+      {query: 'getUser', cacheKey: 2},
+      {query: 'getUser'},
+      {query: 'getUser', cacheKey: 0},
     ])
   )
 
@@ -49,8 +49,8 @@ test('should work if cache key missing', () => {
   )
   store.dispatch(
     clearQueryState([
-      {key: 'getUser', cacheKey: 1},
-      {key: 'getUser', cacheKey: 2},
+      {query: 'getUser', cacheKey: 1},
+      {query: 'getUser', cacheKey: 2},
     ])
   )
 

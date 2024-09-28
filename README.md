@@ -291,17 +291,22 @@ export const updateBank = (bank) => {
 
 #### Invalidation
 
-`cache-first` cache policy (default) skips fetching on component mount if result is already cached, but we can invalidate cached query results using `invalidateQuery` action to make it run again on a next mount. Also, we can return this action as a part of query or mutation response, to perform it in one batch update.
+`cache-first` cache policy (default) skips fetching on component mount if result is already cached, but we can invalidate cached query results using `invalidateQuery` action to make it run again on a next mount.
 
 ```typescript
-const updateUser = (user: Partial<User>) => {
-  const response = ...
-  return {
-    result: response.result,
-    expiresAt: Date.now() + 10000, // optional, expiration time of current response
-    actions: [invalidateQuery([{ key: 'getUsers' }])] // optional, this action sets `expiresAt` field of `getUsers` states to Date.now()
-  }
-}
+
+export const cache = createCache({
+  ...
+  mutations: {
+    updateUser: {
+      mutation: updateUser,
+      onSuccess(_, __, {dispatch}) {
+        // we invalidate getUsers after a single user update (can be done better by updating getUsers state with updateQueryStateAndEntities)
+        dispatch(cache.actions.invalidateQuery([{query: 'getUsers'}]))
+      },
+    },
+  },
+})
 ```
 
 #### Extended cache policy

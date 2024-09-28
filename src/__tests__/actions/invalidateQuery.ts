@@ -14,9 +14,9 @@ test('should work with and without cache key', () => {
   const now = Date.now()
   store.dispatch(
     invalidateQuery([
-      {key: 'getUser', cacheKey: 0},
-      {key: 'getUser', cacheKey: 0},
-      {key: 'getUser', cacheKey: 1, expiresAt: now + 1000},
+      {query: 'getUser', cacheKey: 0},
+      {query: 'getUser', cacheKey: 0},
+      {query: 'getUser', cacheKey: 1, expiresAt: now + 1000},
     ])
   )
   expect(store.getState().cache.queries.getUser).toStrictEqual({
@@ -27,7 +27,7 @@ test('should work with and without cache key', () => {
 
   // invalidate all cache keys
 
-  store.dispatch(invalidateQuery([{key: 'getUser'}]))
+  store.dispatch(invalidateQuery([{query: 'getUser'}]))
 
   const getUserStates = store.getState().cache.queries.getUser
   expect(getUserStates[0]!.expiresAt).toBe(getUserStates[1]!.expiresAt)
@@ -40,12 +40,12 @@ test('should work if cache key missing', () => {
 
   store.dispatch(
     invalidateQuery([
-      {key: 'getUser'},
-      {key: 'getUser', cacheKey: 0},
-      {key: 'getUser', cacheKey: 0},
-      {key: 'getUser', cacheKey: 2},
-      {key: 'getUser'},
-      {key: 'getUser', cacheKey: 0},
+      {query: 'getUser'},
+      {query: 'getUser', cacheKey: 0},
+      {query: 'getUser', cacheKey: 0},
+      {query: 'getUser', cacheKey: 2},
+      {query: 'getUser'},
+      {query: 'getUser', cacheKey: 0},
     ])
   )
 
@@ -56,8 +56,8 @@ test('should work if cache key missing', () => {
   )
   store.dispatch(
     invalidateQuery([
-      {key: 'getUser', cacheKey: 1},
-      {key: 'getUser', cacheKey: 2},
+      {query: 'getUser', cacheKey: 1},
+      {query: 'getUser', cacheKey: 2},
     ])
   )
 

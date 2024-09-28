@@ -156,25 +156,25 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
         const now = Date.now()
         let newQueries = undefined
 
-        for (const {key, cacheKey, expiresAt = now} of queriesToInvalidate) {
-          const queryStates = (newQueries ?? state.queries)[key]
+        for (const {query: queryKey, cacheKey, expiresAt = now} of queriesToInvalidate) {
+          const queryStates = (newQueries ?? state.queries)[queryKey]
           if (cacheKey != null) {
             if (queryStates[cacheKey]) {
               const queryState = queryStates[cacheKey]
               if (queryState && queryState.expiresAt !== expiresAt) {
                 newQueries ??= {...state.queries}
-                if (state.queries[key] === newQueries[key]) {
-                  newQueries[key] = {
-                    ...newQueries[key],
+                if (state.queries[queryKey] === newQueries[queryKey]) {
+                  newQueries[queryKey] = {
+                    ...newQueries[queryKey],
                   }
                 }
                 // @ts-expect-error fix type later
-                newQueries[key][cacheKey] = {
+                newQueries[queryKey][cacheKey] = {
                   ...queryState,
                   expiresAt,
                 }
                 if (expiresAt === undefined) {
-                  delete newQueries[key][cacheKey]!.expiresAt
+                  delete newQueries[queryKey][cacheKey]!.expiresAt
                 }
               }
             }
@@ -183,17 +183,17 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
               const queryState = queryStates[cacheKey]
               if (queryState && queryState.expiresAt !== expiresAt) {
                 newQueries ??= {...state.queries}
-                if (state.queries[key] === newQueries[key]) {
-                  newQueries[key] = {
-                    ...newQueries[key],
+                if (state.queries[queryKey] === newQueries[queryKey]) {
+                  newQueries[queryKey] = {
+                    ...newQueries[queryKey],
                   }
                 }
-                newQueries[key][cacheKey] = {
+                newQueries[queryKey][cacheKey] = {
                   ...queryState,
                   expiresAt,
                 }
                 if (expiresAt === undefined) {
-                  delete newQueries[key][cacheKey]!.expiresAt
+                  delete newQueries[queryKey][cacheKey]!.expiresAt
                 }
               }
             }
@@ -215,21 +215,21 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
 
         let newQueries = undefined
 
-        for (const {key, cacheKey} of queriesToClear) {
-          const queryStates = (newQueries ?? state.queries)[key]
+        for (const {query: queryKey, cacheKey} of queriesToClear) {
+          const queryStates = (newQueries ?? state.queries)[queryKey]
           if (cacheKey != null) {
             if (queryStates[cacheKey]) {
               newQueries ??= {...state.queries}
-              if (state.queries[key] === newQueries[key]) {
-                newQueries[key] = {
-                  ...newQueries[key],
+              if (state.queries[queryKey] === newQueries[queryKey]) {
+                newQueries[queryKey] = {
+                  ...newQueries[queryKey],
                 }
               }
-              delete newQueries[key][cacheKey]
+              delete newQueries[queryKey][cacheKey]
             }
           } else if (queryStates !== EMPTY_QUERY_STATE) {
             newQueries ??= {...state.queries}
-            newQueries[key] = EMPTY_QUERY_STATE
+            newQueries[queryKey] = EMPTY_QUERY_STATE
           }
         }
 

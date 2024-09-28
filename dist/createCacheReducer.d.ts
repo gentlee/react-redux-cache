@@ -22,14 +22,14 @@ export declare const createCacheReducer: <N extends string, T extends Typenames,
 } | {
     type: `@rrc/${N}/invalidateQuery`;
     queries: {
-        key: keyof QP & keyof QR;
+        query: keyof QP & keyof QR;
         cacheKey?: import("./types").Key | undefined;
         expiresAt?: number | undefined;
     }[];
 } | {
     type: `@rrc/${N}/clearQueryState`;
     queries: {
-        key: keyof QP & keyof QR;
+        query: keyof QP & keyof QR;
         cacheKey?: import("./types").Key | undefined;
     }[];
 } | {
