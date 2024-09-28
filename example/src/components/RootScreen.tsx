@@ -4,13 +4,13 @@ export const RootScreen = () => {
   return (
     <div className="screen">
       <Link className={'link'} to={'/users'}>
-        [Good] Normalized example
+        Normalized (best)
       </Link>
       <Link className={'link'} to={'/not-normalized/users'}>
-        [Bad] Not normalized example (cache-policy: 'cache-and-fetch')
+        Not normalized (invalidation)
       </Link>
       <Link className={'link'} to={'/not-normalized-optimized/users'}>
-        [Normal] Not normalized, optimized example (default cache-policy: 'cache-first')
+        Not normalized, optimized (better state updates)
       </Link>
     </div>
   )

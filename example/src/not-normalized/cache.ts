@@ -29,6 +29,9 @@ export const cacheNotNormalized = createCache({
   mutations: {
     updateUser: {
       mutation: updateUser,
+      onSuccess(_, __, {dispatch}) {
+        dispatch(cacheNotNormalized.actions.invalidateQuery([{key: 'getUsers'}]))
+      },
     },
     removeUser: {
       mutation: removeUser,
