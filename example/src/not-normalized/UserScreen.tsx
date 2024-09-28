@@ -16,7 +16,6 @@ export const UserScreen = () => {
 
   const [{result: user, loading, error}, refetchUser] = useQuery({
     query: 'getUser',
-    cachePolicy: 'cache-and-fetch',
     params: userId,
     skip: skip || isNaN(userId),
   })

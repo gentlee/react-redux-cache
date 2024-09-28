@@ -4,9 +4,9 @@ exports.createCache = void 0;
 const react_1 = require("react");
 const react_redux_1 = require("react-redux");
 const createActions_1 = require("./createActions");
+const createCacheReducer_1 = require("./createCacheReducer");
 const mutate_1 = require("./mutate");
 const query_1 = require("./query");
-const reducer_1 = require("./reducer");
 const useMutation_1 = require("./useMutation");
 const useQuery_1 = require("./useQuery");
 const utilsAndConstants_1 = require("./utilsAndConstants");
@@ -48,7 +48,7 @@ const createCache = (partialCache) => {
         /** Keeps all options, passed while creating the cache. */
         cache,
         /** Reducer of the cache, should be added to redux store. */
-        reducer: (0, reducer_1.createCacheReducer)(actions, cache.typenames, Object.keys(cache.queries), cache.options),
+        reducer: (0, createCacheReducer_1.createCacheReducer)(actions, cache.typenames, Object.keys(cache.queries), cache.options),
         actions,
         selectors: {
             /** Selects query state. */
@@ -68,6 +68,10 @@ const createCache = (partialCache) => {
             /** Selects query latest params. */
             selectQueryParams: (state, query, cacheKey) => {
                 return selectQueryState(state, query, cacheKey).params;
+            },
+            /** Selects query expiresAt value. */
+            selectQueryExpiresAt: (state, query, cacheKey) => {
+                return selectQueryState(state, query, cacheKey).expiresAt;
             },
             /** Selects mutation state. */
             selectMutationState,
@@ -110,16 +114,20 @@ const createCache = (partialCache) => {
                             const getCacheKey = (_a = cache.queries[queryKey].getCacheKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetCacheKey);
                             // @ts-expect-error fix later
                             const cacheKey = getCacheKey(params);
-                            return (0, query_1.query)('query', store, cache, actions, queryKey, cacheKey, params);
+                            return (0, query_1.query)('query', store, cache, actions, queryKey, cacheKey, params, options.secondsToLive, options.onlyIfExpired, 
+                            // @ts-expect-error fix later
+                            options.mergeResults, options.onCompleted, options.onSuccess, options.onError);
                         },
                         mutate: (options) => {
-                            return (0, mutate_1.mutate)('mutate', store, cache, actions, options.mutation, options.params, abortControllers);
+                            return (0, mutate_1.mutate)('mutate', store, cache, actions, options.mutation, options.params, abortControllers, 
+                            // @ts-expect-error fix later
+                            options.onCompleted, options.onSuccess, options.onError);
                         },
                     };
                     return client;
                 }, [store]);
             },
-            /** Fetches query when params change and subscribes to query state. */
+            /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
             useQuery: (options) => (0, useQuery_1.useQuery)(cache, actions, options),
             /** Subscribes to provided mutation state and provides mutate function. */
             useMutation: (options) => (0, useMutation_1.useMutation)(cache, actions, options, abortControllers),

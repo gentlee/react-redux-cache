@@ -1,38 +1,45 @@
-import {clearQueryState, updateQueryStateAndEntities} from '../../testing/redux/cache'
+import {invalidateQuery, updateQueryStateAndEntities} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
 import {DEFAULT_QUERY_MUTATION_STATE} from '../../utilsAndConstants'
 
-test('should clear query state with and without cache key', () => {
+test('should work with and without cache key', () => {
   const store = createReduxStore(false)
 
   store.dispatch(updateQueryStateAndEntities('getUser', 0, {result: 0}))
   store.dispatch(updateQueryStateAndEntities('getUser', 1, {result: 1}))
   store.dispatch(updateQueryStateAndEntities('getUser', 2, {result: 2}))
 
-  // clear two cache keys
+  // invalidate two cache keys
 
+  const now = Date.now()
   store.dispatch(
-    clearQueryState([
+    invalidateQuery([
       {query: 'getUser', cacheKey: 0},
       {query: 'getUser', cacheKey: 0},
-      {query: 'getUser', cacheKey: 2},
+      {query: 'getUser', cacheKey: 1, expiresAt: now + 1000},
     ])
   )
   expect(store.getState().cache.queries.getUser).toStrictEqual({
-    1: {...DEFAULT_QUERY_MUTATION_STATE, result: 1},
+    0: {...DEFAULT_QUERY_MUTATION_STATE, result: 0, expiresAt: expect.any(Number)},
+    1: {...DEFAULT_QUERY_MUTATION_STATE, result: 1, expiresAt: now + 1000},
+    2: {...DEFAULT_QUERY_MUTATION_STATE, result: 2},
   })
 
-  // clear all cache keys
+  // invalidate all cache keys
 
-  store.dispatch(clearQueryState([{query: 'getUser'}]))
-  expect(store.getState().cache.queries.getUser).toStrictEqual({})
+  store.dispatch(invalidateQuery([{query: 'getUser'}]))
+
+  const getUserStates = store.getState().cache.queries.getUser
+  expect(getUserStates[0]!.expiresAt).toBe(getUserStates[1]!.expiresAt)
+  expect(getUserStates[1]!.expiresAt).toBe(getUserStates[2]!.expiresAt)
+  expect(typeof getUserStates[2]!.expiresAt).toBe('number')
 })
 
 test('should work if cache key missing', () => {
   const store = createReduxStore(false)
 
   store.dispatch(
-    clearQueryState([
+    invalidateQuery([
       {query: 'getUser'},
       {query: 'getUser', cacheKey: 0},
       {query: 'getUser', cacheKey: 0},
@@ -48,7 +55,7 @@ test('should work if cache key missing', () => {
     })
   )
   store.dispatch(
-    clearQueryState([
+    invalidateQuery([
       {query: 'getUser', cacheKey: 1},
       {query: 'getUser', cacheKey: 2},
     ])

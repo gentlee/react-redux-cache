@@ -3,14 +3,14 @@ import {defaultGetCacheKey} from 'react-redux-cache'
 import {Link, useParams} from 'react-router-dom'
 
 import {useAppStore} from '../redux/store'
-import {cacheNotNormalized} from './cache'
+import {cacheNotNormalizedOptimized} from './cache'
 
 export const UserScreen = () => {
   const {
     actions: {updateQueryStateAndEntities},
     hooks: {useQuery, useMutation},
     selectors: {selectQueryState},
-  } = cacheNotNormalized
+  } = cacheNotNormalizedOptimized
 
   const {dispatch, getState} = useAppStore()
   const {id: userIdParam} = useParams()
@@ -61,11 +61,7 @@ export const UserScreen = () => {
     // Normalization approach does that automatically.
     if (result) {
       // Update getUser result
-      dispatch(
-        updateQueryStateAndEntities('getUser', defaultGetCacheKey(result.id), {
-          result,
-        })
-      )
+      dispatch(updateQueryStateAndEntities('getUser', defaultGetCacheKey(result.id), {result}))
 
       // Update getUsers result
       const getUsersState = selectQueryState(getState(), 'getUsers', 'all-pages')
@@ -77,11 +73,7 @@ export const UserScreen = () => {
             items: [...getUsersState.result.items],
           }
           newUsersResult.items.splice(userIndex, 1, result)
-          dispatch(
-            updateQueryStateAndEntities('getUsers', 'all-pages', {
-              result: newUsersResult,
-            })
-          )
+          dispatch(updateQueryStateAndEntities('getUsers', 'all-pages', {result: newUsersResult}))
         }
       }
     }

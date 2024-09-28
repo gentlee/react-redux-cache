@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mutate = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const mutate = (logTag, store, cache, { updateMutationStateAndEntities, }, mutationKey, params, abortControllers) => __awaiter(void 0, void 0, void 0, function* () {
+const mutate = (logTag, store, cache, { updateMutationStateAndEntities, }, mutationKey, params, abortControllers, onCompleted = cache.mutations[mutationKey].onCompleted, onSuccess = cache.mutations[mutationKey].onSuccess, onError = cache.mutations[mutationKey].onError) => __awaiter(void 0, void 0, void 0, function* () {
     let abortControllersOfStore = abortControllers.get(store);
     if (abortControllersOfStore === undefined) {
         abortControllersOfStore = {};
@@ -44,7 +44,7 @@ const mutate = (logTag, store, cache, { updateMutationStateAndEntities, }, mutat
     try {
         response = yield fetchFn(
         // @ts-expect-error fix later
-        params, abortController.signal);
+        params, store, abortController.signal);
     }
     catch (e) {
         error = e;
@@ -64,15 +64,23 @@ const mutate = (logTag, store, cache, { updateMutationStateAndEntities, }, mutat
             error: error,
             loading: false,
         }));
+        // @ts-expect-error params
+        onError === null || onError === void 0 ? void 0 : onError(error, params, store);
+        // @ts-expect-error response
+        onCompleted === null || onCompleted === void 0 ? void 0 : onCompleted(response, error, params, store);
         return { error };
     }
     if (response) {
-        store.dispatch(updateMutationStateAndEntities(mutationKey, {
+        const newState = {
             error: undefined,
             loading: false,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             result: response.result,
-        }, response));
+        };
+        store.dispatch(updateMutationStateAndEntities(mutationKey, newState, response));
+        // @ts-expect-error params
+        onSuccess === null || onSuccess === void 0 ? void 0 : onSuccess(response, params, store);
+        // @ts-expect-error response
+        onCompleted === null || onCompleted === void 0 ? void 0 : onCompleted(response, error, params, store);
         // @ts-expect-error fix later
         return { result: response.result };
     }

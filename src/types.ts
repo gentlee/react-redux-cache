@@ -2,7 +2,7 @@
 
 import {Store} from 'redux'
 
-import type {ReduxCacheState} from './reducer'
+import type {ReduxCacheState} from './createCacheReducer'
 
 export type Key = string | number | symbol
 
@@ -85,6 +85,8 @@ export type QueryInfo<T extends Typenames, P, R> = {
    * @default cache-first
    */
   cachePolicy?: QueryCachePolicy
+  /** If set, this value updates expiresAt value of query state when query resut is received. */
+  secondsToLive?: number
   /** Merges results before saving to the store. Default implementation is using the latest result. */
   mergeResults?: (
     oldResult: R | undefined,
@@ -98,13 +100,40 @@ export type QueryInfo<T extends Typenames, P, R> = {
    * It is recommended to override it when default implementation is not optimal or when keys in params object can be sorted in random order etc.
    * */
   getCacheKey?: (params?: P) => Key
+  /** Called after fetch finished either successfully or not. */
+  onCompleted?: (
+    response: QueryResponse<T, R> | undefined,
+    error: unknown | undefined,
+    params: P | undefined,
+    store: Store
+  ) => void
+  /** Called after fetch finished without error. */
+  onSuccess?: (response: QueryResponse<T, R>, params: P | undefined, store: Store) => void
+  /** Called after fetch finished with error. */
+  onError?: (error: unknown, params: P | undefined, store: Store) => void
+}
+
+export type QueryState<P, R> = MutationState<P, R> & {
+  expiresAt?: number
 }
 
 export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = {
   query: QK
   params: QK extends keyof (QP | QR) ? QP[QK] : never
+  /** When true fetch is not performed. When switches to false fetch is performed depending on cache policy. */
   skip?: boolean
-} & Pick<QueryInfo<T, unknown, unknown>, 'cachePolicy'>
+} & Pick<
+  QueryInfo<T, QK extends keyof (QP | QR) ? QP[QK] : never, QK extends keyof (QP | QR) ? QR[QK] : never>,
+  'cachePolicy' | 'secondsToLive' | 'mergeResults' | 'onCompleted' | 'onSuccess' | 'onError'
+>
+
+export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = Omit<
+  UseQueryOptions<T, QP, QR, QK>,
+  'skip' | 'cachePolicy'
+> & {
+  /** If set to true, query will run only if it is expired or result not yet cached. */
+  onlyIfExpired?: boolean
+}
 
 /**
  * @param cache-first for each params key fetch is not called if cache exists.
@@ -113,8 +142,9 @@ export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & 
 export type QueryCachePolicy = 'cache-first' | 'cache-and-fetch'
 
 export type QueryResponse<T extends Typenames, R> = EntityChanges<T> & {
-  /** Normalized result of a query. */
   result: R
+  /** If defined, overrides this value for query state, ignoring `secondsToLive`. */
+  expiresAt?: number
 }
 
 export type QueryResult<R> = {
@@ -122,11 +152,6 @@ export type QueryResult<R> = {
   cancelled?: true
   result?: R
 }
-
-export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = Omit<
-  UseQueryOptions<T, QP, QR, QK>,
-  'skip'
->
 
 // Mutation
 
@@ -139,12 +164,22 @@ export type Mutation<P, T extends Typenames = Typenames, R = unknown> = (
   abortSignal: AbortSignal
 ) => Promise<MutationResponse<T, R>>
 
-export type MutationInfo<T extends Typenames, P, R> = {
+export type MutationInfo<T extends Typenames, P, R> = Pick<
+  QueryInfo<T, P, R>,
+  'onCompleted' | 'onSuccess' | 'onError'
+> & {
   mutation: Mutation<P, T, R>
 }
 
+export type MutateOptions<T extends Typenames, MP, MR, MK extends keyof (MP & MR)> = Pick<
+  MutationInfo<T, MK extends keyof (MP | MR) ? MP[MK] : never, MK extends keyof (MP | MR) ? MR[MK] : never>,
+  'onCompleted' | 'onSuccess' | 'onError'
+> & {
+  mutation: MK
+  params: MK extends keyof (MP | MR) ? MP[MK] : never
+}
+
 export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
-  /** Normalized result of a mutation. */
   result?: R
 }
 
@@ -156,7 +191,7 @@ export type MutationResult<R> = {
 
 // Query & Mutation
 
-export type QueryMutationState<P, R> = {
+export type MutationState<P, R> = {
   /** `true` when query or mutation is currently in progress. */
   loading: boolean
   /** Result of the latest successfull response. */
