@@ -30,14 +30,14 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
         };
         type: `@rrc/${N}/mergeEntityChanges`;
     };
-    /** Invalidates query states */
+    /** Invalidates query states. */
     invalidateQuery: {
         <K_2 extends keyof QP & keyof QR>(queries: {
             /** Query key */
             key: K_2;
             /** Query cache key */
             cacheKey?: Key | undefined;
-            /** Unix timestamp at which query expires. @default Date.now() */
+            /** Unix timestamp at which query expires. Is set to the query state. @default Date.now() */
             expiresAt?: number | undefined;
         }[]): {
             type: `@rrc/${N}/invalidateQuery`;
@@ -46,7 +46,7 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
                 key: K_2;
                 /** Query cache key */
                 cacheKey?: Key | undefined;
-                /** Unix timestamp at which query expires. @default Date.now() */
+                /** Unix timestamp at which query expires. Is set to the query state. @default Date.now() */
                 expiresAt?: number | undefined;
             }[];
         };

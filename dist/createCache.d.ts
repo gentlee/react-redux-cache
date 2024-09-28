@@ -150,8 +150,8 @@ export declare const createCache: <N extends string, T extends Typenames, QP, QR
                 params: MK_6 extends keyof MP & keyof MR ? MP[MK_6] : never;
             }) => Promise<MutationResult<MK_6 extends keyof MP & keyof MR ? MR[MK_6] : never>>;
         };
-        /** Fetches query when params change and subscribes to query state. */
-        useQuery: <QK_8 extends keyof QP | keyof QR>(options: import("./types").UseQueryOptions<T, QP, QR, QK_8>) => readonly [QueryState<QK_8 extends keyof QP & keyof QR ? QP[QK_8] : never, QK_8 extends keyof QP & keyof QR ? QR[QK_8] : never>, (options?: Partial<Pick<QueryOptions<T, QP, QR, QK_8>, "params" | "onlyIfExpired">> | undefined) => Promise<QueryResult<QK_8 extends infer T_5 ? T_5 extends QK_8 ? T_5 extends keyof QP & keyof QR ? QR[T_5] : never : never : never>>];
+        /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
+        useQuery: <QK_8 extends keyof QP | keyof QR>(options: import("./types").UseQueryOptions<T, QP, QR, QK_8>) => readonly [Omit<QueryState<QK_8 extends keyof QP & keyof QR ? QP[QK_8] : never, QK_8 extends keyof QP & keyof QR ? QR[QK_8] : never>, "expiresAt">, (options?: Partial<Pick<QueryOptions<T, QP, QR, QK_8>, "params" | "onlyIfExpired">> | undefined) => Promise<QueryResult<QK_8 extends infer T_5 ? T_5 extends QK_8 ? T_5 extends keyof QP & keyof QR ? QR[T_5] : never : never : never>>];
         /** Subscribes to provided mutation state and provides mutate function. */
         useMutation: <MK_7 extends keyof MP | keyof MR>(options: {
             mutation: MK_7;

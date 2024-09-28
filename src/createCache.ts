@@ -156,7 +156,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
               type P = QK extends keyof (QP | QR) ? QP[QK] : never
               type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
-              const {query: queryKey, params, onlyIfExpired, secondsToLive} = options
+              const {query: queryKey, params, onlyIfExpired, secondsToLive, mergeResults} = options
               const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
               // @ts-expect-error fix later
               const cacheKey = getCacheKey(params)
@@ -170,7 +170,9 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
                 cacheKey,
                 params,
                 secondsToLive,
-                onlyIfExpired
+                onlyIfExpired,
+                // @ts-expect-error fix later
+                mergeResults
               ) as Promise<QueryResult<R>>
             },
             mutate: <MK extends keyof (MP & MR)>(options: {

@@ -380,7 +380,9 @@ test('expiresAt from query response works and overrides sedondsToLive', async ()
 
   expect(selectQueryExpiresAt(store.getState(), 'getUserExpires', 0)).toBe(Date.now() + TTL_TIMEOUT)
 
-  refetch({secondsToLive: 1}) // sedondsToLive should be ignored
+  act(() => {
+    refetch({secondsToLive: 1}) // sedondsToLive should be ignored
+  })
   await act(advanceApiTimeout)
 
   expect(selectQueryExpiresAt(store.getState(), 'getUserExpires', 0)).toBe(Date.now() + TTL_TIMEOUT)

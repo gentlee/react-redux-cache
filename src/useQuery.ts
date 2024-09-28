@@ -28,6 +28,7 @@ export const useQuery = <
     params,
     secondsToLive,
     cachePolicy = cache.queries[queryKey].cachePolicy ?? 'cache-first',
+    mergeResults,
   } = options
 
   const logsEnabled = cache.options.logsEnabled
@@ -53,7 +54,9 @@ export const useQuery = <
         paramsPassed ? getCacheKey(options.params) : cacheKey,
         paramsPassed ? options.params! : params, // params type can also have null | undefined, thats why we don't check for it here
         secondsToLive,
-        options?.onlyIfExpired
+        options?.onlyIfExpired,
+        // @ts-expect-error fix later
+        mergeResults
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

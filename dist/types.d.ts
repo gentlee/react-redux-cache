@@ -1,4 +1,4 @@
-import { Action, Store } from 'redux';
+import { Store } from 'redux';
 import type { ReduxCacheState } from './createCacheReducer';
 export type Key = string | number | symbol;
 export type Dict<T> = Record<Key, T>;
@@ -100,7 +100,7 @@ export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & 
     params: QK extends keyof (QP | QR) ? QP[QK] : never;
     /** When true fetch is not performed. When switches to false fetch is performed depending on cache policy. */
     skip?: boolean;
-} & Pick<QueryInfo<T, unknown, unknown>, 'cachePolicy'>;
+} & Pick<QueryInfo<T, unknown, unknown>, 'cachePolicy' | 'secondsToLive'>;
 /**
  * @param cache-first for each params key fetch is not called if cache exists.
  * @param cache-and-fetch for each params key result is taken from cache and fetch is called.
@@ -108,10 +108,8 @@ export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & 
 export type QueryCachePolicy = 'cache-first' | 'cache-and-fetch';
 export type QueryResponse<T extends Typenames, R> = EntityChanges<T> & {
     result: R;
-    /** If defined, overrides this value for query state. */
+    /** If defined, overrides this value for query state, ignoring `secondsToLive`. */
     expiresAt?: number;
-    /** Additional actions that should be performed in the same redux transacion. Can be used for invalidation or additional state updates. */
-    actions?: Action[];
 };
 export type QueryResult<R> = {
     error?: unknown;
@@ -132,7 +130,7 @@ abortSignal: AbortSignal) => Promise<MutationResponse<T, R>>;
 export type MutationInfo<T extends Typenames, P, R> = {
     mutation: Mutation<P, T, R>;
 };
-export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & Pick<QueryResponse<T, R>, 'actions'> & {
+export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
     result?: R;
 };
 export type MutationResult<R> = {

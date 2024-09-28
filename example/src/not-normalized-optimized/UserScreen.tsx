@@ -3,14 +3,14 @@ import {defaultGetCacheKey} from 'react-redux-cache'
 import {Link, useParams} from 'react-router-dom'
 
 import {useAppStore} from '../redux/store'
-import {cacheNotNormalized} from './cache'
+import {cacheNotNormalizedOptimized} from './cache'
 
 export const UserScreen = () => {
   const {
     actions: {updateQueryStateAndEntities},
     hooks: {useQuery, useMutation},
     selectors: {selectQueryState},
-  } = cacheNotNormalized
+  } = cacheNotNormalizedOptimized
 
   const {dispatch, getState} = useAppStore()
   const {id: userIdParam} = useParams()

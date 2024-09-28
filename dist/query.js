@@ -11,11 +11,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.query = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey, cacheKey, params, onlyIfExpired) => __awaiter(void 0, void 0, void 0, function* () {
+const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey, cacheKey, params, secondsToLive = cache.queries[queryKey].secondsToLive, onlyIfExpired) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
-    const logsEnabled = true; //cache.options.logsEnabled
+    const logsEnabled = cache.options.logsEnabled;
     const cacheStateSelector = cache.cacheStateSelector;
-    const { mergeResults, secondsToLive } = cache.queries[queryKey];
+    const { mergeResults } = cache.queries[queryKey];
     const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey][cacheKey];
     if (queryStateOnStart === null || queryStateOnStart === void 0 ? void 0 : queryStateOnStart.loading) {
         logsEnabled &&
@@ -40,7 +40,7 @@ const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey,
         loading: true,
         params,
     }));
-    logsEnabled && (0, utilsAndConstants_1.log)(`${logTag} started`, { queryStateOnStart, params, cacheKey });
+    logsEnabled && (0, utilsAndConstants_1.log)(`${logTag} started`, { queryKey, params, cacheKey, queryStateOnStart, onlyIfExpired });
     let response;
     const fetchFn = cache.queries[queryKey].query;
     try {

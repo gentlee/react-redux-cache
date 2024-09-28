@@ -2,7 +2,7 @@ import {Cache, createCache, defaultGetCacheKey} from 'react-redux-cache'
 
 import {getUser, getUsers, removeUser, updateUser} from '../not-normalized/api/mocks'
 
-export type Typenames = typeof cacheNotNormalized extends Cache<
+export type Typenames = typeof cacheNotNormalizedOptimized extends Cache<
   string,
   infer T,
   unknown,
@@ -13,7 +13,7 @@ export type Typenames = typeof cacheNotNormalized extends Cache<
   ? T
   : never
 
-export const cacheNotNormalized = createCache({
+export const cacheNotNormalizedOptimized = createCache({
   name: 'cacheNotNormalized',
   typenames: {}, // without normalization we don't need typenames
   queries: {
@@ -25,10 +25,14 @@ export const cacheNotNormalized = createCache({
         const updateGetUserResults = () => {
           newResult.items.forEach((user) => {
             store.dispatch(
-              cacheNotNormalized.actions.updateQueryStateAndEntities('getUser', defaultGetCacheKey(user.id), {
-                result: user,
-                params: user.id,
-              })
+              cacheNotNormalizedOptimized.actions.updateQueryStateAndEntities(
+                'getUser',
+                defaultGetCacheKey(user.id),
+                {
+                  result: user,
+                  params: user.id,
+                }
+              )
             )
           })
         }

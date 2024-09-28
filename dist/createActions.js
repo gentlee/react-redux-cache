@@ -52,7 +52,7 @@ const createActions = (name) => {
         updateMutationStateAndEntities,
         /** Merge EntityChanges to the state. */
         mergeEntityChanges,
-        /** Invalidates query states */
+        /** Invalidates query states. */
         invalidateQuery,
         /** Clear states for provided query keys and cache keys.
          * If cache key for query key is not provided, the whole state for query key is cleared. */

@@ -9,6 +9,9 @@ export {
 // Backlog
 
 // ! high (1.0.0)
+// key -> query
+// rca -> vite
+// defaults
 // remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
 // optional typenames: {} as Typenames
 // remove mergeResults? bcs store is passed to queries/mutations

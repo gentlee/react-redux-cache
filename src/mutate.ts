@@ -99,9 +99,7 @@ export const mutate = async <
       result: response.result,
     }
 
-    // React 18 automatically batches all state updates, no need for optimization here
     store.dispatch(updateMutationStateAndEntities(mutationKey as keyof (MP | MR), newState, response))
-    response.actions?.forEach(store.dispatch)
 
     // @ts-expect-error fix later
     return {result: response.result}

@@ -110,11 +110,11 @@ const createCache = (partialCache) => {
                     const client = {
                         query: (options) => {
                             var _a;
-                            const { query: queryKey, params, onlyIfExpired } = options;
+                            const { query: queryKey, params, onlyIfExpired, secondsToLive } = options;
                             const getCacheKey = (_a = cache.queries[queryKey].getCacheKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetCacheKey);
                             // @ts-expect-error fix later
                             const cacheKey = getCacheKey(params);
-                            return (0, query_1.query)('query', store, cache, actions, queryKey, cacheKey, params, onlyIfExpired);
+                            return (0, query_1.query)('query', store, cache, actions, queryKey, cacheKey, params, secondsToLive, onlyIfExpired);
                         },
                         mutate: (options) => {
                             return (0, mutate_1.mutate)('mutate', store, cache, actions, options.mutation, options.params, abortControllers);
@@ -123,7 +123,7 @@ const createCache = (partialCache) => {
                     return client;
                 }, [store]);
             },
-            /** Fetches query when params change and subscribes to query state. */
+            /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
             useQuery: (options) => (0, useQuery_1.useQuery)(cache, actions, options),
             /** Subscribes to provided mutation state and provides mutate function. */
             useMutation: (options) => (0, useMutation_1.useMutation)(cache, actions, options, abortControllers),
