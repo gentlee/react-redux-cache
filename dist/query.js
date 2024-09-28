@@ -11,11 +11,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.query = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey, cacheKey, params, secondsToLive = cache.queries[queryKey].secondsToLive, onlyIfExpired) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey, cacheKey, params, secondsToLive = cache.queries[queryKey].secondsToLive, onlyIfExpired, mergeResults = cache.queries[queryKey].mergeResults) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     const logsEnabled = cache.options.logsEnabled;
     const cacheStateSelector = cache.cacheStateSelector;
-    const { mergeResults } = cache.queries[queryKey];
     const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey][cacheKey];
     if (queryStateOnStart === null || queryStateOnStart === void 0 ? void 0 : queryStateOnStart.loading) {
         logsEnabled &&
@@ -65,9 +64,7 @@ const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey,
             (_b = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _b === void 0 ? void 0 : _b.result, response, params, store)
             : response.result,
     };
-    // React 18 automatically batches all state updates, no need for optimization here
     store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, newState, response));
-    (_c = response.actions) === null || _c === void 0 ? void 0 : _c.forEach(store.dispatch);
     return {
         // @ts-expect-error fix types
         result: newState === null || newState === void 0 ? void 0 : newState.result,

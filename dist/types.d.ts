@@ -100,7 +100,7 @@ export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & 
     params: QK extends keyof (QP | QR) ? QP[QK] : never;
     /** When true fetch is not performed. When switches to false fetch is performed depending on cache policy. */
     skip?: boolean;
-} & Pick<QueryInfo<T, unknown, unknown>, 'cachePolicy' | 'secondsToLive'>;
+} & Pick<QueryInfo<T, QK extends keyof (QP | QR) ? QP[QK] : never, QK extends keyof (QP | QR) ? QR[QK] : never>, 'cachePolicy' | 'secondsToLive' | 'mergeResults'>;
 /**
  * @param cache-first for each params key fetch is not called if cache exists.
  * @param cache-and-fetch for each params key result is taken from cache and fetch is called.

@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.mutate = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
 const mutate = (logTag, store, cache, { updateMutationStateAndEntities, }, mutationKey, params, abortControllers) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     let abortControllersOfStore = abortControllers.get(store);
     if (abortControllersOfStore === undefined) {
         abortControllersOfStore = {};
@@ -73,9 +72,7 @@ const mutate = (logTag, store, cache, { updateMutationStateAndEntities, }, mutat
             loading: false,
             result: response.result,
         };
-        // React 18 automatically batches all state updates, no need for optimization here
         store.dispatch(updateMutationStateAndEntities(mutationKey, newState, response));
-        (_a = response.actions) === null || _a === void 0 ? void 0 : _a.forEach(store.dispatch);
         // @ts-expect-error fix later
         return { result: response.result };
     }
