@@ -4,7 +4,6 @@ import {getUser, getUsers, removeUser, updateUser} from '../not-normalized/api/m
 
 export const cacheNotNormalizedOptimized = createCache({
   name: 'cacheNotNormalized',
-  typenames: {}, // without normalization we don't need typenames
   queries: {
     getUsers: {
       query: getUsers,

@@ -4,7 +4,6 @@ import {getUser, getUsers, removeUser, updateUser} from './api/mocks'
 
 export const cacheNotNormalized = createCache({
   name: 'cacheNotNormalized',
-  typenames: {}, // without normalization we don't need typenames
   queries: {
     getUsers: {
       query: getUsers,
@@ -30,7 +29,7 @@ export const cacheNotNormalized = createCache({
     updateUser: {
       mutation: updateUser,
       onSuccess(_, __, {dispatch}) {
-        dispatch(cacheNotNormalized.actions.invalidateQuery([{key: 'getUsers'}]))
+        dispatch(cacheNotNormalized.actions.invalidateQuery([{query: 'getUsers'}]))
       },
     },
     removeUser: {

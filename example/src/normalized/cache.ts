@@ -1,4 +1,4 @@
-import {createCache} from 'react-redux-cache'
+import {withTypenames} from 'react-redux-cache'
 
 import {getUser, getUsers, removeUser, updateUser} from './api/mocks'
 import {Bank, User} from './api/types'
@@ -14,12 +14,8 @@ export const {
   selectors: {selectEntitiesByTypename},
   actions: {updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges},
   hooks: {useClient, useMutation, useQuery, useSelectEntityById},
-} = createCache({
+} = withTypenames<Typenames>().createCache({
   name: 'cache',
-  typenames: {
-    users: {},
-    banks: {},
-  } as Typenames,
   queries: {
     getUsers: {
       query: getUsers,
