@@ -29,6 +29,9 @@ export const useQuery = <
     secondsToLive,
     cachePolicy = cache.queries[queryKey].cachePolicy ?? 'cache-first',
     mergeResults,
+    onCompleted,
+    onSuccess,
+    onError,
   } = options
 
   const logsEnabled = cache.options.logsEnabled
@@ -56,7 +59,10 @@ export const useQuery = <
         secondsToLive,
         options?.onlyIfExpired,
         // @ts-expect-error fix later
-        mergeResults
+        mergeResults,
+        onCompleted,
+        onSuccess,
+        onError
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

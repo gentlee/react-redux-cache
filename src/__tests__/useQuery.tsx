@@ -45,13 +45,30 @@ afterEach(() => {
 
 // tests
 
-test('fetch if no cache', async () => {
-  render({query: 'getUsers', params: {page: 1}})
+test('fetch if no cache, success callbacks work', async () => {
+  render({
+    query: 'getUsers',
+    params: {page: 1},
+    onSuccess(response, params) {
+      // @ts-expect-error page
+      logEvent('onSuccess result:' + response.result.page + ' params:' + params.page)
+    },
+    onCompleted(response, error, params) {
+      // @ts-expect-error page
+      logEvent('onCompleted result:' + response?.result.page + ' params:' + params.page + ' error:' + error)
+    },
+    onError(error, params) {
+      // @ts-expect-error page
+      logEvent('onError params:' + params.page + ' error:' + error)
+    },
+  })
   await act(advanceApiTimeout)
   assertEventLog([
     'first render: undefined',
     'render: loading',
     'merge results: first page',
+    'onSuccess result:1 params:1',
+    'onCompleted result:1 params:1 error:undefined',
     'render: ' + JSON.stringify({items: [0, 1, 2], page: 1}),
   ])
 

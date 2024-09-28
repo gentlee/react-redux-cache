@@ -110,16 +110,18 @@ const createCache = (partialCache) => {
                     const client = {
                         query: (options) => {
                             var _a;
-                            const { query: queryKey, params, onlyIfExpired, secondsToLive, mergeResults } = options;
+                            const { query: queryKey, params } = options;
                             const getCacheKey = (_a = cache.queries[queryKey].getCacheKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetCacheKey);
                             // @ts-expect-error fix later
                             const cacheKey = getCacheKey(params);
-                            return (0, query_1.query)('query', store, cache, actions, queryKey, cacheKey, params, secondsToLive, onlyIfExpired, 
+                            return (0, query_1.query)('query', store, cache, actions, queryKey, cacheKey, params, options.secondsToLive, options.onlyIfExpired, 
                             // @ts-expect-error fix later
-                            mergeResults);
+                            options.mergeResults, options.onCompleted, options.onSuccess, options.onError);
                         },
                         mutate: (options) => {
-                            return (0, mutate_1.mutate)('mutate', store, cache, actions, options.mutation, options.params, abortControllers);
+                            return (0, mutate_1.mutate)('mutate', store, cache, actions, options.mutation, options.params, abortControllers, 
+                            // @ts-expect-error fix later
+                            options.onCompleted, options.onSuccess, options.onError);
                         },
                     };
                     return client;

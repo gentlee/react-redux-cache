@@ -1,17 +1,6 @@
-import {Cache, createCache, defaultGetCacheKey} from 'react-redux-cache'
+import {createCache, defaultGetCacheKey} from 'react-redux-cache'
 
 import {getUser, getUsers, removeUser, updateUser} from '../not-normalized/api/mocks'
-
-export type Typenames = typeof cacheNotNormalizedOptimized extends Cache<
-  string,
-  infer T,
-  unknown,
-  unknown,
-  unknown,
-  unknown
->
-  ? T
-  : never
 
 export const cacheNotNormalizedOptimized = createCache({
   name: 'cacheNotNormalized',

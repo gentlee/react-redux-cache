@@ -16,7 +16,7 @@ const query_1 = require("./query");
 const utilsAndConstants_1 = require("./utilsAndConstants");
 const useQuery = (cache, actions, options) => {
     var _a, _b, _c;
-    const { query: queryKey, skip, params, secondsToLive, cachePolicy = (_a = cache.queries[queryKey].cachePolicy) !== null && _a !== void 0 ? _a : 'cache-first', mergeResults, } = options;
+    const { query: queryKey, skip, params, secondsToLive, cachePolicy = (_a = cache.queries[queryKey].cachePolicy) !== null && _a !== void 0 ? _a : 'cache-first', mergeResults, onCompleted, onSuccess, onError, } = options;
     const logsEnabled = cache.options.logsEnabled;
     const getCacheKey = (_b = cache.queries[queryKey].getCacheKey) !== null && _b !== void 0 ? _b : (utilsAndConstants_1.defaultGetCacheKey);
     const cacheStateSelector = cache.cacheStateSelector;
@@ -31,7 +31,7 @@ const useQuery = (cache, actions, options) => {
         paramsPassed ? getCacheKey(options.params) : cacheKey, paramsPassed ? options.params : params, // params type can also have null | undefined, thats why we don't check for it here
         secondsToLive, options === null || options === void 0 ? void 0 : options.onlyIfExpired, 
         // @ts-expect-error fix later
-        mergeResults);
+        mergeResults, onCompleted, onSuccess, onError);
     }), 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [store, queryKey, cacheKey]);

@@ -16,7 +16,7 @@ const mutate_1 = require("./mutate");
 const utilsAndConstants_1 = require("./utilsAndConstants");
 const useMutation = (cache, actions, options, abortControllers) => {
     var _a;
-    const { mutation: mutationKey } = options;
+    const { mutation: mutationKey, onCompleted, onSuccess, onError } = options;
     const store = (0, react_redux_1.useStore)();
     // Using single useMemo for performance reasons
     const [mutationStateSelector, mutate, abort] = (0, react_1.useMemo)(() => {
@@ -32,7 +32,9 @@ const useMutation = (cache, actions, options, abortControllers) => {
             },
             // mutate
             (params) => __awaiter(void 0, void 0, void 0, function* () {
-                return yield (0, mutate_1.mutate)('useMutation.mutate', store, cache, actions, mutationKey, params, abortControllers);
+                return yield (0, mutate_1.mutate)('useMutation.mutate', store, cache, actions, mutationKey, params, abortControllers, 
+                // @ts-expect-error fix later
+                onCompleted, onSuccess, onError);
             }),
             // abort
             () => {

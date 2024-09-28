@@ -24,7 +24,10 @@ export const query = async <
   params: QK extends keyof (QP | QR) ? QP[QK] : never,
   secondsToLive: number | undefined = cache.queries[queryKey].secondsToLive,
   onlyIfExpired: boolean | undefined,
-  mergeResults = cache.queries[queryKey].mergeResults
+  mergeResults = cache.queries[queryKey].mergeResults,
+  onCompleted = cache.queries[queryKey].onCompleted,
+  onSuccess = cache.queries[queryKey].onSuccess,
+  onError = cache.queries[queryKey].onError
 ): Promise<QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>> => {
   const logsEnabled = cache.options.logsEnabled
   const cacheStateSelector = cache.cacheStateSelector
@@ -79,6 +82,10 @@ export const query = async <
         loading: false,
       })
     )
+    // @ts-expect-error params
+    onError?.(error, params, store)
+    // @ts-expect-error params
+    onCompleted?.(undefined, error, params, store)
     return {error}
   }
 
@@ -98,6 +105,10 @@ export const query = async <
   }
 
   store.dispatch(updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, newState, response))
+  // @ts-expect-error response
+  onSuccess?.(response, params, store)
+  // @ts-expect-error response
+  onCompleted?.(response, undefined, params, store)
 
   return {
     // @ts-expect-error fix types

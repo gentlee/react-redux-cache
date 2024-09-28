@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.query = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey, cacheKey, params, secondsToLive = cache.queries[queryKey].secondsToLive, onlyIfExpired, mergeResults = cache.queries[queryKey].mergeResults) => __awaiter(void 0, void 0, void 0, function* () {
+const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey, cacheKey, params, secondsToLive = cache.queries[queryKey].secondsToLive, onlyIfExpired, mergeResults = cache.queries[queryKey].mergeResults, onCompleted = cache.queries[queryKey].onCompleted, onSuccess = cache.queries[queryKey].onSuccess, onError = cache.queries[queryKey].onError) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const logsEnabled = cache.options.logsEnabled;
     const cacheStateSelector = cache.cacheStateSelector;
@@ -52,6 +52,10 @@ const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey,
             error: error,
             loading: false,
         }));
+        // @ts-expect-error params
+        onError === null || onError === void 0 ? void 0 : onError(error, params, store);
+        // @ts-expect-error params
+        onCompleted === null || onCompleted === void 0 ? void 0 : onCompleted(undefined, error, params, store);
         return { error };
     }
     const newState = {
@@ -65,6 +69,10 @@ const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey,
             : response.result,
     };
     store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, newState, response));
+    // @ts-expect-error response
+    onSuccess === null || onSuccess === void 0 ? void 0 : onSuccess(response, params, store);
+    // @ts-expect-error response
+    onCompleted === null || onCompleted === void 0 ? void 0 : onCompleted(response, undefined, params, store);
     return {
         // @ts-expect-error fix types
         result: newState === null || newState === void 0 ? void 0 : newState.result,

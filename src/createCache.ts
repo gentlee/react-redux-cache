@@ -10,6 +10,7 @@ import type {
   Cache,
   CacheOptions,
   Key,
+  MutateOptions,
   MutationResult,
   MutationState,
   OptionalPartial,
@@ -156,7 +157,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
               type P = QK extends keyof (QP | QR) ? QP[QK] : never
               type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
-              const {query: queryKey, params, onlyIfExpired, secondsToLive, mergeResults} = options
+              const {query: queryKey, params} = options
               const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
               // @ts-expect-error fix later
               const cacheKey = getCacheKey(params)
@@ -169,16 +170,16 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
                 queryKey,
                 cacheKey,
                 params,
-                secondsToLive,
-                onlyIfExpired,
+                options.secondsToLive,
+                options.onlyIfExpired,
                 // @ts-expect-error fix later
-                mergeResults
+                options.mergeResults,
+                options.onCompleted,
+                options.onSuccess,
+                options.onError
               ) as Promise<QueryResult<R>>
             },
-            mutate: <MK extends keyof (MP & MR)>(options: {
-              mutation: MK
-              params: MK extends keyof (MP | MR) ? MP[MK] : never
-            }) => {
+            mutate: <MK extends keyof (MP & MR)>(options: MutateOptions<T, MP, MR, MK>) => {
               type R = MK extends keyof (MP | MR) ? MR[MK] : never
 
               return mutateImpl(
@@ -188,7 +189,11 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
                 actions,
                 options.mutation,
                 options.params,
-                abortControllers
+                abortControllers,
+                // @ts-expect-error fix later
+                options.onCompleted,
+                options.onSuccess,
+                options.onError
               ) as Promise<MutationResult<R>>
             },
           }
