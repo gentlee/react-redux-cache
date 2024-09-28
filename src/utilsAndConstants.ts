@@ -25,6 +25,8 @@ export const IS_DEV: boolean = (() => {
 
 export const DEFAULT_QUERY_MUTATION_STATE = Object.freeze({loading: false})
 
+export const EMPTY_OBJECT = Object.freeze({})
+
 export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
   switch (typeof params) {
     case 'string':
@@ -63,7 +65,13 @@ export const applyEntityChanges = <T extends Typenames>(
 
   let result: EntitiesMap<T> | undefined
 
-  for (const typename in entities) {
+  const typenames = new Set([
+    ...(changes.entities ? Object.keys(changes.entities) : []),
+    ...(changes.merge ? Object.keys(changes.merge) : []),
+    ...(changes.remove ? Object.keys(changes.remove) : []),
+    ...(changes.replace ? Object.keys(changes.replace) : []),
+  ])
+  for (const typename of typenames) {
     const entitiesToMerge = merge?.[typename]
     const entitiesToReplace = replace?.[typename]
     const entitiesToRemove = remove?.[typename]
@@ -88,7 +96,8 @@ export const applyEntityChanges = <T extends Typenames>(
       }
     }
 
-    const oldEntities = entities[typename]
+    const oldEntities =
+      entities[typename] ?? (EMPTY_OBJECT as NonNullable<(typeof entities)[typeof typename]>)
     let newEntities: EntitiesMap<T>[typeof typename] | undefined
 
     // remove
@@ -127,6 +136,7 @@ export const applyEntityChanges = <T extends Typenames>(
     }
 
     result ??= {...entities}
+    // @ts-expect-error fix later
     result[typename] = newEntities
   }
 

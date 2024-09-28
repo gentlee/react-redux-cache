@@ -1,4 +1,4 @@
-import {createCache} from '../../createCache'
+import {withTypenames} from '../../createCache'
 import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
 import type {Bank, User} from '../api/types'
 import {logEvent} from '../api/utils'
@@ -38,16 +38,12 @@ export const {
   },
   hooks: {useClient, useMutation, useQuery},
   utils: {applyEntityChanges},
-} = createCache({
+} = withTypenames<TestTypenames>().createCache({
   name: 'cache',
   options: {
     logsEnabled: false,
     validateFunctionArguments: true,
     // deepComparisonEnabled: false,
-  },
-  typenames: {
-    users: {} as User,
-    banks: {} as Bank,
   },
   queries: {
     getUsers: {
@@ -99,7 +95,7 @@ export const {
 // })
 
 // const state = reducer({} as ReturnType<typeof reducer>, null)
-// state.entities.banks.a
+// state.entities.banks?.a
 // state.queries.getUser.a.result
 // state.queries.getUser.a.params
 // state.queries.getUsers.a.result

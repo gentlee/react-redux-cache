@@ -2,14 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCacheReducer = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const EMPTY_QUERY_STATE = Object.freeze({});
 const optionalQueryKeys = ['error', 'expiresAt', 'result', 'params'];
 const optionalMutationKeys = ['error', 'result', 'params'];
-const createCacheReducer = (actions, typenames, queryKeys, cacheOptions) => {
+const createCacheReducer = (actions, queryKeys, cacheOptions) => {
     const entitiesMap = {};
-    for (const key in typenames) {
-        entitiesMap[key] = EMPTY_QUERY_STATE;
-    }
     const queryStateMap = {};
     for (const key of queryKeys) {
         queryStateMap[key] = {};
@@ -22,7 +18,6 @@ const createCacheReducer = (actions, typenames, queryKeys, cacheOptions) => {
     };
     cacheOptions.logsEnabled &&
         (0, utilsAndConstants_1.log)('createCacheReducer', {
-            typenames,
             queryKeys,
             initialState,
         });
@@ -151,9 +146,9 @@ const createCacheReducer = (actions, typenames, queryKeys, cacheOptions) => {
                             delete newQueries[queryKey][cacheKey];
                         }
                     }
-                    else if (queryStates !== EMPTY_QUERY_STATE) {
+                    else if (queryStates !== utilsAndConstants_1.EMPTY_OBJECT) {
                         newQueries !== null && newQueries !== void 0 ? newQueries : (newQueries = Object.assign({}, state.queries));
-                        newQueries[queryKey] = EMPTY_QUERY_STATE;
+                        newQueries[queryKey] = utilsAndConstants_1.EMPTY_OBJECT;
                     }
                 }
                 return !newQueries

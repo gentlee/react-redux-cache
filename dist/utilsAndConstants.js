@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.applyEntityChanges = exports.log = exports.defaultGetCacheKey = exports.DEFAULT_QUERY_MUTATION_STATE = exports.IS_DEV = exports.optionalUtils = exports.PACKAGE_SHORT_NAME = void 0;
+exports.applyEntityChanges = exports.log = exports.defaultGetCacheKey = exports.EMPTY_OBJECT = exports.DEFAULT_QUERY_MUTATION_STATE = exports.IS_DEV = exports.optionalUtils = exports.PACKAGE_SHORT_NAME = void 0;
 exports.PACKAGE_SHORT_NAME = 'rrc';
 exports.optionalUtils = {
     deepEqual: undefined,
@@ -21,6 +21,7 @@ exports.IS_DEV = (() => {
     }
 })();
 exports.DEFAULT_QUERY_MUTATION_STATE = Object.freeze({ loading: false });
+exports.EMPTY_OBJECT = Object.freeze({});
 const defaultGetCacheKey = (params) => {
     switch (typeof params) {
         case 'string':
@@ -38,7 +39,7 @@ const log = (tag, data) => {
 };
 exports.log = log;
 const applyEntityChanges = (entities, changes, options) => {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     if (options.validateFunctionArguments) {
         // check for merge and entities both set
         if (changes.merge && changes.entities) {
@@ -51,7 +52,13 @@ const applyEntityChanges = (entities, changes, options) => {
     }
     const deepEqual = options.deepComparisonEnabled ? exports.optionalUtils.deepEqual : undefined;
     let result;
-    for (const typename in entities) {
+    const typenames = new Set([
+        ...(changes.entities ? Object.keys(changes.entities) : []),
+        ...(changes.merge ? Object.keys(changes.merge) : []),
+        ...(changes.remove ? Object.keys(changes.remove) : []),
+        ...(changes.replace ? Object.keys(changes.replace) : []),
+    ]);
+    for (const typename of typenames) {
         const entitiesToMerge = merge === null || merge === void 0 ? void 0 : merge[typename];
         const entitiesToReplace = replace === null || replace === void 0 ? void 0 : replace[typename];
         const entitiesToRemove = remove === null || remove === void 0 ? void 0 : remove[typename];
@@ -70,7 +77,7 @@ const applyEntityChanges = (entities, changes, options) => {
                 throw new Error('Merge, replace and remove changes have intersections for: ' + typename);
             }
         }
-        const oldEntities = entities[typename];
+        const oldEntities = (_d = entities[typename]) !== null && _d !== void 0 ? _d : exports.EMPTY_OBJECT;
         let newEntities;
         // remove
         entitiesToRemove === null || entitiesToRemove === void 0 ? void 0 : entitiesToRemove.forEach((id) => {
@@ -104,6 +111,7 @@ const applyEntityChanges = (entities, changes, options) => {
             continue;
         }
         result !== null && result !== void 0 ? result : (result = Object.assign({}, entities));
+        // @ts-expect-error fix later
         result[typename] = newEntities;
     }
     options.logsEnabled &&

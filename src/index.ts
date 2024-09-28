@@ -1,4 +1,4 @@
-export {createCache} from './createCache'
+export {createCache, withTypenames} from './createCache'
 export type {ReduxCacheState} from './createCacheReducer'
 export * from './types'
 export {
@@ -12,7 +12,6 @@ export {
 // rca -> vite
 // defaults
 // remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
-// optional typenames: {} as Typenames
 // remove mergeResults? bcs store is passed to queries/mutations
 // remove undefined optional fields & emtpy states
 // generate full api docs
