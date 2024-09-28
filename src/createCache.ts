@@ -21,7 +21,13 @@ import type {
 } from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
-import {DEFAULT_QUERY_MUTATION_STATE, defaultGetCacheKey, IS_DEV, optionalUtils} from './utilsAndConstants'
+import {
+  applyEntityChanges,
+  DEFAULT_QUERY_MUTATION_STATE,
+  defaultGetCacheKey,
+  IS_DEV,
+  optionalUtils,
+} from './utilsAndConstants'
 
 /**
  * First function call should only provide generic Typenames if normalization is needed - this is a Typescript limitation.
