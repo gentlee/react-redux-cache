@@ -1,4 +1,4 @@
-import {createCache} from '../../createCache'
+import {withTypenames} from '../../createCache'
 import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
 import type {Bank, User} from '../api/types'
 import {logEvent} from '../api/utils'
@@ -38,7 +38,7 @@ export const {
   },
   hooks: {useClient, useMutation, useQuery},
   utils: {applyEntityChanges},
-} = createCache<TestTypenames>()({
+} = withTypenames<TestTypenames>().createCache({
   name: 'cache',
   options: {
     logsEnabled: false,

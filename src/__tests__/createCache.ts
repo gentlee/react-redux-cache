@@ -1,6 +1,6 @@
 import {createStore} from 'redux'
 
-import {createCache} from '../createCache'
+import {withTypenames} from '../createCache'
 import {Cache, Typenames} from '../types'
 
 test('createCache returns correct result', () => {
@@ -124,9 +124,9 @@ const createTestingCache = <N extends string>(
   name: N,
   cacheStateSelector?: Cache<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateSelector']
 ) => {
-  return createCache<{
+  return withTypenames<{
     users: {id: number}
-  }>()({
+  }>().createCache({
     name,
     options: {
       logsEnabled: false,
