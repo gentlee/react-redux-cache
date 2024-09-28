@@ -1,5 +1,5 @@
 import { Store } from 'redux';
-import type { ReduxCacheState } from './reducer';
+import type { ReduxCacheState } from './createCacheReducer';
 export type Key = string | number | symbol;
 export type Dict<T> = Record<Key, T>;
 export type OptionalPartial<T, K extends keyof T> = Partial<{
@@ -69,14 +69,20 @@ export type EntitiesMap<T extends Typenames> = {
 export type EntityIds<T extends Typenames> = {
     [K in keyof T]?: Key[];
 };
-export type Query<T extends Typenames, P, R> = (params: P) => Promise<QueryResponse<T, R>>;
+export type Query<P, T extends Typenames = Typenames, R = unknown> = (
+/** Query parameters */
+params: P, 
+/** Redux store */
+store: Store) => Promise<QueryResponse<T, R>>;
 export type QueryInfo<T extends Typenames, P, R> = {
-    query: Query<T, P, R>;
+    query: Query<P, T, R>;
     /**
      * Cache policy.
      * @default cache-first
      */
     cachePolicy?: QueryCachePolicy;
+    /** If set, this value updates expiresAt value of query state when query resut is received. */
+    secondsToLive?: number;
     /** Merges results before saving to the store. Default implementation is using the latest result. */
     mergeResults?: (oldResult: R | undefined, response: QueryResponse<T, R>, params: P | undefined, store: Store) => R;
     /**
@@ -85,35 +91,56 @@ export type QueryInfo<T extends Typenames, P, R> = {
      * It is recommended to override it when default implementation is not optimal or when keys in params object can be sorted in random order etc.
      * */
     getCacheKey?: (params?: P) => Key;
+    /** Called after fetch finished either successfully or not. */
+    onCompleted?: (response: QueryResponse<T, R> | undefined, error: unknown | undefined, params: P | undefined, store: Store) => void;
+    /** Called after fetch finished without error. */
+    onSuccess?: (response: QueryResponse<T, R>, params: P | undefined, store: Store) => void;
+    /** Called after fetch finished with error. */
+    onError?: (error: unknown, params: P | undefined, store: Store) => void;
+};
+export type QueryState<P, R> = MutationState<P, R> & {
+    expiresAt?: number;
 };
 export type UseQueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = {
     query: QK;
     params: QK extends keyof (QP | QR) ? QP[QK] : never;
+    /** When true fetch is not performed. When switches to false fetch is performed depending on cache policy. */
     skip?: boolean;
-} & Pick<QueryInfo<T, unknown, unknown>, 'cachePolicy'>;
+} & Pick<QueryInfo<T, QK extends keyof (QP | QR) ? QP[QK] : never, QK extends keyof (QP | QR) ? QR[QK] : never>, 'cachePolicy' | 'secondsToLive' | 'mergeResults' | 'onCompleted' | 'onSuccess' | 'onError'>;
+export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = Omit<UseQueryOptions<T, QP, QR, QK>, 'skip' | 'cachePolicy'> & {
+    /** If set to true, query will run only if it is expired or result not yet cached. */
+    onlyIfExpired?: boolean;
+};
 /**
  * @param cache-first for each params key fetch is not called if cache exists.
  * @param cache-and-fetch for each params key result is taken from cache and fetch is called.
  */
 export type QueryCachePolicy = 'cache-first' | 'cache-and-fetch';
 export type QueryResponse<T extends Typenames, R> = EntityChanges<T> & {
-    /** Normalized result of a query. */
     result: R;
+    /** If defined, overrides this value for query state, ignoring `secondsToLive`. */
+    expiresAt?: number;
 };
 export type QueryResult<R> = {
     error?: unknown;
     cancelled?: true;
     result?: R;
 };
-export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = Omit<UseQueryOptions<T, QP, QR, QK>, 'skip'>;
-export type Mutation<T extends Typenames, P, R> = (params: P, 
+export type Mutation<P, T extends Typenames = Typenames, R = unknown> = (
+/** Mutation parameters */
+params: P, 
+/** Redux store */
+store: Store, 
 /** Signal is aborted for current mutation when the same mutation was called once again. */
 abortSignal: AbortSignal) => Promise<MutationResponse<T, R>>;
-export type MutationInfo<T extends Typenames, P, R> = {
-    mutation: Mutation<T, P, R>;
+export type MutationInfo<T extends Typenames, P, R> = Pick<QueryInfo<T, P, R>, 'onCompleted' | 'onSuccess' | 'onError'> & {
+    mutation: Mutation<P, T, R>;
+};
+export type MutateOptions<T extends Typenames, MP, MR, MK extends keyof (MP & MR)> = Pick<MutationInfo<T, MK extends keyof (MP | MR) ? MP[MK] : never, MK extends keyof (MP | MR) ? MR[MK] : never>, 'onCompleted' | 'onSuccess' | 'onError'> & {
+    mutation: MK;
+    params: MK extends keyof (MP | MR) ? MP[MK] : never;
 };
 export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
-    /** Normalized result of a mutation. */
     result?: R;
 };
 export type MutationResult<R> = {
@@ -121,7 +148,7 @@ export type MutationResult<R> = {
     aborted?: true;
     result?: R;
 };
-export type QueryMutationState<P, R> = {
+export type MutationState<P, R> = {
     /** `true` when query or mutation is currently in progress. */
     loading: boolean;
     /** Result of the latest successfull response. */

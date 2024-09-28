@@ -23,7 +23,7 @@ export const IS_DEV: boolean = (() => {
   }
 })()
 
-export const DEFAULT_QUERY_MUTATION_STATE = {loading: false} as const
+export const DEFAULT_QUERY_MUTATION_STATE = Object.freeze({loading: false})
 
 export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
   switch (typeof params) {

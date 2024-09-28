@@ -16,14 +16,7 @@ test('should clear mutation state', () => {
     })
   )
   expect(store.getState().cache.mutations).toStrictEqual({
-    updateUser: {
-      ...DEFAULT_QUERY_MUTATION_STATE,
-      result: 0,
-    },
-    removeUser: {
-      ...DEFAULT_QUERY_MUTATION_STATE,
-      result: undefined,
-    },
+    updateUser: {...DEFAULT_QUERY_MUTATION_STATE, result: 0},
   })
 
   store.dispatch(clearMutationState(['updateUser']))

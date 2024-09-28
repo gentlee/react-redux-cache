@@ -1,15 +1,17 @@
 import {act, render as renderImpl} from '@testing-library/react'
-import React from 'react'
+import React, {Key, useRef} from 'react'
 import {Provider} from 'react-redux'
 
 import {defaultQueryMutationState} from '..'
 import {getUser, getUsers} from '../testing/api/mocks'
-import {assertEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
+import {assertEventLog, clearEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
 import {EMPTY_STATE} from '../testing/constants'
 import {GET_USERS_ONE_PAGE_STATE} from '../testing/constants'
 import {
   cache,
+  invalidateQuery,
   selectQueryError,
+  selectQueryExpiresAt,
   selectQueryLoading,
   selectQueryParams,
   selectQueryResult,
@@ -19,7 +21,7 @@ import {
   useQuery,
 } from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
-import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
+import {advanceApiTimeout, advanceHalfApiTimeout, TTL_TIMEOUT} from '../testing/utils'
 import {DEFAULT_QUERY_MUTATION_STATE, defaultGetCacheKey} from '../utilsAndConstants'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,13 +45,30 @@ afterEach(() => {
 
 // tests
 
-test('fetch if no cache', async () => {
-  render({query: 'getUsers', params: {page: 1}})
+test('fetch if no cache, success callbacks work', async () => {
+  render({
+    query: 'getUsers',
+    params: {page: 1},
+    onSuccess(response, params) {
+      // @ts-expect-error page
+      logEvent('onSuccess result:' + response.result.page + ' params:' + params.page)
+    },
+    onCompleted(response, error, params) {
+      // @ts-expect-error page
+      logEvent('onCompleted result:' + response?.result.page + ' params:' + params.page + ' error:' + error)
+    },
+    onError(error, params) {
+      // @ts-expect-error page
+      logEvent('onError params:' + params.page + ' error:' + error)
+    },
+  })
   await act(advanceApiTimeout)
   assertEventLog([
-    'render: undefined',
+    'first render: undefined',
     'render: loading',
     'merge results: first page',
+    'onSuccess result:1 params:1',
+    'onCompleted result:1 params:1 error:undefined',
     'render: ' + JSON.stringify({items: [0, 1, 2], page: 1}),
   ])
 
@@ -77,7 +96,7 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
     params: {page: 1},
   })
   await act(advanceApiTimeout)
-  assertEventLog(['render: ' + JSON.stringify({items: [0, 1, 2], page: 1})])
+  assertEventLog(['first render: ' + JSON.stringify({items: [0, 1, 2], page: 1})])
 
   expect(getUsers).toBeCalledTimes(0)
   expect(store.getState().cache).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
@@ -114,7 +133,6 @@ test('loads three pages sequentially with useQuery, refetch and client; query se
   expect(getUsers).toBeCalledTimes(2)
   expect(selectQueryState(store.getState(), 'getUsers', 'all-pages')).toStrictEqual({
     ...defaultQueryMutationState,
-    error: undefined,
     result: finalState,
     params: {page: 3},
   })
@@ -127,7 +145,7 @@ test('loads three pages sequentially with useQuery, refetch and client; query se
 test('should not cancel current loading query on refetch with different params', async () => {
   render({query: 'getUser', params: 0})
   await act(advanceApiTimeout)
-  assertEventLog(['render: undefined', 'render: loading', 'render: 0'])
+  assertEventLog(['first render: undefined', 'render: loading', 'render: 0'])
 
   render({query: 'getUser', params: 1})
   assertEventLog(['render: undefined', 'render: loading'])
@@ -146,19 +164,16 @@ test('should not cancel current loading query on refetch with different params',
         getUser: {
           0: {
             ...DEFAULT_QUERY_MUTATION_STATE,
-            error: undefined,
             result: 0,
             params: 0,
           },
           1: {
             ...DEFAULT_QUERY_MUTATION_STATE,
-            error: undefined,
             result: 1,
             params: 1,
           },
           2: {
             ...DEFAULT_QUERY_MUTATION_STATE,
-            error: undefined,
             result: 2,
             params: 2,
           },
@@ -194,7 +209,7 @@ test('fetch on mount having cache with cache-and-fetch policy', async () => {
 
   render({query: 'getUser', params: 0, cachePolicy: 'cache-and-fetch'})
   await act(advanceApiTimeout)
-  assertEventLog(['render: 0', 'render: loading', 'render: 0'])
+  assertEventLog(['first render: 0', 'render: loading', 'render: 0'])
 
   expect(getUser).toBeCalledTimes(1)
 })
@@ -209,7 +224,7 @@ test.each(['cache-first', 'cache-and-fetch'] as const)(
     })
     await act(advanceApiTimeout)
     assertEventLog([
-      'render: undefined',
+      'first render: undefined',
       'render: loading',
       'merge results: first page',
       'render: ' + JSON.stringify({items: [0, 1, 2], page: 1}),
@@ -230,7 +245,7 @@ test.each(['cache-first', 'cache-and-fetch'] as const)(
 test('no fetch when skip, without cancelling current request when setting to true', async () => {
   render({query: 'getUser', params: 0, skip: true})
   await act(advanceHalfApiTimeout)
-  assertEventLog(['render: undefined'])
+  assertEventLog(['first render: undefined'])
 
   render({query: 'getUser', params: 1, skip: true})
   await act(advanceHalfApiTimeout)
@@ -281,7 +296,6 @@ test('cancel manual refetch when currently loading same params', async () => {
             result: 0,
             params: 0,
             loading: false,
-            error: undefined,
           },
         },
       },
@@ -289,7 +303,7 @@ test('cancel manual refetch when currently loading same params', async () => {
   })
   expect(shouldBeCancelledResult).toStrictEqual({cancelled: true})
   expect(refetchResult).toStrictEqual({result: 0})
-  assertEventLog(['render: undefined', 'render: loading', 'render: 0', 'render: loading', 'render: 0'])
+  assertEventLog(['first render: undefined', 'render: loading', 'render: 0', 'render: loading', 'render: 0'])
 })
 
 // skipping if deep comparison disabled
@@ -301,7 +315,7 @@ test('cancel manual refetch when currently loading same params', async () => {
 
   await act(advanceApiTimeout)
 
-  assertEventLog(['render: undefined', 'render: loading', 'render: 0'])
+  assertEventLog(['first render: undefined', 'render: loading', 'render: 0'])
 
   // this act should not cause re-render
   act(() =>
@@ -324,25 +338,98 @@ test('cancel manual refetch when currently loading same params', async () => {
   assertEventLog([])
 })
 
+test('secondsToLive, onlyIfExpired', async () => {
+  render({query: 'getUserTtl', params: 0})
+  await act(advanceApiTimeout)
+  assertEventLog(['first render: undefined', 'render: loading', 'render: 0'])
+  expect(selectQueryExpiresAt(store.getState(), 'getUserTtl', 0)).toEqual(Date.now() + TTL_TIMEOUT)
+
+  act(() => {
+    refetch({onlyIfExpired: true}) // onlyIfExpired should not cause fetch
+  })
+  assertEventLog([])
+  expect(getUser).toBeCalledTimes(1)
+
+  render({query: 'getUserTtl', params: 0}, 'second-mount') // here query is not expired yet
+  assertEventLog(['first render: 0'])
+  expect(getUser).toBeCalledTimes(1)
+
+  await act(() => jest.advanceTimersByTimeAsync(TTL_TIMEOUT)) // here query expires and next mount should cause new fetch
+
+  render({query: 'getUserTtl', params: 0}, 'second-mount') // re-render does not cause refetch even if expired
+  assertEventLog(['render: 0'])
+
+  render({query: 'getUserTtl', params: 0}, 'third-mount') // mount causes refetch if expired
+  await act(advanceApiTimeout)
+  assertEventLog(['first render: 0', 'render: loading', 'render: 0'])
+  expect(getUser).toBeCalledTimes(2)
+  expect(store.getState().cache).toStrictEqual({
+    ...EMPTY_STATE,
+    entities: generateTestEntitiesMap(1),
+    queries: {
+      ...EMPTY_STATE.queries,
+      ...{
+        getUserTtl: {
+          0: {
+            ...DEFAULT_QUERY_MUTATION_STATE,
+            expiresAt: Date.now() + TTL_TIMEOUT,
+            result: 0,
+            params: 0,
+          },
+        },
+      },
+    },
+  })
+})
+
+test('no re-render on expiresAt change', async () => {
+  render({query: 'getUserTtl', params: 0})
+  await act(advanceApiTimeout)
+  clearEventLog()
+
+  act(() => store.dispatch(invalidateQuery([{query: 'getUserTtl', expiresAt: Date.now() + 1000}])))
+  assertEventLog([]) // update of expiresAt should not cause re-render
+})
+
+test('expiresAt from query response works and overrides sedondsToLive', async () => {
+  render({query: 'getUserExpires', params: 0})
+  await act(advanceApiTimeout)
+
+  expect(selectQueryExpiresAt(store.getState(), 'getUserExpires', 0)).toBe(Date.now() + TTL_TIMEOUT)
+
+  act(() => {
+    refetch({secondsToLive: 1}) // sedondsToLive should be ignored
+  })
+  await act(advanceApiTimeout)
+
+  expect(selectQueryExpiresAt(store.getState(), 'getUserExpires', 0)).toBe(Date.now() + TTL_TIMEOUT)
+})
+
 // components
 
 const TestUseQueryComponent = ({options}: {options: Parameters<typeof useQuery>[0]}) => {
   client = useClient()
+  const firstMountRef = useRef(true)
 
   const [{result, loading}, refetchImpl] = useQuery(options)
   refetch = refetchImpl
 
-  logEvent(loading ? 'render: loading' : 'render: ' + JSON.stringify(result))
+  logEvent(
+    (firstMountRef.current ? 'first ' : '') +
+      (loading ? 'render: loading' : 'render: ' + JSON.stringify(result))
+  )
+
+  firstMountRef.current = false
 
   return null
 }
 
 // utils
 
-const render = (options: Parameters<typeof useQuery>[0]) => {
+const render = (options: Parameters<typeof useQuery>[0], key?: Key) => {
   return rerender(
     <Provider store={store}>
-      <TestUseQueryComponent options={options} />
+      <TestUseQueryComponent key={key} options={options} />
     </Provider>
   )
 }

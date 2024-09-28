@@ -21,7 +21,10 @@ export const mutate = async <
   }: Pick<ActionMap<N, T, unknown, unknown, MP, MR>, 'updateMutationStateAndEntities'>,
   mutationKey: MK,
   params: MK extends keyof (MP | MR) ? MP[MK] : never,
-  abortControllers: WeakMap<Store, Record<Key, AbortController>>
+  abortControllers: WeakMap<Store, Record<Key, AbortController>>,
+  onCompleted = cache.mutations[mutationKey].onCompleted,
+  onSuccess = cache.mutations[mutationKey].onSuccess,
+  onError = cache.mutations[mutationKey].onError
 ): Promise<MutationResult<MK extends keyof (MP | MR) ? MR[MK] : never>> => {
   let abortControllersOfStore = abortControllers.get(store)
   if (abortControllersOfStore === undefined) {
@@ -89,22 +92,27 @@ export const mutate = async <
         loading: false,
       })
     )
+    // @ts-expect-error params
+    onError?.(error, params, store)
+    // @ts-expect-error response
+    onCompleted?.(response, error, params, store)
+
     return {error}
   }
 
   if (response) {
-    store.dispatch(
-      updateMutationStateAndEntities(
-        mutationKey as keyof (MP | MR),
-        {
-          error: undefined,
-          loading: false,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          result: response.result,
-        },
-        response
-      )
-    )
+    const newState = {
+      error: undefined,
+      loading: false,
+      result: response.result,
+    }
+
+    store.dispatch(updateMutationStateAndEntities(mutationKey as keyof (MP | MR), newState, response))
+    // @ts-expect-error params
+    onSuccess?.(response, params, store)
+    // @ts-expect-error response
+    onCompleted?.(response, error, params, store)
+
     // @ts-expect-error fix later
     return {result: response.result}
   }

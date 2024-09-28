@@ -3,18 +3,20 @@ import {useSelector, useStore} from 'react-redux'
 import {Store} from 'redux'
 
 import {createActions} from './createActions'
+import {createCacheReducer} from './createCacheReducer'
 import {mutate as mutateImpl} from './mutate'
 import {query as queryImpl} from './query'
-import {createCacheReducer} from './reducer'
 import type {
   Cache,
   CacheOptions,
   Key,
+  MutateOptions,
   MutationResult,
+  MutationState,
   OptionalPartial,
-  QueryMutationState,
   QueryOptions,
   QueryResult,
+  QueryState,
   Typenames,
 } from './types'
 import {useMutation} from './useMutation'
@@ -64,10 +66,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
     state: unknown,
     query: QK,
     cacheKey: Key
-  ): QueryMutationState<
-    QK extends keyof (QP | QR) ? QP[QK] : never,
-    QK extends keyof (QP | QR) ? QR[QK] : never
-  > => {
+  ): QueryState<QK extends keyof (QP | QR) ? QP[QK] : never, QK extends keyof (QP | QR) ? QR[QK] : never> => {
     // @ts-expect-error fix later
     return cache.cacheStateSelector(state).queries[query][cacheKey] ?? DEFAULT_QUERY_MUTATION_STATE
   }
@@ -75,7 +74,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
   const selectMutationState = <MK extends keyof (MP & MR)>(
     state: unknown,
     mutation: MK
-  ): QueryMutationState<
+  ): MutationState<
     MK extends keyof (MP | MR) ? MP[MK] : never,
     MK extends keyof (MP | MR) ? MR[MK] : never
   > => {
@@ -115,6 +114,10 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
       selectQueryParams: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
         return selectQueryState(state, query, cacheKey).params
       },
+      /** Selects query expiresAt value. */
+      selectQueryExpiresAt: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
+        return selectQueryState(state, query, cacheKey).expiresAt
+      },
       /** Selects mutation state. */
       selectMutationState,
       /** Selects mutation latest result. */
@@ -150,9 +153,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
         const store = useStore()
         return useMemo(() => {
           const client = {
-            query: <QK extends keyof (QP & QR)>(
-              options: Omit<QueryOptions<T, QP, QR, QK>, 'cachePolicy'>
-            ) => {
+            query: <QK extends keyof (QP & QR)>(options: QueryOptions<T, QP, QR, QK>) => {
               type P = QK extends keyof (QP | QR) ? QP[QK] : never
               type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
@@ -161,14 +162,24 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
               // @ts-expect-error fix later
               const cacheKey = getCacheKey(params)
 
-              return queryImpl('query', store, cache, actions, queryKey, cacheKey, params) as Promise<
-                QueryResult<R>
-              >
+              return queryImpl(
+                'query',
+                store,
+                cache,
+                actions,
+                queryKey,
+                cacheKey,
+                params,
+                options.secondsToLive,
+                options.onlyIfExpired,
+                // @ts-expect-error fix later
+                options.mergeResults,
+                options.onCompleted,
+                options.onSuccess,
+                options.onError
+              ) as Promise<QueryResult<R>>
             },
-            mutate: <MK extends keyof (MP & MR)>(options: {
-              mutation: MK
-              params: MK extends keyof (MP | MR) ? MP[MK] : never
-            }) => {
+            mutate: <MK extends keyof (MP & MR)>(options: MutateOptions<T, MP, MR, MK>) => {
               type R = MK extends keyof (MP | MR) ? MR[MK] : never
 
               return mutateImpl(
@@ -178,7 +189,11 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
                 actions,
                 options.mutation,
                 options.params,
-                abortControllers
+                abortControllers,
+                // @ts-expect-error fix later
+                options.onCompleted,
+                options.onSuccess,
+                options.onError
               ) as Promise<MutationResult<R>>
             },
           }
@@ -186,7 +201,7 @@ export const createCache = <N extends string, T extends Typenames, QP, QR, MP, M
         }, [store])
       },
 
-      /** Fetches query when params change and subscribes to query state. */
+      /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
       useQuery: <QK extends keyof (QP & QR)>(
         options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[2]
       ) => useQuery(cache, actions, options),

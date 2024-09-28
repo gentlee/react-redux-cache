@@ -20,7 +20,7 @@ exports.IS_DEV = (() => {
         return process.env.NODE_ENV === 'development';
     }
 })();
-exports.DEFAULT_QUERY_MUTATION_STATE = { loading: false };
+exports.DEFAULT_QUERY_MUTATION_STATE = Object.freeze({ loading: false });
 const defaultGetCacheKey = (params) => {
     switch (typeof params) {
         case 'string':

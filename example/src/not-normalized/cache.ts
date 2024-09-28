@@ -1,17 +1,6 @@
-import {Cache, createCache} from 'react-redux-cache'
+import {createCache} from 'react-redux-cache'
 
 import {getUser, getUsers, removeUser, updateUser} from './api/mocks'
-
-export type Typenames = typeof cacheNotNormalized extends Cache<
-  string,
-  infer T,
-  unknown,
-  unknown,
-  unknown,
-  unknown
->
-  ? T
-  : never
 
 export const cacheNotNormalized = createCache({
   name: 'cacheNotNormalized',
@@ -40,6 +29,9 @@ export const cacheNotNormalized = createCache({
   mutations: {
     updateUser: {
       mutation: updateUser,
+      onSuccess(_, __, {dispatch}) {
+        dispatch(cacheNotNormalized.actions.invalidateQuery([{key: 'getUsers'}]))
+      },
     },
     removeUser: {
       mutation: removeUser,

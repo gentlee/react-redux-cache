@@ -1,5 +1,5 @@
 import type {ActionMap} from './createActions'
-import type {CacheOptions, Dict, EntitiesMap, QueryMutationState, Typenames} from './types'
+import type {CacheOptions, Dict, EntitiesMap, MutationState, QueryState, Typenames} from './types'
 import {applyEntityChanges, DEFAULT_QUERY_MUTATION_STATE, log, optionalUtils} from './utilsAndConstants'
 
 export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
@@ -7,6 +7,10 @@ export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
 >
 
 const EMPTY_QUERY_STATE = Object.freeze({})
+
+const optionalQueryKeys: (keyof QueryState<unknown, unknown>)[] = ['error', 'expiresAt', 'result', 'params']
+
+const optionalMutationKeys: (keyof MutationState<unknown, unknown>)[] = ['error', 'result', 'params']
 
 export const createCacheReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
   actions: ActionMap<N, T, QP, QR, MP, MR>,
@@ -19,12 +23,12 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
     entitiesMap[key] = EMPTY_QUERY_STATE
   }
 
-  const queryStateMap = {} as {[QK in keyof (QP | QR)]: Dict<QueryMutationState<QP[QK], QR[QK]>>}
+  const queryStateMap = {} as {[QK in keyof (QP | QR)]: Dict<QueryState<QP[QK], QR[QK]> | undefined>}
   for (const key of queryKeys) {
     queryStateMap[key] = {}
   }
 
-  const mutationStateMap = {} as {[MK in keyof (MP | MR)]: QueryMutationState<MP[MK], MR[MK]>}
+  const mutationStateMap = {} as {[MK in keyof (MP | MR)]: MutationState<MP[MK], MR[MK]>}
 
   const initialState = {
     entities: entitiesMap,
@@ -59,6 +63,16 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
           ...oldQueryState,
           ...queryState,
         }
+
+        // remove undefined optional fields
+        if (newQueryState) {
+          for (const key of optionalQueryKeys) {
+            if (key in newQueryState && newQueryState[key] === undefined) {
+              delete newQueryState[key]
+            }
+          }
+        }
+
         if (deepEqual?.(oldQueryState, newQueryState)) {
           newQueryState = undefined
         }
@@ -95,6 +109,16 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
           ...oldMutationState,
           ...mutationState,
         }
+
+        // remove undefined optional fields
+        if (newMutationState) {
+          for (const key of optionalMutationKeys) {
+            if (key in newMutationState && newMutationState[key] === undefined) {
+              delete newMutationState[key]
+            }
+          }
+        }
+
         if (deepEqual?.(oldMutationState, newMutationState)) {
           newMutationState = undefined
         }
@@ -123,29 +147,89 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
 
         return newEntities ? {...state, entities: newEntities} : state
       }
+      case actions.invalidateQuery.type: {
+        const {queries: queriesToInvalidate} = action as ReturnType<typeof actions.invalidateQuery>
+        if (!queriesToInvalidate.length) {
+          return state
+        }
+
+        const now = Date.now()
+        let newQueries = undefined
+
+        for (const {query: queryKey, cacheKey, expiresAt = now} of queriesToInvalidate) {
+          const queryStates = (newQueries ?? state.queries)[queryKey]
+          if (cacheKey != null) {
+            if (queryStates[cacheKey]) {
+              const queryState = queryStates[cacheKey]
+              if (queryState && queryState.expiresAt !== expiresAt) {
+                newQueries ??= {...state.queries}
+                if (state.queries[queryKey] === newQueries[queryKey]) {
+                  newQueries[queryKey] = {
+                    ...newQueries[queryKey],
+                  }
+                }
+                // @ts-expect-error fix type later
+                newQueries[queryKey][cacheKey] = {
+                  ...queryState,
+                  expiresAt,
+                }
+                if (expiresAt === undefined) {
+                  delete newQueries[queryKey][cacheKey]!.expiresAt
+                }
+              }
+            }
+          } else {
+            for (const cacheKey in queryStates) {
+              const queryState = queryStates[cacheKey]
+              if (queryState && queryState.expiresAt !== expiresAt) {
+                newQueries ??= {...state.queries}
+                if (state.queries[queryKey] === newQueries[queryKey]) {
+                  newQueries[queryKey] = {
+                    ...newQueries[queryKey],
+                  }
+                }
+                newQueries[queryKey][cacheKey] = {
+                  ...queryState,
+                  expiresAt,
+                }
+                if (expiresAt === undefined) {
+                  delete newQueries[queryKey][cacheKey]!.expiresAt
+                }
+              }
+            }
+          }
+        }
+
+        return !newQueries
+          ? state
+          : {
+              ...state,
+              queries: newQueries,
+            }
+      }
       case actions.clearQueryState.type: {
-        const {queryKeys: queryKeysToClear} = action as ReturnType<typeof actions.clearQueryState>
-        if (!queryKeysToClear.length) {
+        const {queries: queriesToClear} = action as ReturnType<typeof actions.clearQueryState>
+        if (!queriesToClear.length) {
           return state
         }
 
         let newQueries = undefined
 
-        for (const query of queryKeysToClear) {
-          const queryState = (newQueries ?? state.queries)[query.key]
-          if (query.cacheKey != null) {
-            if (queryState[query.cacheKey]) {
+        for (const {query: queryKey, cacheKey} of queriesToClear) {
+          const queryStates = (newQueries ?? state.queries)[queryKey]
+          if (cacheKey != null) {
+            if (queryStates[cacheKey]) {
               newQueries ??= {...state.queries}
-              if (state.queries[query.key] === newQueries[query.key]) {
-                newQueries[query.key] = {
-                  ...newQueries[query.key],
+              if (state.queries[queryKey] === newQueries[queryKey]) {
+                newQueries[queryKey] = {
+                  ...newQueries[queryKey],
                 }
               }
-              delete newQueries[query.key][query.cacheKey]
+              delete newQueries[queryKey][cacheKey]
             }
-          } else if (queryState !== EMPTY_QUERY_STATE) {
+          } else if (queryStates !== EMPTY_QUERY_STATE) {
             newQueries ??= {...state.queries}
-            newQueries[query.key] = EMPTY_QUERY_STATE
+            newQueries[queryKey] = EMPTY_QUERY_STATE
           }
         }
 

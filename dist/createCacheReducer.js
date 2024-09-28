@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCacheReducer = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
 const EMPTY_QUERY_STATE = Object.freeze({});
+const optionalQueryKeys = ['error', 'expiresAt', 'result', 'params'];
+const optionalMutationKeys = ['error', 'result', 'params'];
 const createCacheReducer = (actions, typenames, queryKeys, cacheOptions) => {
     const entitiesMap = {};
     for (const key in typenames) {
@@ -32,6 +34,14 @@ const createCacheReducer = (actions, typenames, queryKeys, cacheOptions) => {
                 const { queryKey, queryCacheKey, state: queryState, entityChanges, } = action;
                 const oldQueryState = (_a = state.queries[queryKey][queryCacheKey]) !== null && _a !== void 0 ? _a : utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE;
                 let newQueryState = queryState && Object.assign(Object.assign({}, oldQueryState), queryState);
+                // remove undefined optional fields
+                if (newQueryState) {
+                    for (const key of optionalQueryKeys) {
+                        if (key in newQueryState && newQueryState[key] === undefined) {
+                            delete newQueryState[key];
+                        }
+                    }
+                }
                 if (deepEqual === null || deepEqual === void 0 ? void 0 : deepEqual(oldQueryState, newQueryState)) {
                     newQueryState = undefined;
                 }
@@ -51,6 +61,14 @@ const createCacheReducer = (actions, typenames, queryKeys, cacheOptions) => {
                 const { mutationKey, state: mutationState, entityChanges, } = action;
                 const oldMutationState = (_b = state.mutations[mutationKey]) !== null && _b !== void 0 ? _b : utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE;
                 let newMutationState = mutationState && Object.assign(Object.assign({}, oldMutationState), mutationState);
+                // remove undefined optional fields
+                if (newMutationState) {
+                    for (const key of optionalMutationKeys) {
+                        if (key in newMutationState && newMutationState[key] === undefined) {
+                            delete newMutationState[key];
+                        }
+                    }
+                }
                 if (deepEqual === null || deepEqual === void 0 ? void 0 : deepEqual(oldMutationState, newMutationState)) {
                     newMutationState = undefined;
                 }
@@ -71,26 +89,71 @@ const createCacheReducer = (actions, typenames, queryKeys, cacheOptions) => {
                 const newEntities = (0, utilsAndConstants_1.applyEntityChanges)(state.entities, changes, cacheOptions);
                 return newEntities ? Object.assign(Object.assign({}, state), { entities: newEntities }) : state;
             }
+            case actions.invalidateQuery.type: {
+                const { queries: queriesToInvalidate } = action;
+                if (!queriesToInvalidate.length) {
+                    return state;
+                }
+                const now = Date.now();
+                let newQueries = undefined;
+                for (const { query: queryKey, cacheKey, expiresAt = now } of queriesToInvalidate) {
+                    const queryStates = (newQueries !== null && newQueries !== void 0 ? newQueries : state.queries)[queryKey];
+                    if (cacheKey != null) {
+                        if (queryStates[cacheKey]) {
+                            const queryState = queryStates[cacheKey];
+                            if (queryState && queryState.expiresAt !== expiresAt) {
+                                newQueries !== null && newQueries !== void 0 ? newQueries : (newQueries = Object.assign({}, state.queries));
+                                if (state.queries[queryKey] === newQueries[queryKey]) {
+                                    newQueries[queryKey] = Object.assign({}, newQueries[queryKey]);
+                                }
+                                // @ts-expect-error fix type later
+                                newQueries[queryKey][cacheKey] = Object.assign(Object.assign({}, queryState), { expiresAt });
+                                if (expiresAt === undefined) {
+                                    delete newQueries[queryKey][cacheKey].expiresAt;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        for (const cacheKey in queryStates) {
+                            const queryState = queryStates[cacheKey];
+                            if (queryState && queryState.expiresAt !== expiresAt) {
+                                newQueries !== null && newQueries !== void 0 ? newQueries : (newQueries = Object.assign({}, state.queries));
+                                if (state.queries[queryKey] === newQueries[queryKey]) {
+                                    newQueries[queryKey] = Object.assign({}, newQueries[queryKey]);
+                                }
+                                newQueries[queryKey][cacheKey] = Object.assign(Object.assign({}, queryState), { expiresAt });
+                                if (expiresAt === undefined) {
+                                    delete newQueries[queryKey][cacheKey].expiresAt;
+                                }
+                            }
+                        }
+                    }
+                }
+                return !newQueries
+                    ? state
+                    : Object.assign(Object.assign({}, state), { queries: newQueries });
+            }
             case actions.clearQueryState.type: {
-                const { queryKeys: queryKeysToClear } = action;
-                if (!queryKeysToClear.length) {
+                const { queries: queriesToClear } = action;
+                if (!queriesToClear.length) {
                     return state;
                 }
                 let newQueries = undefined;
-                for (const query of queryKeysToClear) {
-                    const queryState = (newQueries !== null && newQueries !== void 0 ? newQueries : state.queries)[query.key];
-                    if (query.cacheKey != null) {
-                        if (queryState[query.cacheKey]) {
+                for (const { query: queryKey, cacheKey } of queriesToClear) {
+                    const queryStates = (newQueries !== null && newQueries !== void 0 ? newQueries : state.queries)[queryKey];
+                    if (cacheKey != null) {
+                        if (queryStates[cacheKey]) {
                             newQueries !== null && newQueries !== void 0 ? newQueries : (newQueries = Object.assign({}, state.queries));
-                            if (state.queries[query.key] === newQueries[query.key]) {
-                                newQueries[query.key] = Object.assign({}, newQueries[query.key]);
+                            if (state.queries[queryKey] === newQueries[queryKey]) {
+                                newQueries[queryKey] = Object.assign({}, newQueries[queryKey]);
                             }
-                            delete newQueries[query.key][query.cacheKey];
+                            delete newQueries[queryKey][cacheKey];
                         }
                     }
-                    else if (queryState !== EMPTY_QUERY_STATE) {
+                    else if (queryStates !== EMPTY_QUERY_STATE) {
                         newQueries !== null && newQueries !== void 0 ? newQueries : (newQueries = Object.assign({}, state.queries));
-                        newQueries[query.key] = EMPTY_QUERY_STATE;
+                        newQueries[queryKey] = EMPTY_QUERY_STATE;
                     }
                 }
                 return !newQueries
