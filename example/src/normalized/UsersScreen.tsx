@@ -41,7 +41,7 @@ export const UsersScreen = () => {
       </p>
       <p>
         denormalized:{' '}
-        <span id="denormalized">{JSON.stringify(usersResult?.items.map((id) => usersMap[id]))}</span>
+        <span id="denormalized">{JSON.stringify(usersResult?.items.map((id) => usersMap?.[id]))}</span>
       </p>
       {refreshing && <div className="spinner" />}
       {usersResult?.items.map((userId: number) => {

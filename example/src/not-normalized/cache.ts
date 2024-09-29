@@ -4,6 +4,9 @@ import {getUser, getUsers, removeUser, updateUser} from './api/mocks'
 
 export const cacheNotNormalized = createCache({
   name: 'cacheNotNormalized',
+  defaults: {
+    secondsToLive: 5 * 60,
+  },
   queries: {
     getUsers: {
       query: getUsers,

@@ -16,6 +16,9 @@ export const {
   hooks: {useClient, useMutation, useQuery, useSelectEntityById},
 } = withTypenames<Typenames>().createCache({
   name: 'cache',
+  defaults: {
+    secondsToLive: 10 * 60,
+  },
   queries: {
     getUsers: {
       query: getUsers,
