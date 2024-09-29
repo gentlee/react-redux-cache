@@ -10,9 +10,8 @@ export {
 
 // ! high (1.0.0)
 // rca -> vite
-// defaults
-// remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
 // remove undefined optional fields & emtpy states. remove mutation state when it finished without errors
+// remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
 // generate full api docs
 
 // ! medium

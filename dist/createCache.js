@@ -24,18 +24,20 @@ const withTypenames = () => {
      */
     return {
         createCache: (partialCache) => {
-            var _a, _b, _c, _d, _e, _f, _g;
-            var _h, _j, _k;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+            var _k, _l, _m, _o;
             const abortControllers = new WeakMap();
             // provide all optional fields
             (_a = partialCache.options) !== null && _a !== void 0 ? _a : (partialCache.options = {});
-            (_b = (_h = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_h.logsEnabled = false);
-            (_c = (_j = partialCache.options).validateFunctionArguments) !== null && _c !== void 0 ? _c : (_j.validateFunctionArguments = utilsAndConstants_1.IS_DEV);
-            (_d = (_k = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_k.deepComparisonEnabled = true);
+            (_b = (_k = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_k.logsEnabled = false);
+            (_c = (_l = partialCache.options).validateFunctionArguments) !== null && _c !== void 0 ? _c : (_l.validateFunctionArguments = utilsAndConstants_1.IS_DEV);
+            (_d = (_m = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_m.deepComparisonEnabled = true);
             (_e = partialCache.queries) !== null && _e !== void 0 ? _e : (partialCache.queries = {});
             (_f = partialCache.mutations) !== null && _f !== void 0 ? _f : (partialCache.mutations = {});
+            (_g = partialCache.defaults) !== null && _g !== void 0 ? _g : (partialCache.defaults = {});
+            (_h = (_o = partialCache.defaults).cachePolicy) !== null && _h !== void 0 ? _h : (_o.cachePolicy = 'cache-first');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (_g = partialCache.cacheStateSelector) !== null && _g !== void 0 ? _g : (partialCache.cacheStateSelector = (state) => state[cache.name]);
+            (_j = partialCache.cacheStateSelector) !== null && _j !== void 0 ? _j : (partialCache.cacheStateSelector = (state) => state[cache.name]);
             // @ts-expect-error private field for testing
             partialCache.abortControllers = abortControllers;
             const cache = partialCache;

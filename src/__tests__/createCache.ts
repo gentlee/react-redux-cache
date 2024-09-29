@@ -8,6 +8,7 @@ test('createCache returns correct result', () => {
 
   expect(cache).toStrictEqual({
     name: 'cache',
+    defaults: {cachePolicy: 'cache-first'},
     abortControllers: new WeakMap(),
     cacheStateSelector: cache.cacheStateSelector,
     options: {

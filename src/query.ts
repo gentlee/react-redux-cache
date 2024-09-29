@@ -22,7 +22,7 @@ export const query = async <
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never,
-  secondsToLive: number | undefined = cache.queries[queryKey].secondsToLive,
+  secondsToLive: number | undefined = cache.queries[queryKey].secondsToLive ?? cache.defaults.secondsToLive,
   onlyIfExpired: boolean | undefined,
   mergeResults = cache.queries[queryKey].mergeResults,
   onCompleted = cache.queries[queryKey].onCompleted,

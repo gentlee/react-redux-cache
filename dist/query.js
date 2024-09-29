@@ -11,8 +11,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.query = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey, cacheKey, params, secondsToLive = cache.queries[queryKey].secondsToLive, onlyIfExpired, mergeResults = cache.queries[queryKey].mergeResults, onCompleted = cache.queries[queryKey].onCompleted, onSuccess = cache.queries[queryKey].onSuccess, onError = cache.queries[queryKey].onError) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+const query = (logTag, store, cache, _a, queryKey, cacheKey, params, secondsToLive, onlyIfExpired, mergeResults, onCompleted, onSuccess, onError) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b, _c, _d;
+    var { updateQueryStateAndEntities, } = _a;
+    if (secondsToLive === void 0) { secondsToLive = (_b = cache.queries[queryKey].secondsToLive) !== null && _b !== void 0 ? _b : cache.defaults.secondsToLive; }
+    if (mergeResults === void 0) { mergeResults = cache.queries[queryKey].mergeResults; }
+    if (onCompleted === void 0) { onCompleted = cache.queries[queryKey].onCompleted; }
+    if (onSuccess === void 0) { onSuccess = cache.queries[queryKey].onSuccess; }
+    if (onError === void 0) { onError = cache.queries[queryKey].onError; }
     const logsEnabled = cache.options.logsEnabled;
     const cacheStateSelector = cache.cacheStateSelector;
     const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey][cacheKey];
@@ -61,11 +67,11 @@ const query = (logTag, store, cache, { updateQueryStateAndEntities, }, queryKey,
     const newState = {
         error: undefined,
         loading: false,
-        expiresAt: (_a = response.expiresAt) !== null && _a !== void 0 ? _a : (secondsToLive != null ? Date.now() + secondsToLive * 1000 : undefined),
+        expiresAt: (_c = response.expiresAt) !== null && _c !== void 0 ? _c : (secondsToLive != null ? Date.now() + secondsToLive * 1000 : undefined),
         result: mergeResults
             ? mergeResults(
             // @ts-expect-error fix later
-            (_b = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _b === void 0 ? void 0 : _b.result, response, params, store)
+            (_d = cacheStateSelector(store.getState()).queries[queryKey][cacheKey]) === null || _d === void 0 ? void 0 : _d.result, response, params, store)
             : response.result,
     };
     store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, newState, response));

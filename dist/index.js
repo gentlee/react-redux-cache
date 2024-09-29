@@ -24,33 +24,23 @@ Object.defineProperty(exports, "defaultGetCacheKey", { enumerable: true, get: fu
 Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, get: function () { return utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE; } });
 // Backlog
 // ! high (1.0.0)
-// rca -> vite
 // defaults
+// rca -> vite
+// remove undefined optional fields & emtpy states. remove mutation state when it finished without errors
 // remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
-// remove undefined optional fields & emtpy states
 // generate full api docs
 // ! medium
 // optimistic response
 // make query key / cache key difference more clear in the docs
 // check type of function arguments in dev
-// allow multiple mutation with same keys?
-// return back deserialize selector?
-// selector for entities by typename
-// callback option on error / success?
-// refetch queries on mutation success
-// remove query/mutation state when it finished without errors
-// deep equal entities while merging state
-// make error type generic
 // ! low
+// make error type generic
+// allow multiple mutation with same keys?
 // custom useStore & useSelector to support multiple stores?
-// access to currently loading queries and mutations?
-// add params to the state?
+// easy access to all currently loading queries and mutations?
 // cancellation to queries
-// if mutation & query alrady loading - make options: last, throttle, debounce, parallel?
-// add time-to-live option, and/or time-to-refresh
+// if mutation & query already loading - make options: last, throttle, debounce, parallel?
 // add refresh interval for queries that are mounted
-// replace try/catch with returned error
-// support any store, not only redux
 // readonly types?
 // proper types, remove as, any, todo
 // add number of retries param?

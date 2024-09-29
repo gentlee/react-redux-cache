@@ -9,6 +9,7 @@ import {query as queryImpl} from './query'
 import type {
   Cache,
   CacheOptions,
+  Defaults,
   Key,
   MutateOptions,
   MutationResult,
@@ -45,7 +46,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
     createCache: <N extends string, QP, QR, MP, MR>(
       partialCache: OptionalPartial<
         Cache<N, T, QP, QR, MP, MR>,
-        'options' | 'queries' | 'mutations' | 'cacheStateSelector'
+        'options' | 'queries' | 'mutations' | 'cacheStateSelector' | 'defaults'
       >
     ) => {
       type TypedCache = Cache<N, T, QP, QR, MP, MR>
@@ -60,6 +61,8 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       partialCache.options.deepComparisonEnabled ??= true
       partialCache.queries ??= {} as TypedCache['queries']
       partialCache.mutations ??= {} as TypedCache['mutations']
+      partialCache.defaults ??= {} as Defaults
+      partialCache.defaults.cachePolicy ??= 'cache-first'
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       partialCache.cacheStateSelector ??= (state: any) => state[cache.name]
       // @ts-expect-error private field for testing

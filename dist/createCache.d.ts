@@ -11,7 +11,7 @@ import { applyEntityChanges } from './utilsAndConstants';
  * })
  */
 export declare const withTypenames: <T extends Typenames = Typenames>() => {
-    createCache: <N extends string, QP, QR, MP, MR>(partialCache: OptionalPartial<Cache<N, T, QP, QR, MP, MR>, "queries" | "options" | "mutations" | "cacheStateSelector">) => {
+    createCache: <N extends string, QP, QR, MP, MR>(partialCache: OptionalPartial<Cache<N, T, QP, QR, MP, MR>, "queries" | "options" | "mutations" | "cacheStateSelector" | "defaults">) => {
         /** Keeps all options, passed while creating the cache. */
         cache: Cache<N, T, QP, QR, MP, MR>;
         /** Reducer of the cache, should be added to redux store. */
@@ -172,7 +172,7 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
 /**
  * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
  */
-export declare const createCache: <N extends string, QP, QR, MP, MR>(partialCache: OptionalPartial<Cache<N, Typenames, QP, QR, MP, MR>, "queries" | "options" | "mutations" | "cacheStateSelector">) => {
+export declare const createCache: <N extends string, QP, QR, MP, MR>(partialCache: OptionalPartial<Cache<N, Typenames, QP, QR, MP, MR>, "queries" | "options" | "mutations" | "cacheStateSelector" | "defaults">) => {
     /** Keeps all options, passed while creating the cache. */
     cache: Cache<N, Typenames, QP, QR, MP, MR>;
     /** Reducer of the cache, should be added to redux store. */
