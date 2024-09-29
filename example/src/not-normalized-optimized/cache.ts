@@ -4,7 +4,7 @@ import {getUser, getUsers, removeUser, updateUser} from '../not-normalized/api/m
 
 export const cacheNotNormalizedOptimized = createCache({
   name: 'cacheNotNormalized',
-  defaults: {
+  globals: {
     secondsToLive: 10 * 60,
   },
   queries: {

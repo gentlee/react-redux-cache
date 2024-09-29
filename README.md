@@ -165,6 +165,7 @@ export const {
       query: getUser,
       // For each query `secondsToLive` option can be set, which is used to set expiration date of a cached result when query response is received.
       // After expiration query result is considered invalidated and will be refetched on the next useQuery mount.
+      // Can also be set globally in `globals`.
       secondsToLive: 5 * 60 // Here cached result is valid for 5 minutes.
     },
   },
