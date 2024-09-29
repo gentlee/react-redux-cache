@@ -27,7 +27,6 @@ Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, 
 // rca -> vite
 // defaults
 // remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
-// remove mergeResults? bcs store is passed to queries/mutations
 // remove undefined optional fields & emtpy states
 // generate full api docs
 // ! medium

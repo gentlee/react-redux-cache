@@ -27,6 +27,8 @@ export const DEFAULT_QUERY_MUTATION_STATE = Object.freeze({loading: false})
 
 export const EMPTY_OBJECT = Object.freeze({})
 
+export const EMPTY_ARRAY = Object.freeze([])
+
 export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
   switch (typeof params) {
     case 'string':
@@ -48,11 +50,8 @@ export const applyEntityChanges = <T extends Typenames>(
   changes: EntityChanges<T>,
   options: CacheOptions
 ): EntitiesMap<T> | undefined => {
-  if (options.validateFunctionArguments) {
-    // check for merge and entities both set
-    if (changes.merge && changes.entities) {
-      throw new Error('Merge and entities should not be both set')
-    }
+  if (changes.merge && changes.entities) {
+    console.warn('react-redux-cache.applyEntityChanges: merge and entities should not be both set')
   }
 
   const {merge = changes.entities, replace, remove} = changes
@@ -65,11 +64,12 @@ export const applyEntityChanges = <T extends Typenames>(
 
   let result: EntitiesMap<T> | undefined
 
+  // TODO refactor to remove this Set
   const typenames = new Set([
-    ...(changes.entities ? Object.keys(changes.entities) : []),
-    ...(changes.merge ? Object.keys(changes.merge) : []),
-    ...(changes.remove ? Object.keys(changes.remove) : []),
-    ...(changes.replace ? Object.keys(changes.replace) : []),
+    ...(changes.entities ? Object.keys(changes.entities) : EMPTY_ARRAY),
+    ...(changes.merge ? Object.keys(changes.merge) : EMPTY_ARRAY),
+    ...(changes.remove ? Object.keys(changes.remove) : EMPTY_ARRAY),
+    ...(changes.replace ? Object.keys(changes.replace) : EMPTY_ARRAY),
   ])
   for (const typename of typenames) {
     const entitiesToMerge = merge?.[typename]
@@ -92,7 +92,10 @@ export const applyEntityChanges = <T extends Typenames>(
       const totalKeysInResponse =
         (mergeIds?.length ?? 0) + (replaceIds?.length ?? 0) + (entitiesToRemove?.length ?? 0)
       if (totalKeysInResponse !== 0 && idsSet.size !== totalKeysInResponse) {
-        throw new Error('Merge, replace and remove changes have intersections for: ' + typename)
+        console.warn(
+          'react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: ' +
+            typename
+        )
       }
     }
 

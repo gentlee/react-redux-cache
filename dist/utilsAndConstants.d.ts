@@ -8,6 +8,7 @@ export declare const DEFAULT_QUERY_MUTATION_STATE: Readonly<{
     loading: false;
 }>;
 export declare const EMPTY_OBJECT: Readonly<{}>;
+export declare const EMPTY_ARRAY: readonly never[];
 export declare const defaultGetCacheKey: <P = unknown>(params: P) => Key;
 export declare const log: (tag: string, data?: unknown) => void;
 export declare const applyEntityChanges: <T extends Typenames>(entities: EntitiesMap<T>, changes: EntityChanges<T>, options: CacheOptions) => EntitiesMap<T> | undefined;

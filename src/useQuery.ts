@@ -6,15 +6,7 @@ import {query as queryImpl} from './query'
 import {Cache, QueryOptions, QueryState, Typenames, UseQueryOptions} from './types'
 import {DEFAULT_QUERY_MUTATION_STATE, defaultGetCacheKey, log} from './utilsAndConstants'
 
-export const useQuery = <
-  N extends string,
-  T extends Typenames,
-  QP,
-  QR,
-  MP, // TODO remove?
-  MR,
-  QK extends keyof (QP & QR)
->(
+export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
   cache: Cache<N, T, QP, QR, MP, MR>,
   actions: Pick<ActionMap<N, T, QP, QR, MP, MR>, 'updateQueryStateAndEntities'>,
   options: UseQueryOptions<T, QP, QR, QK>

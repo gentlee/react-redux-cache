@@ -157,7 +157,9 @@ test('return undefined with empty arguments', () => {
   expect(result3).toEqual(undefined)
 })
 
-test('throw error if merge and entities both set', () => {
+test('warn if merge and entities both set', () => {
+  const warnSpy = jest.spyOn(console, 'warn')
+
   const entitiesMap = generateTestEntitiesMap(1)
   const changes: EntityChanges<TestTypenames> = {
     merge: {
@@ -172,12 +174,17 @@ test('throw error if merge and entities both set', () => {
     },
   }
 
-  expect(() => {
-    applyEntityChanges(entitiesMap, changes)
-  }).toThrowError('Merge and entities should not be both set')
+  applyEntityChanges(entitiesMap, changes)
+
+  expect(warnSpy.mock.calls).toEqual([
+    ['react-redux-cache.applyEntityChanges: merge and entities should not be both set'],
+  ])
+  warnSpy.mockClear()
 })
 
-test('throw error if merge, replace or remove have intersections', () => {
+test('warn if merge, replace or remove have intersections', () => {
+  const warnSpy = jest.spyOn(console, 'warn')
+
   const entitiesMap = generateTestEntitiesMap(1)
   const changes: EntityChanges<TestTypenames> = {
     merge: {
@@ -202,8 +209,13 @@ test('throw error if merge, replace or remove have intersections', () => {
   }
 
   ;[changes, changes2, changes3].forEach((changes) => {
-    expect(() => {
-      applyEntityChanges(entitiesMap, changes)
-    }).toThrowError('Merge, replace and remove changes have intersections for: users')
+    applyEntityChanges(entitiesMap, changes)
   })
+  expect(warnSpy.mock.calls).toEqual([
+    ['react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: users'],
+    ['react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: users'],
+    ['react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: users'],
+    ['react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: banks'],
+  ])
+  warnSpy.mockClear()
 })
