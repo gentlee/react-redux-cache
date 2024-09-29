@@ -27,14 +27,14 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
     mutations: {
         [MK in keyof (MP & MR)]: MK extends keyof (MP | MR) ? MutationInfo<T, MP[MK], MR[MK]> : never;
     };
-    /** Default options for queries.
-     * @default { cachePolicy: 'cache-first', sedondsToLive: undefined } */
-    defaults: Defaults;
+    /** Default options for queries and mutations.
+     * @default { cachePolicy: 'cache-first', sedondsToLive: undefined, onError: undefined } */
+    globals: Globals<QP, MP>;
     options: CacheOptions;
     /** Should return cache state from redux root state. Default implementation returns `state[name]`. */
     cacheStateSelector: (state: any) => ReduxCacheState<T, QP, QR, MP, MR>;
 };
-export type Defaults = {
+export type Globals<QP, MP> = {
     /**
      * Cache policy.
      * @cache-first fetch only if cache either does not exist or is expired on useQuery mount.
@@ -44,6 +44,9 @@ export type Defaults = {
     cachePolicy: QueryCachePolicy;
     /** If set, this value updates expiresAt value of query state when query result is received. */
     secondsToLive?: number;
+    /** Handles errors, not handled by onError from queries and mutations. */
+    onError?: <K extends keyof QP | keyof MP>(error: unknown, key: K, params: QP[keyof QP] | MP[keyof MP], // TODO proper type
+    store: Store) => void;
 };
 export type CacheOptions = {
     /**
@@ -78,7 +81,7 @@ export type Query<P, T extends Typenames = Typenames, R = unknown> = (
 params: P, 
 /** Redux store */
 store: Store) => Promise<QueryResponse<T, R>>;
-export type QueryInfo<T extends Typenames, P, R> = Partial<Defaults> & {
+export type QueryInfo<T extends Typenames, P, R> = Partial<Pick<Globals<unknown, unknown>, 'cachePolicy' | 'secondsToLive'>> & {
     query: Query<P, T, R>;
     /** Merges results before saving to the store. Default implementation is using the latest result. */
     mergeResults?: (oldResult: R | undefined, response: QueryResponse<T, R>, params: P | undefined, store: Store) => R;
@@ -92,8 +95,8 @@ export type QueryInfo<T extends Typenames, P, R> = Partial<Defaults> & {
     onCompleted?: (response: QueryResponse<T, R> | undefined, error: unknown | undefined, params: P | undefined, store: Store) => void;
     /** Called after fetch finished without error. */
     onSuccess?: (response: QueryResponse<T, R>, params: P | undefined, store: Store) => void;
-    /** Called after fetch finished with error. */
-    onError?: (error: unknown, params: P | undefined, store: Store) => void;
+    /** Called after fetch finished with error. Should return true if error was handled and does not require global onError handling. */
+    onError?: (error: unknown, params: P | undefined, store: Store) => boolean | void | null | undefined;
 };
 export type QueryState<P, R> = MutationState<P, R> & {
     expiresAt?: number;

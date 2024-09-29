@@ -22,7 +22,7 @@ export const query = async <
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never,
-  secondsToLive: number | undefined = cache.queries[queryKey].secondsToLive ?? cache.defaults.secondsToLive,
+  secondsToLive: number | undefined = cache.queries[queryKey].secondsToLive ?? cache.globals.secondsToLive,
   onlyIfExpired: boolean | undefined,
   mergeResults = cache.queries[queryKey].mergeResults,
   onCompleted = cache.queries[queryKey].onCompleted,
@@ -83,7 +83,10 @@ export const query = async <
       })
     )
     // @ts-expect-error params
-    onError?.(error, params, store)
+    if (!onError?.(error, params, store)) {
+      // @ts-expect-error queryKey
+      cache.globals.onError?.(error, queryKey, params, store)
+    }
     // @ts-expect-error params
     onCompleted?.(undefined, error, params, store)
     return {error}

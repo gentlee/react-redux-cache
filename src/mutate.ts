@@ -93,7 +93,10 @@ export const mutate = async <
       })
     )
     // @ts-expect-error params
-    onError?.(error, params, store)
+    if (!onError?.(error, params, store)) {
+      // @ts-expect-error queryKey
+      cache.globals.onError?.(error, mutationKey, params, store)
+    }
     // @ts-expect-error response
     onCompleted?.(response, error, params, store)
 

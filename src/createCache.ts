@@ -9,7 +9,7 @@ import {query as queryImpl} from './query'
 import type {
   Cache,
   CacheOptions,
-  Defaults,
+  Globals,
   Key,
   MutateOptions,
   MutationResult,
@@ -46,7 +46,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
     createCache: <N extends string, QP, QR, MP, MR>(
       partialCache: OptionalPartial<
         Cache<N, T, QP, QR, MP, MR>,
-        'options' | 'queries' | 'mutations' | 'cacheStateSelector' | 'defaults'
+        'options' | 'queries' | 'mutations' | 'cacheStateSelector' | 'globals'
       >
     ) => {
       type TypedCache = Cache<N, T, QP, QR, MP, MR>
@@ -61,8 +61,8 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       partialCache.options.deepComparisonEnabled ??= true
       partialCache.queries ??= {} as TypedCache['queries']
       partialCache.mutations ??= {} as TypedCache['mutations']
-      partialCache.defaults ??= {} as Defaults
-      partialCache.defaults.cachePolicy ??= 'cache-first'
+      partialCache.globals ??= {} as Globals<QP, MP>
+      partialCache.globals.cachePolicy ??= 'cache-first'
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       partialCache.cacheStateSelector ??= (state: any) => state[cache.name]
       // @ts-expect-error private field for testing
@@ -237,6 +237,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           /** Subscribes to provided mutation state and provides mutate function. */
           useMutation: <MK extends keyof (MP & MR)>(
             options: Parameters<typeof useMutation<N, T, MP, MR, MK>>[2]
+            // @ts-expect-error cache type
           ) => useMutation(cache, actions, options, abortControllers),
 
           /** useSelector + selectEntityById. */

@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.mutate = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
 const mutate = (logTag, store, cache, { updateMutationStateAndEntities, }, mutationKey, params, abortControllers, onCompleted = cache.mutations[mutationKey].onCompleted, onSuccess = cache.mutations[mutationKey].onSuccess, onError = cache.mutations[mutationKey].onError) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     let abortControllersOfStore = abortControllers.get(store);
     if (abortControllersOfStore === undefined) {
         abortControllersOfStore = {};
@@ -65,7 +66,10 @@ const mutate = (logTag, store, cache, { updateMutationStateAndEntities, }, mutat
             loading: false,
         }));
         // @ts-expect-error params
-        onError === null || onError === void 0 ? void 0 : onError(error, params, store);
+        if (!(onError === null || onError === void 0 ? void 0 : onError(error, params, store))) {
+            // @ts-expect-error queryKey
+            (_b = (_a = cache.globals).onError) === null || _b === void 0 ? void 0 : _b.call(_a, error, mutationKey, params, store);
+        }
         // @ts-expect-error response
         onCompleted === null || onCompleted === void 0 ? void 0 : onCompleted(response, error, params, store);
         return { error };

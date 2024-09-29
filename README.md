@@ -289,7 +289,23 @@ export const updateBank = (bank) => {
     }
   }
 } satisfies Mutation<Partial<Bank>>
+```
 
+If global error handling is needed for errors, not handled by query / mutation `onError` callback, global `onError` can be used:
+
+```typescript
+export const cache = createCache({
+  name: 'cache',
+  globals: {
+    onError: (error, key) {
+      console.log('Not handled error', { error, key })
+    }
+  },
+  queries: {
+    getUsers: { query: getUsers },
+  },
+  ...
+})
 ```
 
 #### Invalidation

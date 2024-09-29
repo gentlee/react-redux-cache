@@ -34,8 +34,8 @@ const withTypenames = () => {
             (_d = (_m = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_m.deepComparisonEnabled = true);
             (_e = partialCache.queries) !== null && _e !== void 0 ? _e : (partialCache.queries = {});
             (_f = partialCache.mutations) !== null && _f !== void 0 ? _f : (partialCache.mutations = {});
-            (_g = partialCache.defaults) !== null && _g !== void 0 ? _g : (partialCache.defaults = {});
-            (_h = (_o = partialCache.defaults).cachePolicy) !== null && _h !== void 0 ? _h : (_o.cachePolicy = 'cache-first');
+            (_g = partialCache.globals) !== null && _g !== void 0 ? _g : (partialCache.globals = {});
+            (_h = (_o = partialCache.globals).cachePolicy) !== null && _h !== void 0 ? _h : (_o.cachePolicy = 'cache-first');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (_j = partialCache.cacheStateSelector) !== null && _j !== void 0 ? _j : (partialCache.cacheStateSelector = (state) => state[cache.name]);
             // @ts-expect-error private field for testing
@@ -147,7 +147,9 @@ const withTypenames = () => {
                     /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
                     useQuery: (options) => (0, useQuery_1.useQuery)(cache, actions, options),
                     /** Subscribes to provided mutation state and provides mutate function. */
-                    useMutation: (options) => (0, useMutation_1.useMutation)(cache, actions, options, abortControllers),
+                    useMutation: (options
+                    // @ts-expect-error cache type
+                    ) => (0, useMutation_1.useMutation)(cache, actions, options, abortControllers),
                     /** useSelector + selectEntityById. */
                     useSelectEntityById: (id, typename) => {
                         return (0, react_redux_1.useSelector)((state) => selectEntityById(state, id, typename));

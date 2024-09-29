@@ -1,16 +1,22 @@
 import {createStore} from 'redux'
 
 import {withTypenames} from '../createCache'
+import {getUsers, removeUser} from '../testing/api/mocks'
 import {Cache, Typenames} from '../types'
 
 test('createCache returns correct result', () => {
-  const {cache, actions, hooks, reducer, selectors, utils} = createTestingCache('cache')
+  const onError = jest.fn()
+  const {cache, actions, hooks, reducer, selectors, utils} = createTestingCache('cache', undefined, onError)
 
   expect(cache).toStrictEqual({
     name: 'cache',
-    defaults: {cachePolicy: 'cache-first'},
     abortControllers: new WeakMap(),
     cacheStateSelector: cache.cacheStateSelector,
+    globals: {
+      cachePolicy: 'cache-and-fetch',
+      secondsToLive: 10,
+      onError,
+    },
     options: {
       logsEnabled: false,
       validateFunctionArguments: true,
@@ -20,10 +26,16 @@ test('createCache returns correct result', () => {
       getUser: {
         query: getUser,
       },
+      getUsers: {
+        query: getUsers,
+      },
     },
     mutations: {
       updateUser: {
         mutation: updateUser,
+      },
+      removeUser: {
+        mutation: removeUser,
       },
     },
   })
@@ -33,6 +45,7 @@ test('createCache returns correct result', () => {
     entities: {},
     queries: {
       getUser: {},
+      getUsers: {},
     },
     mutations: {},
   })
@@ -123,12 +136,18 @@ const updateUser = async (id: number) => ({
 
 const createTestingCache = <N extends string>(
   name: N,
-  cacheStateSelector?: Cache<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateSelector']
+  cacheStateSelector?: Cache<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateSelector'],
+  onError?: () => void
 ) => {
   return withTypenames<{
     users: {id: number}
   }>().createCache({
     name,
+    globals: {
+      cachePolicy: 'cache-and-fetch',
+      secondsToLive: 10,
+      onError,
+    },
     options: {
       logsEnabled: false,
       validateFunctionArguments: true,
@@ -137,10 +156,16 @@ const createTestingCache = <N extends string>(
       getUser: {
         query: getUser,
       },
+      getUsers: {
+        query: getUsers,
+      },
     },
     mutations: {
       updateUser: {
         mutation: updateUser,
+      },
+      removeUser: {
+        mutation: removeUser,
       },
     },
     cacheStateSelector,
