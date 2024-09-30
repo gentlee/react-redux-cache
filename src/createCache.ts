@@ -57,7 +57,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
 
       partialCache.options ??= {} as CacheOptions
       partialCache.options.logsEnabled ??= false
-      partialCache.options.validateFunctionArguments ??= IS_DEV
+      partialCache.options.additionalValidation ??= IS_DEV
       partialCache.options.deepComparisonEnabled ??= true
       partialCache.queries ??= {} as TypedCache['queries']
       partialCache.mutations ??= {} as TypedCache['mutations']

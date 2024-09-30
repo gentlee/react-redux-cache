@@ -42,7 +42,7 @@ export const {
   name: 'cache',
   options: {
     logsEnabled: false,
-    validateFunctionArguments: true,
+    additionalValidation: true,
     // deepComparisonEnabled: false,
   },
   queries: {

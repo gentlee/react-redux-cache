@@ -24,12 +24,11 @@ Object.defineProperty(exports, "defaultGetCacheKey", { enumerable: true, get: fu
 Object.defineProperty(exports, "defaultQueryMutationState", { enumerable: true, get: function () { return utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE; } });
 // Backlog
 // ! high (1.0.0)
-// rca -> vite
-// check validateFunctionArguments
 // remove undefined optional fields & emtpy states. remove mutation state when it finished without errors
 // remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
 // generate full api docs
 // ! medium
+// example rca -> vite
 // optimistic response
 // reset [whole] cache to initial / to provided state
 // globals for success, completions and loading states?

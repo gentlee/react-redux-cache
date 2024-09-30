@@ -65,7 +65,7 @@ const applyEntityChanges = (entities, changes, options) => {
             continue;
         }
         // check for key intersection
-        if (options.validateFunctionArguments) {
+        if (options.additionalValidation) {
             const mergeIds = entitiesToMerge && Object.keys(entitiesToMerge);
             const replaceIds = entitiesToReplace && Object.keys(entitiesToReplace);
             const idsSet = new Set(mergeIds);

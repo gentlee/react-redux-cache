@@ -50,12 +50,12 @@ export type Globals<QP, MP> = {
 };
 export type CacheOptions = {
     /**
-     * Enables validation of package function arguments. Recommened to enable in dev/testing mode.
+     * Enables additional validation with logging to console.warn. Recommened to enable in dev/testing mode.
      * @default true in dev mode.
      * */
-    validateFunctionArguments: boolean;
+    additionalValidation: boolean;
     /**
-     * Enables console logs.
+     * Enables debug logs.
      * @default false
      */
     logsEnabled: boolean;

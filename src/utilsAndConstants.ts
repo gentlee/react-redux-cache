@@ -81,7 +81,7 @@ export const applyEntityChanges = <T extends Typenames>(
     }
 
     // check for key intersection
-    if (options.validateFunctionArguments) {
+    if (options.additionalValidation) {
       const mergeIds = entitiesToMerge && Object.keys(entitiesToMerge)
       const replaceIds = entitiesToReplace && Object.keys(entitiesToReplace)
 

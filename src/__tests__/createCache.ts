@@ -19,7 +19,7 @@ test('createCache returns correct result', () => {
     },
     options: {
       logsEnabled: false,
-      validateFunctionArguments: true,
+      additionalValidation: true,
       deepComparisonEnabled: true,
     },
     queries: {
@@ -150,7 +150,7 @@ const createTestingCache = <N extends string>(
     },
     options: {
       logsEnabled: false,
-      validateFunctionArguments: true,
+      additionalValidation: true,
     },
     queries: {
       getUser: {
