@@ -152,9 +152,9 @@ test('return undefined with empty arguments', () => {
   const result2 = applyEntityChanges(entitiesMap, changes2)
   const result3 = applyEntityChanges(entitiesMap, changes3)
 
-  expect(result).toEqual(undefined)
-  expect(result2).toEqual(undefined)
-  expect(result3).toEqual(undefined)
+  expect(result).toBe(undefined)
+  expect(result2).toBe(undefined)
+  expect(result3).toBe(undefined)
 })
 
 test('warn if merge and entities both set', () => {
@@ -176,7 +176,7 @@ test('warn if merge and entities both set', () => {
 
   applyEntityChanges(entitiesMap, changes)
 
-  expect(warnSpy.mock.calls).toEqual([
+  expect(warnSpy.mock.calls).toStrictEqual([
     ['react-redux-cache.applyEntityChanges: merge and entities should not be both set'],
   ])
   warnSpy.mockClear()
@@ -211,7 +211,7 @@ test('warn if merge, replace or remove have intersections', () => {
   ;[changes, changes2, changes3].forEach((changes) => {
     applyEntityChanges(entitiesMap, changes)
   })
-  expect(warnSpy.mock.calls).toEqual([
+  expect(warnSpy.mock.calls).toStrictEqual([
     ['react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: users'],
     ['react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: users'],
     ['react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: users'],

@@ -1,6 +1,5 @@
 import {clearQueryState, updateQueryStateAndEntities} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
-import {DEFAULT_QUERY_MUTATION_STATE} from '../../utilsAndConstants'
 
 test('should clear query state with and without cache key', () => {
   const store = createReduxStore(false)
@@ -19,7 +18,7 @@ test('should clear query state with and without cache key', () => {
     ])
   )
   expect(store.getState().cache.queries.getUser).toStrictEqual({
-    1: {...DEFAULT_QUERY_MUTATION_STATE, result: 1},
+    1: {result: 1},
   })
 
   // clear all cache keys
@@ -54,10 +53,5 @@ test('should work if cache key missing', () => {
     ])
   )
 
-  expect(store.getState().cache.queries.getUser).toStrictEqual({
-    0: {
-      ...DEFAULT_QUERY_MUTATION_STATE,
-      result: 0,
-    },
-  })
+  expect(store.getState().cache.queries.getUser).toStrictEqual({0: {result: 0}})
 })

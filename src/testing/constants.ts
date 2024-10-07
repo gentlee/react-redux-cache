@@ -14,7 +14,6 @@ export const GET_USERS_ONE_PAGE_STATE = {
           page: 1,
         },
         params: {page: 1},
-        loading: false,
       },
     },
   },

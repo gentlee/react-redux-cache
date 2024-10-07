@@ -1,15 +1,11 @@
 export {createCache, withTypenames} from './createCache'
 export type {ReduxCacheState} from './createCacheReducer'
 export * from './types'
-export {
-  defaultGetCacheKey,
-  DEFAULT_QUERY_MUTATION_STATE as defaultQueryMutationState,
-} from './utilsAndConstants'
+export {defaultGetCacheKey} from './utilsAndConstants'
 
 // Backlog
 
 // ! high (1.0.0)
-// remove undefined optional fields & emtpy states. remove mutation state when it finished without errors
 // remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
 // generate full api docs
 

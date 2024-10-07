@@ -14,7 +14,6 @@ import {
 } from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
 import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
-import {DEFAULT_QUERY_MUTATION_STATE} from '../utilsAndConstants'
 
 let store: ReturnType<typeof createReduxStore>
 let updateUser: ReturnType<typeof useMutation<'updateUser'>>[0]
@@ -61,7 +60,6 @@ test('should be able to abort started mutation, mutation selectors work', async 
       ...EMPTY_STATE,
       mutations: {
         updateUser: {
-          ...DEFAULT_QUERY_MUTATION_STATE,
           params: {id: 0, name: 'New name 2'},
         },
       },
@@ -72,7 +70,6 @@ test('should be able to abort started mutation, mutation selectors work', async 
     },
   })
   expect(selectMutationState(store.getState(), 'updateUser')).toStrictEqual({
-    ...DEFAULT_QUERY_MUTATION_STATE,
     params: {id: 0, name: 'New name 2'},
   })
   expect(selectMutationResult(store.getState(), 'updateUser')).toStrictEqual(undefined)
@@ -81,15 +78,15 @@ test('should be able to abort started mutation, mutation selectors work', async 
   expect(selectMutationParams(store.getState(), 'updateUser')).toStrictEqual({id: 0, name: 'New name 2'})
   assertEventLog([
     '@rrc/cache/mergeEntityChanges',
-    'render: loading: false, result: undefined',
+    'render: loading: undefined, result: undefined',
     '@rrc/cache/updateMutationStateAndEntities', // loading true
     'render: loading: true, result: undefined',
     '@rrc/cache/updateMutationStateAndEntities', // loading false, result 0
-    'render: loading: false, result: 0',
+    'render: loading: undefined, result: 0',
     '@rrc/cache/updateMutationStateAndEntities', // loading true, result undefined
     'render: loading: true, result: undefined',
     '@rrc/cache/updateMutationStateAndEntities', // abort, loading false
-    'render: loading: false, result: undefined',
+    'render: loading: undefined, result: undefined',
   ])
 })
 

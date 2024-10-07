@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.applyEntityChanges = exports.log = exports.defaultGetCacheKey = exports.EMPTY_ARRAY = exports.EMPTY_OBJECT = exports.DEFAULT_QUERY_MUTATION_STATE = exports.IS_DEV = exports.optionalUtils = exports.PACKAGE_SHORT_NAME = void 0;
+exports.isEmptyObject = exports.applyEntityChanges = exports.log = exports.defaultGetCacheKey = exports.EMPTY_ARRAY = exports.EMPTY_OBJECT = exports.IS_DEV = exports.optionalUtils = exports.PACKAGE_SHORT_NAME = void 0;
 exports.PACKAGE_SHORT_NAME = 'rrc';
 exports.optionalUtils = {
     deepEqual: undefined,
@@ -20,7 +20,6 @@ exports.IS_DEV = (() => {
         return process.env.NODE_ENV === 'development';
     }
 })();
-exports.DEFAULT_QUERY_MUTATION_STATE = Object.freeze({ loading: false });
 exports.EMPTY_OBJECT = Object.freeze({});
 exports.EMPTY_ARRAY = Object.freeze([]);
 const defaultGetCacheKey = (params) => {
@@ -124,3 +123,10 @@ const applyEntityChanges = (entities, changes, options) => {
     return result;
 };
 exports.applyEntityChanges = applyEntityChanges;
+const isEmptyObject = (o) => {
+    for (const _ in o) {
+        return false;
+    }
+    return true;
+};
+exports.isEmptyObject = isEmptyObject;

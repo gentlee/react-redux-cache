@@ -23,8 +23,6 @@ export const IS_DEV: boolean = (() => {
   }
 })()
 
-export const DEFAULT_QUERY_MUTATION_STATE = Object.freeze({loading: false})
-
 export const EMPTY_OBJECT = Object.freeze({})
 
 export const EMPTY_ARRAY = Object.freeze([])
@@ -152,4 +150,11 @@ export const applyEntityChanges = <T extends Typenames>(
     })
 
   return result
+}
+
+export const isEmptyObject = (o: object) => {
+  for (const _ in o) {
+    return false
+  }
+  return true
 }

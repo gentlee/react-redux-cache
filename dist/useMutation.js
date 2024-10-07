@@ -53,7 +53,7 @@ const useMutation = (cache, actions, options, abortControllers) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mutationKey, store]);
     // @ts-expect-error fix later
-    const mutationState = (_a = (0, react_redux_1.useSelector)(mutationStateSelector)) !== null && _a !== void 0 ? _a : utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE;
+    const mutationState = (_a = (0, react_redux_1.useSelector)(mutationStateSelector)) !== null && _a !== void 0 ? _a : utilsAndConstants_1.EMPTY_OBJECT;
     cache.options.logsEnabled &&
         (0, utilsAndConstants_1.log)('useMutation', {
             options,

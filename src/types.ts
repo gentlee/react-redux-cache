@@ -206,8 +206,8 @@ export type MutationResult<R> = {
 // Query & Mutation
 
 export type MutationState<P, R> = {
-  /** `true` when query or mutation is currently in progress. */
-  loading: boolean
+  /** `true` when fetch is currently in progress. */
+  loading?: boolean
   /** Result of the latest successfull response. */
   result?: R
   /** Error of the latest response. */

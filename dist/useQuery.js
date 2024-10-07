@@ -39,7 +39,7 @@ const useQuery = (cache, actions, options) => {
     const queryState = (_c = (0, react_redux_1.useSelector)((state) => {
         const queryState = cacheStateSelector(state).queries[queryKey][cacheKey];
         return queryState; // TODO proper type
-    }, (useQueryStateComparer))) !== null && _c !== void 0 ? _c : utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE;
+    }, (useQueryStateComparer))) !== null && _c !== void 0 ? _c : utilsAndConstants_1.EMPTY_OBJECT;
     (0, react_1.useEffect)(() => {
         if (skip) {
             logsEnabled && (0, utilsAndConstants_1.log)('useQuery.useEffect skip fetch', { skip, cacheKey });

@@ -24,8 +24,8 @@ import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
 import {
   applyEntityChanges,
-  DEFAULT_QUERY_MUTATION_STATE,
   defaultGetCacheKey,
+  EMPTY_OBJECT,
   IS_DEV,
   optionalUtils,
 } from './utilsAndConstants'
@@ -97,7 +97,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         QK extends keyof (QP | QR) ? QR[QK] : never
       > => {
         // @ts-expect-error fix later
-        return cache.cacheStateSelector(state).queries[query][cacheKey] ?? DEFAULT_QUERY_MUTATION_STATE
+        return cache.cacheStateSelector(state).queries[query][cacheKey] ?? EMPTY_OBJECT
       }
 
       const selectMutationState = <MK extends keyof (MP & MR)>(
@@ -108,7 +108,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         MK extends keyof (MP | MR) ? MR[MK] : never
       > => {
         // @ts-expect-error fix later
-        return cache.cacheStateSelector(state).mutations[mutation] ?? DEFAULT_QUERY_MUTATION_STATE
+        return cache.cacheStateSelector(state).mutations[mutation] ?? EMPTY_OBJECT
       }
 
       const actions = createActions<N, T, QP, QR, MP, MR>(cache.name)
@@ -132,7 +132,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           },
           /** Selects query loading state. */
           selectQueryLoading: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
-            return selectQueryState(state, query, cacheKey).loading
+            return selectQueryState(state, query, cacheKey).loading ?? false
           },
           /** Selects query latest error. */
           selectQueryError: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
@@ -154,7 +154,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           },
           /** Selects mutation loading state. */
           selectMutationLoading: <MK extends keyof (MP & MR)>(state: unknown, mutation: MK) => {
-            return selectMutationState(state, mutation).loading
+            return selectMutationState(state, mutation).loading ?? false
           },
           /** Selects mutation latest error. */
           selectMutationError: <MK extends keyof (MP & MR)>(state: unknown, mutation: MK) => {

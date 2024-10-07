@@ -1,6 +1,5 @@
 import {invalidateQuery, updateQueryStateAndEntities} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
-import {DEFAULT_QUERY_MUTATION_STATE} from '../../utilsAndConstants'
 
 test('should work with and without cache key', () => {
   const store = createReduxStore(false)
@@ -20,9 +19,9 @@ test('should work with and without cache key', () => {
     ])
   )
   expect(store.getState().cache.queries.getUser).toStrictEqual({
-    0: {...DEFAULT_QUERY_MUTATION_STATE, result: 0, expiresAt: expect.any(Number)},
-    1: {...DEFAULT_QUERY_MUTATION_STATE, result: 1, expiresAt: now + 1000},
-    2: {...DEFAULT_QUERY_MUTATION_STATE, result: 2},
+    0: {result: 0, expiresAt: expect.any(Number)},
+    1: {result: 1, expiresAt: now + 1000},
+    2: {result: 2},
   })
 
   // invalidate all cache keys
@@ -61,10 +60,5 @@ test('should work if cache key missing', () => {
     ])
   )
 
-  expect(store.getState().cache.queries.getUser).toStrictEqual({
-    0: {
-      ...DEFAULT_QUERY_MUTATION_STATE,
-      result: 0,
-    },
-  })
+  expect(store.getState().cache.queries.getUser).toStrictEqual({0: {result: 0}})
 })

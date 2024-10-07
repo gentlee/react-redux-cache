@@ -53,12 +53,12 @@ const withTypenames = () => {
             const selectQueryState = (state, query, cacheKey) => {
                 var _a;
                 // @ts-expect-error fix later
-                return (_a = cache.cacheStateSelector(state).queries[query][cacheKey]) !== null && _a !== void 0 ? _a : utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE;
+                return (_a = cache.cacheStateSelector(state).queries[query][cacheKey]) !== null && _a !== void 0 ? _a : utilsAndConstants_1.EMPTY_OBJECT;
             };
             const selectMutationState = (state, mutation) => {
                 var _a;
                 // @ts-expect-error fix later
-                return (_a = cache.cacheStateSelector(state).mutations[mutation]) !== null && _a !== void 0 ? _a : utilsAndConstants_1.DEFAULT_QUERY_MUTATION_STATE;
+                return (_a = cache.cacheStateSelector(state).mutations[mutation]) !== null && _a !== void 0 ? _a : utilsAndConstants_1.EMPTY_OBJECT;
             };
             const actions = (0, createActions_1.createActions)(cache.name);
             return {
@@ -76,7 +76,8 @@ const withTypenames = () => {
                     },
                     /** Selects query loading state. */
                     selectQueryLoading: (state, query, cacheKey) => {
-                        return selectQueryState(state, query, cacheKey).loading;
+                        var _a;
+                        return (_a = selectQueryState(state, query, cacheKey).loading) !== null && _a !== void 0 ? _a : false;
                     },
                     /** Selects query latest error. */
                     selectQueryError: (state, query, cacheKey) => {
@@ -98,7 +99,8 @@ const withTypenames = () => {
                     },
                     /** Selects mutation loading state. */
                     selectMutationLoading: (state, mutation) => {
-                        return selectMutationState(state, mutation).loading;
+                        var _a;
+                        return (_a = selectMutationState(state, mutation).loading) !== null && _a !== void 0 ? _a : false;
                     },
                     /** Selects mutation latest error. */
                     selectMutationError: (state, mutation) => {

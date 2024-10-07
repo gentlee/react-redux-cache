@@ -2,7 +2,6 @@ import {act, render as renderImpl} from '@testing-library/react'
 import React, {Key, useRef} from 'react'
 import {Provider} from 'react-redux'
 
-import {defaultQueryMutationState} from '..'
 import {getUser, getUsers} from '../testing/api/mocks'
 import {assertEventLog, clearEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
 import {EMPTY_STATE} from '../testing/constants'
@@ -22,7 +21,7 @@ import {
 } from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
 import {advanceApiTimeout, advanceHalfApiTimeout, TTL_TIMEOUT} from '../testing/utils'
-import {DEFAULT_QUERY_MUTATION_STATE, defaultGetCacheKey} from '../utilsAndConstants'
+import {defaultGetCacheKey} from '../utilsAndConstants'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let client: {query: any}
@@ -132,7 +131,6 @@ test('loads three pages sequentially with useQuery, refetch and client; query se
 
   expect(getUsers).toBeCalledTimes(2)
   expect(selectQueryState(store.getState(), 'getUsers', 'all-pages')).toStrictEqual({
-    ...defaultQueryMutationState,
     result: finalState,
     params: {page: 3},
   })
@@ -163,17 +161,14 @@ test('should not cancel current loading query on refetch with different params',
       ...{
         getUser: {
           0: {
-            ...DEFAULT_QUERY_MUTATION_STATE,
             result: 0,
             params: 0,
           },
           1: {
-            ...DEFAULT_QUERY_MUTATION_STATE,
             result: 1,
             params: 1,
           },
           2: {
-            ...DEFAULT_QUERY_MUTATION_STATE,
             result: 2,
             params: 2,
           },
@@ -295,7 +290,6 @@ test('cancel manual refetch when currently loading same params', async () => {
           0: {
             result: 0,
             params: 0,
-            loading: false,
           },
         },
       },
@@ -342,7 +336,7 @@ test('secondsToLive, onlyIfExpired', async () => {
   render({query: 'getUserTtl', params: 0})
   await act(advanceApiTimeout)
   assertEventLog(['first render: undefined', 'render: loading', 'render: 0'])
-  expect(selectQueryExpiresAt(store.getState(), 'getUserTtl', 0)).toEqual(Date.now() + TTL_TIMEOUT)
+  expect(selectQueryExpiresAt(store.getState(), 'getUserTtl', 0)).toStrictEqual(Date.now() + TTL_TIMEOUT)
 
   act(() => {
     refetch({onlyIfExpired: true}) // onlyIfExpired should not cause fetch
@@ -371,7 +365,6 @@ test('secondsToLive, onlyIfExpired', async () => {
       ...{
         getUserTtl: {
           0: {
-            ...DEFAULT_QUERY_MUTATION_STATE,
             expiresAt: Date.now() + TTL_TIMEOUT,
             result: 0,
             params: 0,

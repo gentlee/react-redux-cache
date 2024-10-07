@@ -4,7 +4,7 @@ import {useSelector, useStore} from 'react-redux'
 import {ActionMap} from './createActions'
 import {query as queryImpl} from './query'
 import {Cache, QueryOptions, QueryState, Typenames, UseQueryOptions} from './types'
-import {DEFAULT_QUERY_MUTATION_STATE, defaultGetCacheKey, log} from './utilsAndConstants'
+import {defaultGetCacheKey, EMPTY_OBJECT, log} from './utilsAndConstants'
 
 export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
   cache: Cache<N, T, QP, QR, MP, MR>,
@@ -66,7 +66,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
     useSelector((state: unknown) => {
       const queryState = cacheStateSelector(state).queries[queryKey as keyof (QP | QR)][cacheKey]
       return queryState as QueryState<P, R> | undefined // TODO proper type
-    }, useQueryStateComparer<P, R>) ?? (DEFAULT_QUERY_MUTATION_STATE as QueryState<P, R>)
+    }, useQueryStateComparer<P, R>) ?? (EMPTY_OBJECT as QueryState<P, R>)
 
   useEffect(() => {
     if (skip) {

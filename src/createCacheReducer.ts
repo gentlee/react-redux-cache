@@ -1,12 +1,6 @@
 import type {ActionMap} from './createActions'
 import type {CacheOptions, Dict, EntitiesMap, MutationState, QueryState, Typenames} from './types'
-import {
-  applyEntityChanges,
-  DEFAULT_QUERY_MUTATION_STATE,
-  EMPTY_OBJECT,
-  log,
-  optionalUtils,
-} from './utilsAndConstants'
+import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, log, optionalUtils} from './utilsAndConstants'
 
 export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
   ReturnType<typeof createCacheReducer<string, T, QP, QR, MP, MR>>
@@ -57,23 +51,27 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
           entityChanges,
         } = action as ReturnType<typeof actions.updateQueryStateAndEntities>
 
-        const oldQueryState = state.queries[queryKey][queryCacheKey] ?? DEFAULT_QUERY_MUTATION_STATE
+        const oldQueryState = state.queries[queryKey][queryCacheKey]
         let newQueryState = queryState && {
           ...oldQueryState,
           ...queryState,
         }
 
-        // remove undefined optional fields
         if (newQueryState) {
+          // remove undefined optional fields
           for (const key of optionalQueryKeys) {
             if (key in newQueryState && newQueryState[key] === undefined) {
               delete newQueryState[key]
             }
           }
-        }
+          if ('loading' in newQueryState && !newQueryState.loading) {
+            delete newQueryState.loading
+          }
 
-        if (deepEqual?.(oldQueryState, newQueryState)) {
-          newQueryState = undefined
+          // skip if new state deep equals to the old state
+          if (deepEqual?.(oldQueryState ?? EMPTY_OBJECT, newQueryState)) {
+            newQueryState = undefined
+          }
         }
 
         const newEntities = entityChanges && applyEntityChanges(state.entities, entityChanges, cacheOptions)
@@ -84,13 +82,20 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
           newState.entities = newEntities
         }
         if (newQueryState) {
-          newState ??= {...state}
-          newState.queries = {
-            ...state.queries,
-            [queryKey]: {
-              ...state.queries[queryKey],
-              [queryCacheKey]: newQueryState,
-            },
+          if (!isEmptyObject(newQueryState)) {
+            newState ??= {...state}
+            newState.queries = {
+              ...state.queries,
+              [queryKey]: {
+                ...state.queries[queryKey],
+                [queryCacheKey]: newQueryState,
+              },
+            }
+          } else if (oldQueryState !== undefined) {
+            // empty states are removed
+            const {[queryCacheKey]: _, ...withoutCacheKey} = state.queries[queryKey]
+            newState ??= {...state}
+            newState.queries = {...state.queries, [queryKey]: withoutCacheKey}
           }
         }
 
@@ -103,23 +108,27 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
           entityChanges,
         } = action as ReturnType<typeof actions.updateMutationStateAndEntities>
 
-        const oldMutationState = state.mutations[mutationKey] ?? DEFAULT_QUERY_MUTATION_STATE
+        const oldMutationState = state.mutations[mutationKey]
         let newMutationState = mutationState && {
           ...oldMutationState,
           ...mutationState,
         }
 
-        // remove undefined optional fields
         if (newMutationState) {
+          // remove optional fields with default values
           for (const key of optionalMutationKeys) {
             if (key in newMutationState && newMutationState[key] === undefined) {
               delete newMutationState[key]
             }
           }
-        }
+          if ('loading' in newMutationState && !newMutationState.loading) {
+            delete newMutationState.loading
+          }
 
-        if (deepEqual?.(oldMutationState, newMutationState)) {
-          newMutationState = undefined
+          // skip if new state deep equals to the old state
+          if (deepEqual?.(oldMutationState ?? EMPTY_OBJECT, newMutationState)) {
+            newMutationState = undefined
+          }
         }
 
         const newEntities = entityChanges && applyEntityChanges(state.entities, entityChanges, cacheOptions)
@@ -130,10 +139,17 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
           newState.entities = newEntities
         }
         if (newMutationState) {
-          newState ??= {...state}
-          newState.mutations = {
-            ...state.mutations,
-            [mutationKey]: newMutationState,
+          if (!isEmptyObject(newMutationState)) {
+            newState ??= {...state}
+            newState.mutations = {
+              ...state.mutations,
+              [mutationKey]: newMutationState,
+            }
+          } else if (oldMutationState !== undefined) {
+            // empty states are removed
+            const {[mutationKey]: _, ...withoutMutationKey} = state.mutations
+            newState ??= {...state}
+            newState.mutations = withoutMutationKey as typeof state.mutations
           }
         }
 
@@ -148,7 +164,7 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
       }
       case actions.invalidateQuery.type: {
         const {queries: queriesToInvalidate} = action as ReturnType<typeof actions.invalidateQuery>
-        if (!queriesToInvalidate.length) {
+        if (queriesToInvalidate.length === 0) {
           return state
         }
 
@@ -199,7 +215,7 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
           }
         }
 
-        return !newQueries
+        return newQueries === undefined
           ? state
           : {
               ...state,
@@ -208,7 +224,7 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
       }
       case actions.clearQueryState.type: {
         const {queries: queriesToClear} = action as ReturnType<typeof actions.clearQueryState>
-        if (!queriesToClear.length) {
+        if (queriesToClear.length === 0) {
           return state
         }
 
@@ -232,7 +248,7 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
           }
         }
 
-        return !newQueries
+        return newQueries === undefined
           ? state
           : {
               ...state,
@@ -242,7 +258,7 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
       case actions.clearMutationState.type: {
         const {mutationKeys} = action as ReturnType<typeof actions.clearMutationState>
 
-        if (!mutationKeys.length) {
+        if (mutationKeys.length === 0) {
           return state
         }
 
@@ -255,7 +271,7 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
           }
         }
 
-        return !newMutations
+        return newMutations === undefined
           ? state
           : {
               ...state,

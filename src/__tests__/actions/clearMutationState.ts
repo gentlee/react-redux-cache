@@ -1,6 +1,5 @@
 import {clearMutationState, updateMutationStateAndEntities} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
-import {DEFAULT_QUERY_MUTATION_STATE} from '../../utilsAndConstants'
 
 test('should clear mutation state', () => {
   const store = createReduxStore(false)
@@ -16,7 +15,7 @@ test('should clear mutation state', () => {
     })
   )
   expect(store.getState().cache.mutations).toStrictEqual({
-    updateUser: {...DEFAULT_QUERY_MUTATION_STATE, result: 0},
+    updateUser: {result: 0},
   })
 
   store.dispatch(clearMutationState(['updateUser']))
