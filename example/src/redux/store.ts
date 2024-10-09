@@ -1,5 +1,6 @@
 import {useDispatch, useStore} from 'react-redux'
 import {applyMiddleware, combineReducers, createStore} from 'redux'
+import reduxLogger from 'redux-logger'
 import {persistReducer, persistStore} from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
@@ -37,10 +38,7 @@ export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean
         cacheNotNormalized.reducer
       ),
     }),
-    loggerEnabled
-      ? // eslint-disable-next-line @typescript-eslint/no-var-requires
-        applyMiddleware(require('redux-logger').default)
-      : undefined
+    loggerEnabled ? applyMiddleware(reduxLogger) : undefined
   )
 
   const persistor = persistEnabled ? persistStore(store) : undefined

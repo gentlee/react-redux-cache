@@ -35,7 +35,7 @@ export const UsersScreen = () => {
   return (
     <div className="screen">
       <Link id="users-link" className={'link'} to={'/'}>
-        home
+        Home
       </Link>
       <p>
         getUsers result: '<span id="result">{JSON.stringify(usersResult)}</span>
@@ -49,7 +49,7 @@ export const UsersScreen = () => {
             className={'link'}
             to={'/not-normalized-optimized/user/' + user.id}
           >
-            {'user ' + user.id}
+            {user.name}
           </Link>
         )
       })}
@@ -65,7 +65,7 @@ export const UsersScreen = () => {
             })
           }}
         >
-          load next page
+          Load next page
         </button>
       )}
     </div>

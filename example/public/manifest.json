@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "RRC Examples",
+  "name": "React Redux Cache Examples",
   "icons": [
     {
       "src": "favicon.ico",

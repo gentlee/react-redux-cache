@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
 
 import {useMutation, useQuery, useSelectEntityById} from './cache'
@@ -8,7 +8,6 @@ export const UserScreen = () => {
 
   const [skip, setSkip] = useState(false)
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const userId = +userIdParam!
 
   const user = useSelectEntityById(userId, 'users')
@@ -45,24 +44,25 @@ export const UserScreen = () => {
   return (
     <div className="screen">
       <Link id={'users-link'} className={'link'} to={'/users'}>
-        {'users'}
+        {'Users'}
       </Link>
       <button
         id="update-user"
         onClick={() => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
           user &&
             updateUser({
               id: user.id,
               name: user.name + ' *',
             })
         }}
-      >{`updat${updatingUser ? 'ing' : 'e'} user name`}</button>
+      >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
       <Link id="next-user" className="link" to={'/user/' + String(userId + 1)}>
-        next user
+        Next user
       </Link>
       {userId > 0 && (
         <Link id="next-user" className="link" to={'/user/' + String(userId - 1)}>
-          previous user
+          Previous user
         </Link>
       )}
       <div className="checkbox">
@@ -70,10 +70,10 @@ export const UserScreen = () => {
         <label>skip</label>
       </div>
       <p>
-        user: <span id="user">{JSON.stringify(user)}</span>
+        User: <span id="user">{JSON.stringify(user)}</span>
       </p>
       <p>
-        bank: <span id="bank">{JSON.stringify(bank)}</span>
+        Bank: <span id="bank">{JSON.stringify(bank)}</span>
       </p>
     </div>
   )

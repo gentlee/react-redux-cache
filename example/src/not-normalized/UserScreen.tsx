@@ -11,7 +11,6 @@ export const UserScreen = () => {
   const {id: userIdParam} = useParams()
   const [skip, setSkip] = useState(false)
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const userId = +userIdParam!
 
   const [{result: user, loading, error}, refetchUser] = useQuery({
@@ -20,7 +19,6 @@ export const UserScreen = () => {
     skip: skip || isNaN(userId),
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [updateUser, {loading: updatingUser}] = useMutation({
     mutation: 'updateUser',
   })
@@ -60,19 +58,19 @@ export const UserScreen = () => {
   return (
     <div className="screen">
       <Link id={'users-link'} className={'link'} to={'/not-normalized/users'}>
-        {'users'}
+        {'Users'}
       </Link>
       {!!user && (
-        <button id="update-user" onClick={onUpdateUserNameClick}>{`updat${
+        <button id="update-user" onClick={onUpdateUserNameClick}>{`Updat${
           updatingUser ? 'ing' : 'e'
         } user name`}</button>
       )}
       <Link id="next-user" className="link" to={'/not-normalized/user/' + String(userId + 1)}>
-        next user
+        Next user
       </Link>
       {userId > 0 && (
         <Link id="next-user" className="link" to={'/not-normalized/user/' + String(userId - 1)}>
-          previous user
+          Previous user
         </Link>
       )}
       <div className="checkbox">
@@ -80,10 +78,10 @@ export const UserScreen = () => {
         <label>skip</label>
       </div>
       <p>
-        user: <span id="user">{JSON.stringify(user)}</span>
+        User: <span id="user">{JSON.stringify(user)}</span>
       </p>
       <p>
-        bank: <span id="bank">{JSON.stringify(user?.bank)}</span>
+        Bank: <span id="bank">{JSON.stringify(user?.bank)}</span>
       </p>
     </div>
   )

@@ -10,7 +10,6 @@ export {defaultGetCacheKey} from './utilsAndConstants'
 // generate full api docs
 
 // ! medium
-// example rca -> vite
 // optimistic response
 // reset [whole] cache to initial / to provided state
 // globals for success, completions and loading states?

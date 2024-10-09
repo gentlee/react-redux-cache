@@ -39,7 +39,6 @@ export const App = ({
   return (
     <Provider store={store}>
       {persistEnabled ? (
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         <PersistGate loading={<p>Rehydrating</p>} persistor={persistor!}>
           {router}
         </PersistGate>

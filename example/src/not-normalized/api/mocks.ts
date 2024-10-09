@@ -24,7 +24,6 @@ export const getUsers = async ({page = 1}: {page: number}) => {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const removeUser = async (id: User['id']) => {
   await apiTimeout()
   delete backendStorage.users[id]
