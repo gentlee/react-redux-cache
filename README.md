@@ -207,7 +207,7 @@ Perfect implementation is when the backend already returns normalized data.
 
 // Example of query with normalization (recommended)
 
-export const getUser = async (id) => {
+export const getUser = (async (id) => {
   // Result can be get by any way - fetch, axios etc, even with database connection.
   // There is no limitation here.
   const response = await ...
@@ -215,24 +215,24 @@ export const getUser = async (id) => {
   // In this example normalizr package is used, but it is not necessary.
   return normalize(response, getUserSchema)
   // satisfies keyword is used here for proper typing of params and returned value.
-} satisfies Query<number, CacheTypenames>
+}) satisfies Query<number, CacheTypenames>
 
 // Example of query without normalization (not recommended), with selecting access token from the store
 
-export const getBank = (id, {getState}) => {
+export const getBank = (async (id, {getState}) => {
   const token = tokenSelector(getState())
   const result: Bank = ...
   return {result} // result is bank object, no entities passed
-} satisfies Query<string>
+}) satisfies Query<string>
 
 // Example of mutation with normalization
 
-export const removeUser = async (id, _, abortSignal) => {
+export const removeUser = (async (id, _, abortSignal) => {
   await ...
   return {
     remove: { users: [id] },
   }
-} satisfies Query<number, CacheTypenames>
+}) satisfies Query<number, CacheTypenames>
 ```
 
 ### Usage

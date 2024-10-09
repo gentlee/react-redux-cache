@@ -1,7 +1,10 @@
+import {Mutation, Query} from 'react-redux-cache'
+
+import {Typenames} from '../cache'
 import {Bank, User} from './types'
 import {apiTimeout, generateBank, generateUser} from './utils'
 
-export const getUser = async (id: number) => {
+export const getUser = (async (id: number) => {
   await apiTimeout()
   return {
     result: id,
@@ -14,9 +17,9 @@ export const getUser = async (id: number) => {
       },
     },
   }
-}
+}) satisfies Query<number, Typenames>
 
-export const getUsers = async ({page = 1}: {page: number}) => {
+export const getUsers = (async ({page = 1}) => {
   const pageSize = 3
   const items = Array.from({length: pageSize}, (_, i) => pageSize * (page - 1) + i)
   await apiTimeout()
@@ -38,9 +41,9 @@ export const getUsers = async ({page = 1}: {page: number}) => {
       },
     },
   }
-}
+}) satisfies Query<{page: number}, Typenames>
 
-export const removeUser = async (id: User['id']) => {
+export const removeUser = (async (id) => {
   await apiTimeout()
   delete backendStorage.users[id]
   return {
@@ -48,9 +51,9 @@ export const removeUser = async (id: User['id']) => {
       users: [id],
     },
   }
-}
+}) satisfies Mutation<User['id'], Typenames>
 
-export const updateUser = async (user: Partial<Omit<User, 'bank'>> & Pick<User, 'id'>) => {
+export const updateUser = (async (user) => {
   await apiTimeout()
   backendStorage.users[user.id] = Object.assign(backendStorage.users[user.id], user)
   return {
@@ -61,7 +64,7 @@ export const updateUser = async (user: Partial<Omit<User, 'bank'>> & Pick<User, 
       },
     },
   }
-}
+}) satisfies Mutation<Partial<Omit<User, 'bank'>> & Pick<User, 'id'>, Typenames>
 
 // backend storage mock
 
