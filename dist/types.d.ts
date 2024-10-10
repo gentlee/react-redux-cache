@@ -76,13 +76,8 @@ export type EntitiesMap<T extends Typenames> = {
 export type EntityIds<T extends Typenames> = {
     [K in keyof T]?: Key[];
 };
-export type Query<P, T extends Typenames = Typenames, R = unknown> = (
-/** Query parameters */
-params: P, 
-/** Redux store */
-store: Store) => Promise<QueryResponse<T, R>>;
-export type QueryInfo<T extends Typenames, P, R> = Partial<Pick<Globals<unknown, unknown>, 'cachePolicy' | 'secondsToLive'>> & {
-    query: Query<P, T, R>;
+export type QueryInfo<T extends Typenames = Typenames, P = unknown, R = unknown> = Partial<Pick<Globals<unknown, unknown>, 'cachePolicy' | 'secondsToLive'>> & {
+    query: Query<T, P, R>;
     /** Merges results before saving to the store. Default implementation is using the latest result. */
     mergeResults?: (oldResult: R | undefined, response: QueryResponse<T, R>, params: P | undefined, store: Store) => R;
     /**
@@ -98,6 +93,11 @@ export type QueryInfo<T extends Typenames, P, R> = Partial<Pick<Globals<unknown,
     /** Called after fetch finished with error. Should return true if error was handled and does not require global onError handling. */
     onError?: (error: unknown, params: P | undefined, store: Store) => boolean | void | null | undefined;
 };
+export type Query<T extends Typenames = Typenames, P = unknown, R = unknown> = (
+/** Query parameters */
+params: P, 
+/** Redux store */
+store: Store) => Promise<QueryResponse<T, R>>;
 export type QueryState<P, R> = MutationState<P, R> & {
     expiresAt?: number;
 };
@@ -112,34 +112,34 @@ export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)
     onlyIfExpired?: boolean;
 };
 export type QueryCachePolicy = 'cache-first' | 'cache-and-fetch';
-export type QueryResponse<T extends Typenames, R> = EntityChanges<T> & {
+export type QueryResponse<T extends Typenames = Typenames, R = unknown> = EntityChanges<T> & {
     result: R;
     /** If defined, overrides this value for query state, ignoring `secondsToLive`. */
     expiresAt?: number;
 };
-export type QueryResult<R> = {
+export type QueryResult<R = unknown> = {
     error?: unknown;
     cancelled?: true;
     result?: R;
 };
-export type Mutation<P, T extends Typenames = Typenames, R = unknown> = (
+export type MutationInfo<T extends Typenames = Typenames, P = unknown, R = unknown> = Pick<QueryInfo<T, P, R>, 'onCompleted' | 'onSuccess' | 'onError'> & {
+    mutation: Mutation<T, P, R>;
+};
+export type Mutation<T extends Typenames = Typenames, P = unknown, R = unknown> = (
 /** Mutation parameters */
 params: P, 
 /** Redux store */
 store: Store, 
 /** Signal is aborted for current mutation when the same mutation was called once again. */
 abortSignal: AbortSignal) => Promise<MutationResponse<T, R>>;
-export type MutationInfo<T extends Typenames, P, R> = Pick<QueryInfo<T, P, R>, 'onCompleted' | 'onSuccess' | 'onError'> & {
-    mutation: Mutation<P, T, R>;
-};
 export type MutateOptions<T extends Typenames, MP, MR, MK extends keyof (MP & MR)> = Pick<MutationInfo<T, MK extends keyof (MP | MR) ? MP[MK] : never, MK extends keyof (MP | MR) ? MR[MK] : never>, 'onCompleted' | 'onSuccess' | 'onError'> & {
     mutation: MK;
     params: MK extends keyof (MP | MR) ? MP[MK] : never;
 };
-export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
+export type MutationResponse<T extends Typenames = Typenames, R = unknown> = EntityChanges<T> & {
     result?: R;
 };
-export type MutationResult<R> = {
+export type MutationResult<R = unknown> = {
     error?: unknown;
     aborted?: true;
     result?: R;

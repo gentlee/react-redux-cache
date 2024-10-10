@@ -26,7 +26,6 @@ Object.defineProperty(exports, "defaultGetCacheKey", { enumerable: true, get: fu
 // remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
 // generate full api docs
 // ! medium
-// example rca -> vite
 // optimistic response
 // reset [whole] cache to initial / to provided state
 // globals for success, completions and loading states?
