@@ -1,4 +1,4 @@
-import {Mutation, Query} from 'react-redux-cache'
+import {NormalizedMutation, NormalizedQuery} from 'react-redux-cache'
 
 import {Typenames} from '../cache'
 import {Bank, User} from './types'
@@ -17,7 +17,7 @@ export const getUser = (async (id: number) => {
       },
     },
   }
-}) satisfies Query<number, Typenames>
+}) satisfies NormalizedQuery<Typenames, number>
 
 export const getUsers = (async ({page = 1}) => {
   const pageSize = 3
@@ -41,7 +41,7 @@ export const getUsers = (async ({page = 1}) => {
       },
     },
   }
-}) satisfies Query<{page: number}, Typenames>
+}) satisfies NormalizedQuery<Typenames, {page: number}>
 
 export const removeUser = (async (id) => {
   await apiTimeout()
@@ -51,7 +51,7 @@ export const removeUser = (async (id) => {
       users: [id],
     },
   }
-}) satisfies Mutation<User['id'], Typenames>
+}) satisfies NormalizedMutation<Typenames, User['id']>
 
 export const updateUser = (async (user) => {
   await apiTimeout()
@@ -64,7 +64,7 @@ export const updateUser = (async (user) => {
       },
     },
   }
-}) satisfies Mutation<Partial<Omit<User, 'bank'>> & Pick<User, 'id'>, Typenames>
+}) satisfies NormalizedMutation<Typenames, Partial<Omit<User, 'bank'>> & Pick<User, 'id'>>
 
 // backend storage mock
 
