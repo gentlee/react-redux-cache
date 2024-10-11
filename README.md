@@ -215,7 +215,7 @@ export const getUser = (async (id) => {
   // In this example normalizr package is used, but it is not necessary.
   return normalize(response, getUserSchema)
   // satisfies keyword is used here for proper typing of params and returned value.
-}) satisfies Query<number, CacheTypenames>
+}) satisfies NormalizedQuery<CacheTypenames, number>
 
 // Example of query without normalization (not recommended), with selecting access token from the store
 
@@ -232,7 +232,7 @@ export const removeUser = (async (id, _, abortSignal) => {
   return {
     remove: { users: [id] },
   }
-}) satisfies Query<number, CacheTypenames>
+}) satisfies NormalizedQuery<CacheTypenames, number>
 ```
 
 ### Usage

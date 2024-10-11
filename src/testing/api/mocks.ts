@@ -1,4 +1,4 @@
-import {Mutation, Query} from '../../types'
+import {NormalizedMutation, NormalizedQuery} from '../../types'
 import {TestTypenames} from '../redux/cache'
 import {apiTimeout} from '../utils'
 import {User} from './types'
@@ -17,7 +17,7 @@ export const getUser = jest.fn(async (id) => {
       },
     },
   }
-}) satisfies Query<number, TestTypenames>
+}) satisfies NormalizedQuery<TestTypenames, number>
 
 export const getUsers = jest.fn(async ({page = 1}) => {
   const pageSize = 3
@@ -41,7 +41,7 @@ export const getUsers = jest.fn(async ({page = 1}) => {
       },
     },
   }
-}) satisfies Query<{page: number}, TestTypenames>
+}) satisfies NormalizedQuery<TestTypenames, {page: number}>
 
 export const removeUser = jest.fn(async (id) => {
   await apiTimeout()
@@ -50,7 +50,7 @@ export const removeUser = jest.fn(async (id) => {
       users: [id],
     },
   }
-}) satisfies Mutation<User['id'], TestTypenames>
+}) satisfies NormalizedMutation<TestTypenames, User['id']>
 
 export const updateUser = jest.fn(async (user) => {
   await apiTimeout()
@@ -62,4 +62,4 @@ export const updateUser = jest.fn(async (user) => {
       },
     },
   }
-}) satisfies Mutation<Partial<Omit<User, 'bank'>> & Pick<User, 'id'>, TestTypenames>
+}) satisfies NormalizedMutation<TestTypenames, Partial<Omit<User, 'bank'>> & Pick<User, 'id'>>

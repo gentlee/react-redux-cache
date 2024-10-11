@@ -93,22 +93,15 @@ export type EntityIds<T extends Typenames> = {[K in keyof T]?: Key[]}
 
 // Query
 
-export type Query<P, T extends Typenames = Typenames, R = unknown> = (
-  /** Query parameters */
-  params: P,
-  /** Redux store */
-  store: Store
-) => Promise<QueryResponse<T, R>>
-
-export type QueryInfo<T extends Typenames, P, R> = Partial<
+export type QueryInfo<T extends Typenames = Typenames, P = unknown, R = unknown> = Partial<
   Pick<Globals<unknown, unknown>, 'cachePolicy' | 'secondsToLive'>
 > & {
-  query: Query<P, T, R>
+  query: NormalizedQuery<T, P, R>
 
   /** Merges results before saving to the store. Default implementation is using the latest result. */
   mergeResults?: (
     oldResult: R | undefined,
-    response: QueryResponse<T, R>,
+    response: NormalizedQueryResponse<T, R>,
     params: P | undefined,
     store: Store
   ) => R
@@ -120,16 +113,27 @@ export type QueryInfo<T extends Typenames, P, R> = Partial<
   getCacheKey?: (params?: P) => Key
   /** Called after fetch finished either successfully or not. */
   onCompleted?: (
-    response: QueryResponse<T, R> | undefined,
+    response: NormalizedQueryResponse<T, R> | undefined,
     error: unknown | undefined,
     params: P | undefined,
     store: Store
   ) => void
   /** Called after fetch finished without error. */
-  onSuccess?: (response: QueryResponse<T, R>, params: P | undefined, store: Store) => void
+  onSuccess?: (response: NormalizedQueryResponse<T, R>, params: P | undefined, store: Store) => void
   /** Called after fetch finished with error. Should return true if error was handled and does not require global onError handling. */
   onError?: (error: unknown, params: P | undefined, store: Store) => boolean | void | null | undefined
 }
+
+export type Query<P = unknown, R = unknown> = (
+  /** Query parameters */
+  params: P,
+  /** Redux store */
+  store: Store
+) => Promise<QueryResponse<R>>
+
+export type NormalizedQuery<T extends Typenames = Typenames, P = unknown, R = unknown> = (
+  ...args: Parameters<Query<P, R>>
+) => Promise<NormalizedQueryResponse<T, R>>
 
 export type QueryState<P, R> = MutationState<P, R> & {
   expiresAt?: number
@@ -155,13 +159,16 @@ export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)
 
 export type QueryCachePolicy = 'cache-first' | 'cache-and-fetch'
 
-export type QueryResponse<T extends Typenames, R> = EntityChanges<T> & {
+export type QueryResponse<R = unknown> = {
   result: R
   /** If defined, overrides this value for query state, ignoring `secondsToLive`. */
   expiresAt?: number
 }
 
-export type QueryResult<R> = {
+export type NormalizedQueryResponse<T extends Typenames = Typenames, R = unknown> = EntityChanges<T> &
+  QueryResponse<R>
+
+export type QueryResult<R = unknown> = {
   error?: unknown
   cancelled?: true
   result?: R
@@ -169,21 +176,25 @@ export type QueryResult<R> = {
 
 // Mutation
 
-export type Mutation<P, T extends Typenames = Typenames, R = unknown> = (
+export type MutationInfo<T extends Typenames = Typenames, P = unknown, R = unknown> = Pick<
+  QueryInfo<T, P, R>,
+  'onCompleted' | 'onSuccess' | 'onError'
+> & {
+  mutation: NormalizedMutation<T, P, R>
+}
+
+export type Mutation<P = unknown, R = unknown> = (
   /** Mutation parameters */
   params: P,
   /** Redux store */
   store: Store,
   /** Signal is aborted for current mutation when the same mutation was called once again. */
   abortSignal: AbortSignal
-) => Promise<MutationResponse<T, R>>
+) => Promise<MutationResponse<R>>
 
-export type MutationInfo<T extends Typenames, P, R> = Pick<
-  QueryInfo<T, P, R>,
-  'onCompleted' | 'onSuccess' | 'onError'
-> & {
-  mutation: Mutation<P, T, R>
-}
+export type NormalizedMutation<T extends Typenames = Typenames, P = unknown, R = unknown> = (
+  ...args: Parameters<Mutation<P, R>>
+) => Promise<NormalizedMutationResponse<T, R>>
 
 export type MutateOptions<T extends Typenames, MP, MR, MK extends keyof (MP & MR)> = Pick<
   MutationInfo<T, MK extends keyof (MP | MR) ? MP[MK] : never, MK extends keyof (MP | MR) ? MR[MK] : never>,
@@ -193,11 +204,14 @@ export type MutateOptions<T extends Typenames, MP, MR, MK extends keyof (MP & MR
   params: MK extends keyof (MP | MR) ? MP[MK] : never
 }
 
-export type MutationResponse<T extends Typenames, R> = EntityChanges<T> & {
+export type MutationResponse<R = unknown> = {
   result?: R
 }
 
-export type MutationResult<R> = {
+export type NormalizedMutationResponse<T extends Typenames = Typenames, R = unknown> = EntityChanges<T> &
+  MutationResponse<R>
+
+export type MutationResult<R = unknown> = {
   error?: unknown
   aborted?: true
   result?: R

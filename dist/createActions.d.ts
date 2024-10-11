@@ -3,7 +3,7 @@ export type ActionMap<N extends string, T extends Typenames, QP, QR, MP, MR> = R
 export declare const createActions: <N extends string, T extends Typenames, QP, QR, MP, MR>(name: N) => {
     /** Updates query state, and optionally merges entity changes in a single action. */
     updateQueryStateAndEntities: {
-        <K extends keyof QP & keyof QR>(queryKey: K, queryCacheKey: Key, state?: Partial<QueryState<QP[K], QR[K]>> | undefined, entityChanges?: EntityChanges<T> | undefined): {
+        <K extends keyof (QP | QR)>(queryKey: K, queryCacheKey: Key, state?: Partial<QueryState<QP[K], QR[K]>>, entityChanges?: EntityChanges<T>): {
             type: `@rrc/${N}/updateQueryStateAndEntities`;
             queryKey: K;
             queryCacheKey: Key;
@@ -14,10 +14,10 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
     };
     /** Updates mutation state, and optionally merges entity changes in a single action. */
     updateMutationStateAndEntities: {
-        <K_1 extends keyof MP & keyof MR>(mutationKey: K_1, state?: Partial<MutationState<MP[K_1], MR[K_1]>> | undefined, entityChanges?: EntityChanges<T> | undefined): {
+        <K extends keyof (MP | MR)>(mutationKey: K, state?: Partial<MutationState<MP[K], MR[K]>>, entityChanges?: EntityChanges<T>): {
             type: `@rrc/${N}/updateMutationStateAndEntities`;
-            mutationKey: K_1;
-            state: Partial<MutationState<MP[K_1], MR[K_1]>> | undefined;
+            mutationKey: K;
+            state: Partial<MutationState<MP[K], MR[K]>> | undefined;
             entityChanges: EntityChanges<T> | undefined;
         };
         type: `@rrc/${N}/updateMutationStateAndEntities`;
@@ -32,22 +32,22 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
     };
     /** Invalidates query states. */
     invalidateQuery: {
-        <K_2 extends keyof QP & keyof QR>(queries: {
+        <K extends keyof (QP | QR)>(queries: {
             /** Query key */
-            query: K_2;
+            query: K;
             /** Query cache key */
-            cacheKey?: Key | undefined;
+            cacheKey?: Key;
             /** Unix timestamp at which query expires. Is set to the query state. @default Date.now() */
-            expiresAt?: number | undefined;
+            expiresAt?: number;
         }[]): {
             type: `@rrc/${N}/invalidateQuery`;
             queries: {
                 /** Query key */
-                query: K_2;
+                query: K;
                 /** Query cache key */
-                cacheKey?: Key | undefined;
+                cacheKey?: Key;
                 /** Unix timestamp at which query expires. Is set to the query state. @default Date.now() */
-                expiresAt?: number | undefined;
+                expiresAt?: number;
             }[];
         };
         type: `@rrc/${N}/invalidateQuery`;
@@ -55,27 +55,27 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
     /** Clear states for provided query keys and cache keys.
      * If cache key for query key is not provided, the whole state for query key is cleared. */
     clearQueryState: {
-        <K_3 extends keyof QP & keyof QR>(queries: {
+        <K extends keyof (QP | QR)>(queries: {
             /** Query key */
-            query: K_3;
+            query: K;
             /** Query cache key */
-            cacheKey?: Key | undefined;
+            cacheKey?: Key;
         }[]): {
             type: `@rrc/${N}/clearQueryState`;
             queries: {
                 /** Query key */
-                query: K_3;
+                query: K;
                 /** Query cache key */
-                cacheKey?: Key | undefined;
+                cacheKey?: Key;
             }[];
         };
         type: `@rrc/${N}/clearQueryState`;
     };
     /** Clear states for provided mutation keys. */
     clearMutationState: {
-        <K_4 extends keyof MP & keyof MR>(mutationKeys: K_4[]): {
+        <K extends keyof (MP | MR)>(mutationKeys: K[]): {
             type: `@rrc/${N}/clearMutationState`;
-            mutationKeys: K_4[];
+            mutationKeys: K[];
         };
         type: `@rrc/${N}/clearMutationState`;
     };

@@ -11,8 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mutate = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const mutate = (logTag, store, cache, { updateMutationStateAndEntities, }, mutationKey, params, abortControllers, onCompleted = cache.mutations[mutationKey].onCompleted, onSuccess = cache.mutations[mutationKey].onSuccess, onError = cache.mutations[mutationKey].onError) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+const mutate = (logTag_1, store_1, cache_1, _a, mutationKey_1, params_1, abortControllers_1, ...args_1) => __awaiter(void 0, [logTag_1, store_1, cache_1, _a, mutationKey_1, params_1, abortControllers_1, ...args_1], void 0, function* (logTag, store, cache, { updateMutationStateAndEntities, }, mutationKey, params, abortControllers, onCompleted = cache.mutations[mutationKey].onCompleted, onSuccess = cache.mutations[mutationKey].onSuccess, onError = cache.mutations[mutationKey].onError) {
+    var _b, _c;
     let abortControllersOfStore = abortControllers.get(store);
     if (abortControllersOfStore === undefined) {
         abortControllersOfStore = {};
@@ -68,7 +68,7 @@ const mutate = (logTag, store, cache, { updateMutationStateAndEntities, }, mutat
         // @ts-expect-error params
         if (!(onError === null || onError === void 0 ? void 0 : onError(error, params, store))) {
             // @ts-expect-error queryKey
-            (_b = (_a = cache.globals).onError) === null || _b === void 0 ? void 0 : _b.call(_a, error, mutationKey, params, store);
+            (_c = (_b = cache.globals).onError) === null || _c === void 0 ? void 0 : _c.call(_b, error, mutationKey, params, store);
         }
         // @ts-expect-error response
         onCompleted === null || onCompleted === void 0 ? void 0 : onCompleted(response, error, params, store);
