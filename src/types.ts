@@ -39,14 +39,14 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
   }
   /** Default options for queries and mutations.
    * @default { cachePolicy: 'cache-first', sedondsToLive: undefined, onError: undefined } */
-  globals: Globals<QP, MP>
+  globals: Globals
   options: CacheOptions
   /** Should return cache state from redux root state. Default implementation returns `state[name]`. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cacheStateSelector: (state: any) => ReduxCacheState<T, QP, QR, MP, MR>
 }
 
-export type Globals<QP, MP> = {
+export type Globals = {
   /**
    * Cache policy.
    * @cache-first fetch only if cache either does not exist or is expired on useQuery mount.
@@ -57,30 +57,19 @@ export type Globals<QP, MP> = {
   /** If set, this value updates expiresAt value of query state when query result is received. */
   secondsToLive?: number
   /** Handles errors, not handled by onError from queries and mutations. */
-  onError?: <K extends keyof QP | keyof MP>(
-    error: unknown,
-    key: K,
-    params: QP[keyof QP] | MP[keyof MP], // TODO proper type
-    store: Store
-  ) => void
+  onError?: (error: unknown, key: string, params: unknown, store: Store) => void
 }
 
 export type CacheOptions = {
-  /**
-   * Enables additional validation with logging to console.warn. Recommened to enable in dev/testing mode.
-   * @default true in dev mode.
-   * */
+  /** Enables additional validation with logging to console.warn. Recommened to enable in dev/testing mode. @Default true in dev mode. */
   additionalValidation: boolean
-  /**
-   * Enables debug logs.
-   * @default false
-   */
+  /** Enables debug logs. @Default false */
   logsEnabled: boolean
   /**
    * Enables deep comparison before merging entities to the state.
    * Re-rendering is a heavier operation than comparison, so disabling it can lead to performance drop.
    * Makes sense to disable only if merging equal results & entities to the state is a rare case.
-   * @default true
+   * @Default true
    */
   deepComparisonEnabled: boolean
 }
@@ -94,7 +83,7 @@ export type EntityIds<T extends Typenames> = {[K in keyof T]?: Key[]}
 // Query
 
 export type QueryInfo<T extends Typenames = Typenames, P = unknown, R = unknown> = Partial<
-  Pick<Globals<unknown, unknown>, 'cachePolicy' | 'secondsToLive'>
+  Pick<Globals, 'cachePolicy' | 'secondsToLive'>
 > & {
   query: NormalizedQuery<T, P, R>
 
@@ -107,7 +96,7 @@ export type QueryInfo<T extends Typenames = Typenames, P = unknown, R = unknown>
   ) => R
   /**
    * Cache key is used for storing the query state and for performing a fetch when it changes. Queries with the same cache key share their state.
-   * Default implementation uses `JSON.stringify` or `String()` depending on type.
+   * Default implementation uses `String()` or `JSON.stringify` depending on type.
    * It is recommended to override it when default implementation is not optimal or when keys in params object can be sorted in random order etc.
    * */
   getCacheKey?: (params?: P) => Key

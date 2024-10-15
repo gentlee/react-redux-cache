@@ -1,20 +1,23 @@
 export {createCache, withTypenames} from './createCache'
-export type {ReduxCacheState} from './createCacheReducer'
 export * from './types'
-export {defaultGetCacheKey} from './utilsAndConstants'
+export {useQuerySelectorStateComparer} from './useQuery'
+export {defaultGetCacheKey, isEmptyObject} from './utilsAndConstants'
 
 // Backlog
 
-// ! high (1.0.0)
-// remove cachePolicy? make skip/enabled a function? skip -> enabled/shouldFetch?
+// ! high (1.0.0-rc.0)
+// fetch policy
 // generate full api docs
 
 // ! medium
 // optimistic response
+// remove empty entities and queries from state
 // reset [whole] cache to initial / to provided state
 // globals for success, completions and loading states?
 // make query key / cache key difference more clear in the docs
 // check type of function arguments in dev
+// make skipFetch a function?
+// example -> playground with changable options
 
 // ! low
 // local cache policy to keep in component state?

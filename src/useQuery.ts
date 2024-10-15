@@ -66,7 +66,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
     useSelector((state: unknown) => {
       const queryState = cacheStateSelector(state).queries[queryKey as keyof (QP | QR)][cacheKey]
       return queryState as QueryState<P, R> | undefined // TODO proper type
-    }, useQueryStateComparer<P, R>) ?? (EMPTY_OBJECT as QueryState<P, R>)
+    }, useQuerySelectorStateComparer<P, R>) ?? (EMPTY_OBJECT as QueryState<P, R>)
 
   useEffect(() => {
     if (skip) {
@@ -104,7 +104,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
 }
 
 /** Omit `expiresAt` from comparison */
-const useQueryStateComparer = <P, R>(
+export const useQuerySelectorStateComparer = <P, R>(
   state1: QueryState<P, R> | undefined,
   state2: QueryState<P, R> | undefined
 ) => {
@@ -115,9 +115,9 @@ const useQueryStateComparer = <P, R>(
     return false
   }
   return (
-    state1.error === state2.error &&
-    state1.loading === state2.loading &&
     state1.params === state2.params &&
-    state1.result === state2.result
+    state1.loading === state2.loading &&
+    state1.result === state2.result &&
+    state1.error === state2.error
   )
 }

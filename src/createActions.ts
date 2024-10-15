@@ -50,7 +50,7 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
       query: K
       /** Query cache key */
       cacheKey?: Key
-      /** Unix timestamp at which query expires. Is set to the query state. @default Date.now() */
+      /** Unix timestamp at which query expires. Is set to the query state. @Default Date.now() */
       expiresAt?: number
     }[]
   ) => ({
@@ -81,18 +81,11 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
   clearMutationState.type = clearMutationStateType
 
   return {
-    /** Updates query state, and optionally merges entity changes in a single action. */
     updateQueryStateAndEntities,
-    /** Updates mutation state, and optionally merges entity changes in a single action. */
     updateMutationStateAndEntities,
-    /** Merge EntityChanges to the state. */
     mergeEntityChanges,
-    /** Invalidates query states. */
     invalidateQuery,
-    /** Clear states for provided query keys and cache keys.
-     * If cache key for query key is not provided, the whole state for query key is cleared. */
     clearQueryState,
-    /** Clear states for provided mutation keys. */
     clearMutationState,
   }
 }

@@ -92,6 +92,7 @@ export const mutate = async <
         loading: false,
       })
     )
+
     // @ts-expect-error params
     if (!onError?.(error, params, store)) {
       // @ts-expect-error queryKey

@@ -61,7 +61,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       partialCache.options.deepComparisonEnabled ??= true
       partialCache.queries ??= {} as TypedCache['queries']
       partialCache.mutations ??= {} as TypedCache['mutations']
-      partialCache.globals ??= {} as Globals<QP, MP>
+      partialCache.globals ??= {} as Globals
       partialCache.globals.cachePolicy ??= 'cache-first'
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       partialCache.cacheStateSelector ??= (state: any) => state[cache.name]
@@ -112,6 +112,14 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       }
 
       const actions = createActions<N, T, QP, QR, MP, MR>(cache.name)
+      const {
+        updateQueryStateAndEntities,
+        updateMutationStateAndEntities,
+        mergeEntityChanges,
+        invalidateQuery,
+        clearQueryState,
+        clearMutationState,
+      } = actions
 
       return {
         /** Keeps all options, passed while creating the cache. */
@@ -122,7 +130,21 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           Object.keys(cache.queries) as (keyof (QP | QR))[],
           cache.options
         ),
-        actions,
+        actions: {
+          /** Updates query state, and optionally merges entity changes in a single action. */
+          updateQueryStateAndEntities,
+          /** Updates mutation state, and optionally merges entity changes in a single action. */
+          updateMutationStateAndEntities,
+          /** Merge EntityChanges to the state. */
+          mergeEntityChanges,
+          /** Invalidates query states. */
+          invalidateQuery,
+          /** Clear states for provided query keys and cache keys.
+           * If cache key for query key is not provided, the whole state for query key is cleared. */
+          clearQueryState,
+          /** Clear states for provided mutation keys. */
+          clearMutationState,
+        },
         selectors: {
           /** Selects query state. */
           selectQueryState,
@@ -228,18 +250,14 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
               return client
             }, [store])
           },
-
           /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
           useQuery: <QK extends keyof (QP & QR)>(
             options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[2]
           ) => useQuery(cache, actions, options),
-
           /** Subscribes to provided mutation state and provides mutate function. */
           useMutation: <MK extends keyof (MP & MR)>(
             options: Parameters<typeof useMutation<N, T, MP, MR, MK>>[2]
-            // @ts-expect-error cache type
           ) => useMutation(cache, actions, options, abortControllers),
-
           /** useSelector + selectEntityById. */
           useSelectEntityById: <TN extends keyof T>(
             id: Key | null | undefined,
@@ -249,10 +267,8 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           },
         },
         utils: {
-          /**
-           * Apply changes to the entities map.
-           * @return `undefined` if nothing to change, otherwise new entities map with applied changes.
-           */
+          /** Apply changes to the entities map.
+           * @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. */
           applyEntityChanges: (
             entities: Parameters<typeof applyEntityChanges<T>>[0],
             changes: Parameters<typeof applyEntityChanges<T>>[1]
