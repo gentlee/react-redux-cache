@@ -45,9 +45,11 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
   return {
     createCache: <N extends string, QP, QR, MP, MR>(
       partialCache: OptionalPartial<
-        Cache<N, T, QP, QR, MP, MR>,
-        'options' | 'queries' | 'mutations' | 'cacheStateSelector' | 'globals'
-      >
+        Omit<Cache<N, T, QP, QR, MP, MR>, 'globals'>,
+        'options' | 'queries' | 'mutations' | 'cacheStateSelector'
+      > & {
+        globals?: OptionalPartial<Cache<N, T, QP, QR, MP, MR>['globals'], 'queries'>
+      }
     ) => {
       type TypedCache = Cache<N, T, QP, QR, MP, MR>
 
@@ -61,8 +63,10 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       partialCache.options.deepComparisonEnabled ??= true
       partialCache.queries ??= {} as TypedCache['queries']
       partialCache.mutations ??= {} as TypedCache['mutations']
-      partialCache.globals ??= {} as Globals
-      partialCache.globals.cachePolicy ??= 'cache-first'
+      partialCache.globals ??= {}
+      partialCache.globals.queries ??= {} as Globals['queries']
+      partialCache.globals.queries.fetchPolicy ??= 'cache-expired'
+      partialCache.globals.queries.skipFetch ??= false
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       partialCache.cacheStateSelector ??= (state: any) => state[cache.name]
       // @ts-expect-error private field for testing

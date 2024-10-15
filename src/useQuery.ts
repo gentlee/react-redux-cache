@@ -16,10 +16,10 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
 
   const {
     query: queryKey,
-    skip,
+    skipFetch = false,
     params,
     secondsToLive,
-    cachePolicy = cache.queries[queryKey].cachePolicy ?? cache.globals.cachePolicy,
+    fetchPolicy = cache.queries[queryKey].fetchPolicy ?? cache.globals.queries.fetchPolicy,
     mergeResults,
     onCompleted,
     onSuccess,
@@ -69,14 +69,14 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
     }, useQuerySelectorStateComparer<P, R>) ?? (EMPTY_OBJECT as QueryState<P, R>)
 
   useEffect(() => {
-    if (skip) {
-      logsEnabled && log('useQuery.useEffect skip fetch', {skip, cacheKey})
+    if (skipFetch) {
+      logsEnabled && log('useQuery.useEffect skip fetch', {skipFetch, cacheKey})
       return
     }
 
     if (
+      fetchPolicy === 'cache-expired' &&
       queryState.result != null &&
-      cachePolicy === 'cache-first' &&
       (queryState.expiresAt == null || queryState.expiresAt > Date.now())
     ) {
       logsEnabled &&
@@ -84,14 +84,14 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
           result: queryState.result,
           expiresAt: queryState.expiresAt,
           now: Date.now(),
-          cachePolicy,
+          fetchPolicy,
         })
       return
     }
 
     fetch()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cacheKey, cachePolicy, skip])
+  }, [cacheKey, skipFetch])
 
   logsEnabled &&
     log('useQuery', {

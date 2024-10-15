@@ -13,9 +13,12 @@ test('createCache returns correct result', () => {
     abortControllers: new WeakMap(),
     cacheStateSelector: cache.cacheStateSelector,
     globals: {
-      cachePolicy: 'cache-and-fetch',
-      secondsToLive: 10,
       onError,
+      queries: {
+        fetchPolicy: 'always',
+        secondsToLive: 10,
+        skipFetch: false,
+      },
     },
     options: {
       logsEnabled: false,
@@ -144,8 +147,10 @@ const createTestingCache = <N extends string>(
   }>().createCache({
     name,
     globals: {
-      cachePolicy: 'cache-and-fetch',
-      secondsToLive: 10,
+      queries: {
+        fetchPolicy: 'always',
+        secondsToLive: 10,
+      },
       onError,
     },
     options: {

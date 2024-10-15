@@ -192,7 +192,7 @@ test('no refetch on params change with custom cache key', async () => {
   expect(store.getState().cache).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
 })
 
-test('fetch on mount having cache with cache-and-fetch policy', async () => {
+test('fetch on mount having cache with "always" policy', async () => {
   store.dispatch(
     updateQueryStateAndEntities(
       'getUser',
@@ -202,19 +202,19 @@ test('fetch on mount having cache with cache-and-fetch policy', async () => {
     )
   )
 
-  render({query: 'getUser', params: 0, cachePolicy: 'cache-and-fetch'})
+  render({query: 'getUser', params: 0, fetchPolicy: 'always'})
   await act(advanceApiTimeout)
   assertEventLog(['first render: 0', 'render: loading', 'render: 0'])
 
   expect(getUser).toBeCalledTimes(1)
 })
 
-test.each(['cache-first', 'cache-and-fetch'] as const)(
+test.each(['cache-expired', 'always'] as const)(
   'no fetch after params change with custom cache key',
-  async (cachePolicy) => {
+  async (fetchPolicy) => {
     render({
       query: 'getUsers',
-      cachePolicy,
+      fetchPolicy,
       params: {page: 1},
     })
     await act(advanceApiTimeout)
@@ -227,7 +227,7 @@ test.each(['cache-first', 'cache-and-fetch'] as const)(
 
     render({
       query: 'getUsers',
-      cachePolicy,
+      fetchPolicy,
       params: {page: 2},
     })
     await act(advanceApiTimeout)
@@ -238,11 +238,11 @@ test.each(['cache-first', 'cache-and-fetch'] as const)(
 )
 
 test('no fetch when skip, without cancelling current request when setting to true', async () => {
-  render({query: 'getUser', params: 0, skip: true})
+  render({query: 'getUser', params: 0, skipFetch: true})
   await act(advanceHalfApiTimeout)
   assertEventLog(['first render: undefined'])
 
-  render({query: 'getUser', params: 1, skip: true})
+  render({query: 'getUser', params: 1, skipFetch: true})
   await act(advanceHalfApiTimeout)
   assertEventLog(['render: undefined'])
 
@@ -250,7 +250,7 @@ test('no fetch when skip, without cancelling current request when setting to tru
   await act(advanceHalfApiTimeout)
   assertEventLog(['render: undefined', 'render: loading'])
 
-  render({query: 'getUser', params: 2, skip: true})
+  render({query: 'getUser', params: 2, skipFetch: true})
   await act(advanceHalfApiTimeout)
   assertEventLog(['render: loading', 'render: 2'])
 
@@ -258,7 +258,7 @@ test('no fetch when skip, without cancelling current request when setting to tru
   await act(advanceApiTimeout)
   assertEventLog(['render: undefined', 'render: loading', 'render: 3'])
 
-  render({query: 'getUser', params: 2, skip: true})
+  render({query: 'getUser', params: 2, skipFetch: true})
   assertEventLog(['render: 2'])
 
   expect(getUser).toBeCalledTimes(2)
