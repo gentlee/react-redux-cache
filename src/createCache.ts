@@ -3,7 +3,7 @@ import {useSelector, useStore} from 'react-redux'
 import {Store} from 'redux'
 
 import {createActions} from './createActions'
-import {createCacheReducer} from './createCacheReducer'
+import {createReducer} from './createReducer'
 import {createSelectors} from './createSelectors'
 import {mutate as mutateImpl} from './mutate'
 import {query as queryImpl} from './query'
@@ -32,10 +32,8 @@ import {applyEntityChanges, defaultGetCacheKey, FetchPolicy, IS_DEV, optionalUti
  * })
  */
 export const withTypenames = <T extends Typenames = Typenames>() => {
-  /**
-   * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
-   */
   return {
+    /** Creates reducer, actions and hooks for managing queries and mutations through redux cache. */
     createCache: <N extends string, QP, QR, MP, MR>(
       partialCache: OptionalPartial<
         Omit<Cache<N, T, QP, QR, MP, MR>, 'globals'>,
@@ -111,7 +109,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         /** Keeps all options, passed while creating the cache. */
         cache,
         /** Reducer of the cache, should be added to redux store. */
-        reducer: createCacheReducer<N, T, QP, QR, MP, MR>(
+        reducer: createReducer<N, T, QP, QR, MP, MR>(
           actions,
           Object.keys(cache.queries) as (keyof (QP | QR))[],
           cache.options

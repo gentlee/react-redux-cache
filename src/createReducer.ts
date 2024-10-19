@@ -3,14 +3,14 @@ import type {CacheOptions, Dict, EntitiesMap, MutationState, QueryState, Typenam
 import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, log, optionalUtils} from './utilsAndConstants'
 
 export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
-  ReturnType<typeof createCacheReducer<string, T, QP, QR, MP, MR>>
+  ReturnType<typeof createReducer<string, T, QP, QR, MP, MR>>
 >
 
 const optionalQueryKeys: (keyof QueryState<unknown, unknown>)[] = ['error', 'expiresAt', 'result', 'params']
 
 const optionalMutationKeys: (keyof MutationState<unknown, unknown>)[] = ['error', 'result', 'params']
 
-export const createCacheReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
+export const createReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
   actions: Actions<N, T, QP, QR, MP, MR>,
   queryKeys: (keyof (QP | QR))[],
   cacheOptions: CacheOptions

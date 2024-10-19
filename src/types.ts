@@ -3,7 +3,7 @@
 import type {Store} from 'redux'
 
 import type {Actions} from './createActions'
-import type {ReduxCacheState} from './createCacheReducer'
+import type {ReduxCacheState} from './createReducer'
 import type {Selectors} from './createSelectors'
 
 export type Key = string | number | symbol

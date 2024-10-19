@@ -16,7 +16,7 @@ export const query = async <
 >(
   logTag: string,
   store: Store,
-  cache: Cache<N, T, QP, QR, MP, MR>,
+  cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'queries'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
   selectors: Selectors<N, T, QP, QR, MP, MR>,
   queryKey: QK,
@@ -31,11 +31,8 @@ export const query = async <
   onError = cache.queries[queryKey].onError
 ): Promise<QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>> => {
   const logsEnabled = cache.options.logsEnabled
-  const cacheStateSelector = cache.cacheStateSelector
 
-  const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey as keyof (QP | QR)][
-    cacheKey
-  ]
+  const queryStateOnStart = selectors.selectQueryState(store.getState(), queryKey, cacheKey)
 
   if (queryStateOnStart?.loading) {
     logsEnabled &&
@@ -115,7 +112,7 @@ export const query = async <
     result: mergeResults
       ? mergeResults(
           // @ts-expect-error fix later
-          cacheStateSelector(store.getState()).queries[queryKey as keyof (QP | QR)][cacheKey]?.result,
+          selectors.selectQueryResult(store.getState(), queryKey, cacheKey),
           response,
           params,
           store,

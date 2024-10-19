@@ -17,7 +17,7 @@ export const useMutation = <
   MR,
   MK extends keyof (MP & MR)
 >(
-  cache: Cache<N, T, QP, QR, MP, MR>,
+  cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'mutations'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
   selectors: Selectors<N, T, QP, QR, MP, MR>,
   options: Omit<MutateOptions<N, T, QP, QR, MP, MR, MK>, 'params'>,
@@ -26,22 +26,17 @@ export const useMutation = <
   type P = MK extends keyof (MP | MR) ? MP[MK] : never
   type R = MK extends keyof (MP | MR) ? MP[MK] : never
 
+  const {selectMutationState} = selectors
+  const {updateMutationStateAndEntities} = actions
   const {mutation: mutationKey, onCompleted, onSuccess, onError} = options
 
   const store = useStore()
 
-  // Using single useMemo for performance reasons
+  // Using single useMemo for better performance
   const [mutationStateSelector, mutate, abort] = useMemo(() => {
     return [
       // mutationStateSelector
-      (state: unknown) => {
-        cache.options.logsEnabled &&
-          log('mutationStateSelector', {
-            state,
-            cacheState: cache.cacheStateSelector(state),
-          })
-        return cache.cacheStateSelector(state).mutations[mutationKey as keyof (MP | MR)]
-      },
+      (state: unknown) => selectMutationState(state, mutationKey),
       // mutate
       async (params: P) => {
         return await mutateImpl(
@@ -67,7 +62,7 @@ export const useMutation = <
         }
         abortController.abort()
         store.dispatch(
-          actions.updateMutationStateAndEntities(mutationKey as keyof (MP | MR), {
+          updateMutationStateAndEntities(mutationKey as keyof (MP | MR), {
             loading: false,
           })
         )

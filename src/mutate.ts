@@ -16,7 +16,7 @@ export const mutate = async <
 >(
   logTag: string,
   store: Store,
-  cache: Cache<N, T, QP, QR, MP, MR>,
+  cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'mutations'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
   selectors: Selectors<N, T, QP, QR, MP, MR>,
   mutationKey: MK,

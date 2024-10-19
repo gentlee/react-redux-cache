@@ -8,7 +8,7 @@ import {Cache, QueryOptions, QueryState, Typenames, UseQueryOptions} from './typ
 import {defaultGetCacheKey, EMPTY_OBJECT, log} from './utilsAndConstants'
 
 export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
-  cache: Cache<N, T, QP, QR, MP, MR>,
+  cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'queries'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
   selectors: Selectors<N, T, QP, QR, MP, MR>,
   options: UseQueryOptions<N, T, QK, QP, QR, MP, MR>
@@ -16,6 +16,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
   type P = QK extends keyof (QP | QR) ? QP[QK] : never
   type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
+  const {selectQueryState} = selectors
   const {
     query: queryKey,
     skipFetch = false,
@@ -30,7 +31,6 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
 
   const logsEnabled = cache.options.logsEnabled
   const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
-  const cacheStateSelector = cache.cacheStateSelector
 
   const store = useStore()
 
@@ -64,12 +64,12 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
     [store, queryKey, cacheKey]
   )
 
-  /** Query state */
-  const queryState =
-    useSelector((state: unknown) => {
-      const queryState = cacheStateSelector(state).queries[queryKey as keyof (QP | QR)][cacheKey]
-      return queryState as QueryState<P, R> | undefined // TODO proper type
-    }, useQuerySelectorStateComparer<P, R>) ?? (EMPTY_OBJECT as QueryState<P, R>)
+  /** Query state. */
+  const queryState: QueryState<P, R> =
+    useSelector(
+      (state: unknown) => selectQueryState(state, queryKey, cacheKey),
+      useQuerySelectorStateComparer<P, R>
+    ) ?? EMPTY_OBJECT
 
   useEffect(() => {
     if (skipFetch) {
