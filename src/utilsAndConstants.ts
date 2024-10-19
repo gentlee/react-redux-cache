@@ -1,4 +1,4 @@
-import type {CacheOptions, EntitiesMap, EntityChanges, Key, Typenames} from './types'
+import type {CacheOptions, EntitiesMap, EntityChanges, Key, QueryState, Typenames} from './types'
 
 export const PACKAGE_SHORT_NAME = 'rrc'
 
@@ -41,6 +41,15 @@ export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
 
 export const log = (tag: string, data?: unknown) => {
   console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
+}
+
+export const FetchPolicy = {
+  /** Only if cache does not exist (result is undefined) or expired. */
+  NoCacheOrExpired: (expired: boolean, _: unknown, state: QueryState<unknown, unknown>) => {
+    return expired || state.result === undefined
+  },
+  /** Every fetch trigger. */
+  Always: () => true,
 }
 
 export const applyEntityChanges = <T extends Typenames>(

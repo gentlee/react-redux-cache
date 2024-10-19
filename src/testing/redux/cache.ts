@@ -41,7 +41,7 @@ export const {
 } = withTypenames<TestTypenames>().createCache({
   name: 'cache',
   options: {
-    logsEnabled: false,
+    // logsEnabled: true,
     additionalValidation: true,
     // deepComparisonEnabled: false,
   },
@@ -75,6 +75,18 @@ export const {
     getUserExpires: {
       query: (id: number) => getUser(id).then((x) => ({...x, expiresAt: Date.now() + TTL_TIMEOUT})),
       secondsToLive: Infinity,
+    },
+    getFullUser: {
+      query: getUser,
+      fetchPolicy(expired, id, _, {getState}, {selectEntityById}) {
+        if (expired) {
+          return true
+        }
+
+        // fetch if user is not full
+        const user = selectEntityById(getState(), id, 'users')
+        return !user || !('name' in user) || !('bankId' in user)
+      },
     },
   },
   mutations: {

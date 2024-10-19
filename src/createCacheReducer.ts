@@ -1,4 +1,4 @@
-import type {ActionMap} from './createActions'
+import type {Actions} from './createActions'
 import type {CacheOptions, Dict, EntitiesMap, MutationState, QueryState, Typenames} from './types'
 import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, log, optionalUtils} from './utilsAndConstants'
 
@@ -11,7 +11,7 @@ const optionalQueryKeys: (keyof QueryState<unknown, unknown>)[] = ['error', 'exp
 const optionalMutationKeys: (keyof MutationState<unknown, unknown>)[] = ['error', 'result', 'params']
 
 export const createCacheReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
-  actions: ActionMap<N, T, QP, QR, MP, MR>,
+  actions: Actions<N, T, QP, QR, MP, MR>,
   queryKeys: (keyof (QP | QR))[],
   cacheOptions: CacheOptions
 ) => {

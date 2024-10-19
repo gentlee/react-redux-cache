@@ -11,8 +11,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mutate = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const mutate = (logTag_1, store_1, cache_1, _a, mutationKey_1, params_1, abortControllers_1, ...args_1) => __awaiter(void 0, [logTag_1, store_1, cache_1, _a, mutationKey_1, params_1, abortControllers_1, ...args_1], void 0, function* (logTag, store, cache, { updateMutationStateAndEntities, }, mutationKey, params, abortControllers, onCompleted = cache.mutations[mutationKey].onCompleted, onSuccess = cache.mutations[mutationKey].onSuccess, onError = cache.mutations[mutationKey].onError) {
-    var _b, _c;
+const mutate = (logTag_1, store_1, cache_1, actions_1, selectors_1, mutationKey_1, params_1, abortControllers_1, ...args_1) => __awaiter(void 0, [logTag_1, store_1, cache_1, actions_1, selectors_1, mutationKey_1, params_1, abortControllers_1, ...args_1], void 0, function* (logTag, store, cache, actions, selectors, mutationKey, params, abortControllers, onCompleted = cache.mutations[mutationKey].onCompleted, onSuccess = cache.mutations[mutationKey].onSuccess, onError = cache.mutations[mutationKey].onError) {
+    var _a, _b;
+    const { updateMutationStateAndEntities } = actions;
     let abortControllersOfStore = abortControllers.get(store);
     if (abortControllersOfStore === undefined) {
         abortControllersOfStore = {};
@@ -66,12 +67,14 @@ const mutate = (logTag_1, store_1, cache_1, _a, mutationKey_1, params_1, abortCo
             loading: false,
         }));
         // @ts-expect-error params
-        if (!(onError === null || onError === void 0 ? void 0 : onError(error, params, store))) {
-            // @ts-expect-error queryKey
-            (_c = (_b = cache.globals).onError) === null || _c === void 0 ? void 0 : _c.call(_b, error, mutationKey, params, store);
+        if (!(onError === null || onError === void 0 ? void 0 : onError(error, params, store, actions, selectors))) {
+            (_b = (_a = cache.globals).onError) === null || _b === void 0 ? void 0 : _b.call(_a, error, 
+            // @ts-expect-error mutationKey
+            mutationKey, params, store, actions, selectors);
         }
+        onCompleted === null || onCompleted === void 0 ? void 0 : onCompleted(
         // @ts-expect-error response
-        onCompleted === null || onCompleted === void 0 ? void 0 : onCompleted(response, error, params, store);
+        response, error, params, store, actions, selectors);
         return { error };
     }
     if (response) {
@@ -81,10 +84,12 @@ const mutate = (logTag_1, store_1, cache_1, _a, mutationKey_1, params_1, abortCo
             result: response.result,
         };
         store.dispatch(updateMutationStateAndEntities(mutationKey, newState, response));
-        // @ts-expect-error params
-        onSuccess === null || onSuccess === void 0 ? void 0 : onSuccess(response, params, store);
+        onSuccess === null || onSuccess === void 0 ? void 0 : onSuccess(
         // @ts-expect-error response
-        onCompleted === null || onCompleted === void 0 ? void 0 : onCompleted(response, error, params, store);
+        response, params, store, actions, selectors);
+        onCompleted === null || onCompleted === void 0 ? void 0 : onCompleted(
+        // @ts-expect-error response
+        response, error, params, store, actions, selectors);
         // @ts-expect-error fix later
         return { result: response.result };
     }

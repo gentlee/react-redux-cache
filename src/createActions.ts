@@ -1,9 +1,14 @@
 import type {EntityChanges, Key, MutationState, QueryState, Typenames} from './types'
 import {PACKAGE_SHORT_NAME} from './utilsAndConstants'
 
-export type ActionMap<N extends string, T extends Typenames, QP, QR, MP, MR> = ReturnType<
-  typeof createActions<N, T, QP, QR, MP, MR>
->
+export type Actions<
+  N extends string = string,
+  T extends Typenames = Typenames,
+  QP = unknown,
+  QR = unknown,
+  MP = unknown,
+  MR = unknown
+> = ReturnType<typeof createActions<N, T, QP, QR, MP, MR>>
 
 export const createActions = <N extends string, T extends Typenames, QP, QR, MP, MR>(name: N) => {
   const actionPrefix = `@${PACKAGE_SHORT_NAME}/${name}/` as const

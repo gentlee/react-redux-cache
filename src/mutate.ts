@@ -1,6 +1,7 @@
 import {Store} from 'redux'
 
-import type {ActionMap} from './createActions'
+import type {Actions} from './createActions'
+import {Selectors} from './createSelectors'
 import type {Cache, Key, MutationResult, Typenames} from './types'
 import {log} from './utilsAndConstants'
 
@@ -16,9 +17,8 @@ export const mutate = async <
   logTag: string,
   store: Store,
   cache: Cache<N, T, QP, QR, MP, MR>,
-  {
-    updateMutationStateAndEntities,
-  }: Pick<ActionMap<N, T, unknown, unknown, MP, MR>, 'updateMutationStateAndEntities'>,
+  actions: Actions<N, T, QP, QR, MP, MR>,
+  selectors: Selectors<N, T, QP, QR, MP, MR>,
   mutationKey: MK,
   params: MK extends keyof (MP | MR) ? MP[MK] : never,
   abortControllers: WeakMap<Store, Record<Key, AbortController>>,
@@ -26,6 +26,8 @@ export const mutate = async <
   onSuccess = cache.mutations[mutationKey].onSuccess,
   onError = cache.mutations[mutationKey].onError
 ): Promise<MutationResult<MK extends keyof (MP | MR) ? MR[MK] : never>> => {
+  const {updateMutationStateAndEntities} = actions
+
   let abortControllersOfStore = abortControllers.get(store)
   if (abortControllersOfStore === undefined) {
     abortControllersOfStore = {}
@@ -94,12 +96,26 @@ export const mutate = async <
     )
 
     // @ts-expect-error params
-    if (!onError?.(error, params, store)) {
-      // @ts-expect-error queryKey
-      cache.globals.onError?.(error, mutationKey, params, store)
+    if (!onError?.(error, params, store, actions, selectors)) {
+      cache.globals.onError?.(
+        error,
+        // @ts-expect-error mutationKey
+        mutationKey,
+        params,
+        store,
+        actions,
+        selectors
+      )
     }
-    // @ts-expect-error response
-    onCompleted?.(response, error, params, store)
+    onCompleted?.(
+      // @ts-expect-error response
+      response,
+      error,
+      params,
+      store,
+      actions,
+      selectors
+    )
 
     return {error}
   }
@@ -112,10 +128,23 @@ export const mutate = async <
     }
 
     store.dispatch(updateMutationStateAndEntities(mutationKey as keyof (MP | MR), newState, response))
-    // @ts-expect-error params
-    onSuccess?.(response, params, store)
-    // @ts-expect-error response
-    onCompleted?.(response, error, params, store)
+    onSuccess?.(
+      // @ts-expect-error response
+      response,
+      params,
+      store,
+      actions,
+      selectors
+    )
+    onCompleted?.(
+      // @ts-expect-error response
+      response,
+      error,
+      params,
+      store,
+      actions,
+      selectors
+    )
 
     // @ts-expect-error fix later
     return {result: response.result}

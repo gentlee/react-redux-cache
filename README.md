@@ -244,7 +244,7 @@ Please check `example/` folder (`npm run example` to run).
 export const UserScreen = () => {
   const {id} = useParams()
 
-  // useQuery connects to redux state and if user with that id is already cached, fetch won't happen (with default fetchPolicy 'cache-expired').
+  // useQuery connects to redux state and if user with that id is already cached, fetch won't happen (with default FetchPolicy.NoCacheOrExpired).
   // Infers all types from created cache, telling here that params and result are of type `number`.
   const [{result: userId, loading, error}] = useQuery({
     query: 'getUser',
@@ -306,7 +306,7 @@ export const cache = createCache({
 
 #### Invalidation
 
-`cache-expired` fetch policy (default) skips fetching if result is already cached, but we can invalidate cached query results using `invalidateQuery` action to make it run again on a next mount.
+`FetchPolicy.NoCacheOrExpired` (default) skips fetching on fetch triggers if result is already cached, but we can invalidate cached query results using `invalidateQuery` action to make it run again on a next mount.
 
 ```typescript
 
@@ -315,18 +315,20 @@ export const cache = createCache({
   mutations: {
     updateUser: {
       mutation: updateUser,
-      onSuccess(_, __, {dispatch}) {
+      onSuccess(_, __, {dispatch}, {invalidateQuery}) {
         // Invalidate getUsers after a single user update (can be done better by updating getUsers state with updateQueryStateAndEntities)
-        dispatch(cache.actions.invalidateQuery([{query: 'getUsers'}]))
+        dispatch(invalidateQuery([{query: 'getUsers'}]))
       },
     },
   },
 })
 ```
 
-#### Extended fetch policy
+#### Extended & custom fetch policy
 
-`cache-expired` fetch policy (default) skips fetching on component mount if result is already cached, but sometimes it can't determine that we already have result in some other's query result or in normalized entities cache. In that case we can use `skipFetch` parameter of a query:
+Fetch policy determines if `useQuery` fetch triggers should start fetching. They are: 1) component mount 2) cache key change (=params by default) 3) `skipFetch` change to false.
+
+`FetchPolicy.NoCacheOrExpired` (default) skips fetching if result is already cached, but sometimes it can't determine that we already have result in some other's query result or in normalized entities cache. In that case we can use `skipFetch` parameter of a query:
 
 ```typescript
 export const UserScreen = () => {
@@ -337,20 +339,33 @@ export const UserScreen = () => {
   const [{loading, error}] = useQuery({
     query: 'getUser',
     params: userId,
-    skipFetch: !!user // Skip fetching if we already have user cached by some other query, e.g. getUsers
+    skipFetch: !!user // Disable fetches if we already have user cached by some other query, e.g. getUsers
   })
 
   ...
 }
 ```
 
-We can additionally check that entity is full enough:
+But if more control is needed, e.g. checking if entity is full, custom fetch policy can be provided:
 
 ```typescript
-skipFetch: !!user && isFullUser(user)
+  ...
+  getFullUser: {
+    query: getUser,
+    fetchPolicy(expired, id, _, {getState}, {selectEntityById}) {
+      if (expired) {
+        return true // fetch if expired
+      }
+
+      // fetch if user is not full
+      const user = selectEntityById(getState(), id, 'users')
+      return !user || !('name' in user) || !('bankId' in user)
+    },
+  },
+  ...
 ```
 
-Another approach is to set `skipFetch: true` and manually run `fetch`. `onlyIfExpired` option can be also used:
+One more approach is to set `skipFetch: true` by default and manually run `fetch`. `onlyIfExpired` option can be also used:
 
 ```typescript
 export const UserScreen = () => {

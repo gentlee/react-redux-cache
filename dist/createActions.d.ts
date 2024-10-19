@@ -1,7 +1,6 @@
 import type { EntityChanges, Key, MutationState, QueryState, Typenames } from './types';
-export type ActionMap<N extends string, T extends Typenames, QP, QR, MP, MR> = ReturnType<typeof createActions<N, T, QP, QR, MP, MR>>;
+export type Actions<N extends string = string, T extends Typenames = Typenames, QP = unknown, QR = unknown, MP = unknown, MR = unknown> = ReturnType<typeof createActions<N, T, QP, QR, MP, MR>>;
 export declare const createActions: <N extends string, T extends Typenames, QP, QR, MP, MR>(name: N) => {
-    /** Updates query state, and optionally merges entity changes in a single action. */
     updateQueryStateAndEntities: {
         <K extends keyof (QP | QR)>(queryKey: K, queryCacheKey: Key, state?: Partial<QueryState<QP[K], QR[K]>>, entityChanges?: EntityChanges<T>): {
             type: `@rrc/${N}/updateQueryStateAndEntities`;
@@ -12,7 +11,6 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
         };
         type: `@rrc/${N}/updateQueryStateAndEntities`;
     };
-    /** Updates mutation state, and optionally merges entity changes in a single action. */
     updateMutationStateAndEntities: {
         <K extends keyof (MP | MR)>(mutationKey: K, state?: Partial<MutationState<MP[K], MR[K]>>, entityChanges?: EntityChanges<T>): {
             type: `@rrc/${N}/updateMutationStateAndEntities`;
@@ -22,7 +20,6 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
         };
         type: `@rrc/${N}/updateMutationStateAndEntities`;
     };
-    /** Merge EntityChanges to the state. */
     mergeEntityChanges: {
         (changes: EntityChanges<T>): {
             type: `@rrc/${N}/mergeEntityChanges`;
@@ -30,14 +27,13 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
         };
         type: `@rrc/${N}/mergeEntityChanges`;
     };
-    /** Invalidates query states. */
     invalidateQuery: {
         <K extends keyof (QP | QR)>(queries: {
             /** Query key */
             query: K;
             /** Query cache key */
             cacheKey?: Key;
-            /** Unix timestamp at which query expires. Is set to the query state. @default Date.now() */
+            /** Unix timestamp at which query expires. Is set to the query state. @Default Date.now() */
             expiresAt?: number;
         }[]): {
             type: `@rrc/${N}/invalidateQuery`;
@@ -46,14 +42,12 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
                 query: K;
                 /** Query cache key */
                 cacheKey?: Key;
-                /** Unix timestamp at which query expires. Is set to the query state. @default Date.now() */
+                /** Unix timestamp at which query expires. Is set to the query state. @Default Date.now() */
                 expiresAt?: number;
             }[];
         };
         type: `@rrc/${N}/invalidateQuery`;
     };
-    /** Clear states for provided query keys and cache keys.
-     * If cache key for query key is not provided, the whole state for query key is cleared. */
     clearQueryState: {
         <K extends keyof (QP | QR)>(queries: {
             /** Query key */
@@ -71,7 +65,6 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
         };
         type: `@rrc/${N}/clearQueryState`;
     };
-    /** Clear states for provided mutation keys. */
     clearMutationState: {
         <K extends keyof (MP | MR)>(mutationKeys: K[]): {
             type: `@rrc/${N}/clearMutationState`;

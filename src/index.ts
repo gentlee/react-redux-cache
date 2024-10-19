@@ -1,16 +1,16 @@
 export {createCache, withTypenames} from './createCache'
 export * from './types'
 export {useQuerySelectorStateComparer} from './useQuery'
-export {defaultGetCacheKey, isEmptyObject} from './utilsAndConstants'
+export {defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstants'
 
 // Backlog
 
 // ! high (1.0.0-rc.0)
-// fetch policy
 // generate full api docs
 
 // ! medium
 // optimistic response
+// onCancel & onAbort
 // remove empty entities and queries from state
 // reset [whole] cache to initial / to provided state
 // globals for success, completions and loading states?
@@ -20,7 +20,6 @@ export {defaultGetCacheKey, isEmptyObject} from './utilsAndConstants'
 // example -> playground with changable options
 
 // ! low
-// local cache policy to keep in component state?
 // make error type generic
 // allow multiple mutation with same keys?
 // custom useStore & useSelector to support multiple stores?

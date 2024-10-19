@@ -3,6 +3,7 @@ import {createStore} from 'redux'
 import {withTypenames} from '../createCache'
 import {getUsers, removeUser} from '../testing/api/mocks'
 import {Cache, Typenames} from '../types'
+import {FetchPolicy} from '../utilsAndConstants'
 
 test('createCache returns correct result', () => {
   const onError = jest.fn()
@@ -15,7 +16,7 @@ test('createCache returns correct result', () => {
     globals: {
       onError,
       queries: {
-        fetchPolicy: 'always',
+        fetchPolicy: FetchPolicy.Always,
         secondsToLive: 10,
         skipFetch: false,
       },
@@ -148,7 +149,7 @@ const createTestingCache = <N extends string>(
     name,
     globals: {
       queries: {
-        fetchPolicy: 'always',
+        fetchPolicy: FetchPolicy.Always,
         secondsToLive: 10,
       },
       onError,
