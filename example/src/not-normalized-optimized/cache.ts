@@ -5,25 +5,23 @@ import {getUser, getUsers, removeUser, updateUser} from '../not-normalized/api/m
 export const cacheNotNormalizedOptimized = createCache({
   name: 'cacheNotNormalized',
   globals: {
-    secondsToLive: 10 * 60,
+    queries: {
+      secondsToLive: 10 * 60,
+    },
   },
   queries: {
     getUsers: {
       query: getUsers,
       getCacheKey: () => 'all-pages',
-      mergeResults: (oldResult, {result: newResult}, _, store) => {
+      mergeResults: (oldResult, {result: newResult}, _, store, {updateQueryStateAndEntities}) => {
         // we set getUser query results to prevent them from loading when UserScreen is opened for the first time
         const updateGetUserResults = () => {
           newResult.items.forEach((user) => {
             store.dispatch(
-              cacheNotNormalizedOptimized.actions.updateQueryStateAndEntities(
-                'getUser',
-                defaultGetCacheKey(user.id),
-                {
-                  result: user,
-                  params: user.id,
-                }
-              )
+              updateQueryStateAndEntities('getUser', defaultGetCacheKey(user.id), {
+                result: user,
+                params: user.id,
+              })
             )
           })
         }

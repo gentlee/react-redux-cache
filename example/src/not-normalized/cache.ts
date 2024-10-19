@@ -5,7 +5,9 @@ import {getUser, getUsers, removeUser, updateUser} from './api/mocks'
 export const cacheNotNormalized = createCache({
   name: 'cacheNotNormalized',
   globals: {
-    secondsToLive: 5 * 60,
+    queries: {
+      secondsToLive: 5 * 60,
+    },
   },
   queries: {
     getUsers: {
@@ -31,8 +33,8 @@ export const cacheNotNormalized = createCache({
   mutations: {
     updateUser: {
       mutation: updateUser,
-      onSuccess(_, __, {dispatch}) {
-        dispatch(cacheNotNormalized.actions.invalidateQuery([{query: 'getUsers'}]))
+      onSuccess(_, __, {dispatch}, {invalidateQuery}) {
+        dispatch(invalidateQuery([{query: 'getUsers'}]))
       },
     },
     removeUser: {

@@ -17,7 +17,9 @@ export const {
 } = withTypenames<Typenames>().createCache({
   name: 'cache',
   globals: {
-    secondsToLive: 10 * 60,
+    queries: {
+      secondsToLive: 10 * 60,
+    },
   },
   queries: {
     getUsers: {
