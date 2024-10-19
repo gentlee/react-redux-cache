@@ -274,7 +274,7 @@ export const UserScreen = () => {
 Queries and mutations are wrapped in try/catch, so any error will lead to cancelling of any updates to the state except `loading: false` and the caught error. If you still want to make some state updates, or just want to use thrown errors only for unexpected cases, consider returning expected errors as a part of the result:
 
 ```typescript
-export const updateBank = (bank) => {
+export const updateBank = (async (bank) => {
   const {httpError, response} = ...
   return {
     result: {
@@ -284,7 +284,7 @@ export const updateBank = (bank) => {
       bank: response?.bank
     }
   }
-} satisfies Mutation<Partial<Bank>>
+}) satisfies Mutation<Partial<Bank>>
 ```
 
 If global error handling is needed for errors, not handled by query / mutation `onError` callback, global `onError` can be used:
