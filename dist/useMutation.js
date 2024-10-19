@@ -14,7 +14,7 @@ const react_1 = require("react");
 const react_redux_1 = require("react-redux");
 const mutate_1 = require("./mutate");
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const useMutation = (cache, actions, options, abortControllers) => {
+const useMutation = (cache, actions, selectors, options, abortControllers) => {
     var _a;
     const { mutation: mutationKey, onCompleted, onSuccess, onError } = options;
     const store = (0, react_redux_1.useStore)();
@@ -32,7 +32,7 @@ const useMutation = (cache, actions, options, abortControllers) => {
             },
             // mutate
             (params) => __awaiter(void 0, void 0, void 0, function* () {
-                return yield (0, mutate_1.mutate)('useMutation.mutate', store, cache, actions, mutationKey, params, abortControllers, 
+                return yield (0, mutate_1.mutate)('useMutation.mutate', store, cache, actions, selectors, mutationKey, params, abortControllers, 
                 // @ts-expect-error fix later
                 onCompleted, onSuccess, onError);
             }),

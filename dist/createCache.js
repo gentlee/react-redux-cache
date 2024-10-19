@@ -5,6 +5,7 @@ const react_1 = require("react");
 const react_redux_1 = require("react-redux");
 const createActions_1 = require("./createActions");
 const createCacheReducer_1 = require("./createCacheReducer");
+const createSelectors_1 = require("./createSelectors");
 const mutate_1 = require("./mutate");
 const query_1 = require("./query");
 const useMutation_1 = require("./useMutation");
@@ -24,20 +25,22 @@ const withTypenames = () => {
      */
     return {
         createCache: (partialCache) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-            var _k, _l, _m, _o;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+            var _m, _o, _p, _q, _r, _s;
             const abortControllers = new WeakMap();
             // provide all optional fields
             (_a = partialCache.options) !== null && _a !== void 0 ? _a : (partialCache.options = {});
-            (_b = (_k = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_k.logsEnabled = false);
-            (_c = (_l = partialCache.options).additionalValidation) !== null && _c !== void 0 ? _c : (_l.additionalValidation = utilsAndConstants_1.IS_DEV);
-            (_d = (_m = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_m.deepComparisonEnabled = true);
+            (_b = (_m = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_m.logsEnabled = false);
+            (_c = (_o = partialCache.options).additionalValidation) !== null && _c !== void 0 ? _c : (_o.additionalValidation = utilsAndConstants_1.IS_DEV);
+            (_d = (_p = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_p.deepComparisonEnabled = true);
             (_e = partialCache.queries) !== null && _e !== void 0 ? _e : (partialCache.queries = {});
             (_f = partialCache.mutations) !== null && _f !== void 0 ? _f : (partialCache.mutations = {});
             (_g = partialCache.globals) !== null && _g !== void 0 ? _g : (partialCache.globals = {});
-            (_h = (_o = partialCache.globals).cachePolicy) !== null && _h !== void 0 ? _h : (_o.cachePolicy = 'cache-first');
+            (_h = (_q = partialCache.globals).queries) !== null && _h !== void 0 ? _h : (_q.queries = {});
+            (_j = (_r = partialCache.globals.queries).fetchPolicy) !== null && _j !== void 0 ? _j : (_r.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired);
+            (_k = (_s = partialCache.globals.queries).skipFetch) !== null && _k !== void 0 ? _k : (_s.skipFetch = false);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (_j = partialCache.cacheStateSelector) !== null && _j !== void 0 ? _j : (partialCache.cacheStateSelector = (state) => state[cache.name]);
+            (_l = partialCache.cacheStateSelector) !== null && _l !== void 0 ? _l : (partialCache.cacheStateSelector = (state) => state[cache.name]);
             // @ts-expect-error private field for testing
             partialCache.abortControllers = abortControllers;
             const cache = partialCache;
@@ -45,81 +48,61 @@ const withTypenames = () => {
             if (cache.options.deepComparisonEnabled && !utilsAndConstants_1.optionalUtils.deepEqual) {
                 console.warn('react-redux-cache: optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true');
             }
-            // make selectors
-            const selectEntityById = (state, id, typename) => {
-                var _a;
-                return id == null ? undefined : (_a = cache.cacheStateSelector(state).entities[typename]) === null || _a === void 0 ? void 0 : _a[id];
-            };
-            const selectQueryState = (state, query, cacheKey) => {
-                var _a;
-                // @ts-expect-error fix later
-                return (_a = cache.cacheStateSelector(state).queries[query][cacheKey]) !== null && _a !== void 0 ? _a : utilsAndConstants_1.EMPTY_OBJECT;
-            };
-            const selectMutationState = (state, mutation) => {
-                var _a;
-                // @ts-expect-error fix later
-                return (_a = cache.cacheStateSelector(state).mutations[mutation]) !== null && _a !== void 0 ? _a : utilsAndConstants_1.EMPTY_OBJECT;
-            };
+            // selectors
+            const selectors = (0, createSelectors_1.createSelectors)(cache);
+            const { selectQueryState, selectQueryResult, selectQueryLoading, selectQueryError, selectQueryParams, selectQueryExpiresAt, selectMutationState, selectMutationResult, selectMutationLoading, selectMutationError, selectMutationParams, selectEntityById, selectEntities, selectEntitiesByTypename, } = selectors;
+            // actions
             const actions = (0, createActions_1.createActions)(cache.name);
+            const { updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges, invalidateQuery, clearQueryState, clearMutationState, } = actions;
             return {
                 /** Keeps all options, passed while creating the cache. */
                 cache,
                 /** Reducer of the cache, should be added to redux store. */
                 reducer: (0, createCacheReducer_1.createCacheReducer)(actions, Object.keys(cache.queries), cache.options),
-                actions,
+                actions: {
+                    /** Updates query state, and optionally merges entity changes in a single action. */
+                    updateQueryStateAndEntities,
+                    /** Updates mutation state, and optionally merges entity changes in a single action. */
+                    updateMutationStateAndEntities,
+                    /** Merge EntityChanges to the state. */
+                    mergeEntityChanges,
+                    /** Invalidates query states. */
+                    invalidateQuery,
+                    /** Clear states for provided query keys and cache keys.
+                     * If cache key for query key is not provided, the whole state for query key is cleared. */
+                    clearQueryState,
+                    /** Clear states for provided mutation keys. */
+                    clearMutationState,
+                },
                 selectors: {
                     /** Selects query state. */
                     selectQueryState,
                     /** Selects query latest result. */
-                    selectQueryResult: (state, query, cacheKey) => {
-                        return selectQueryState(state, query, cacheKey).result;
-                    },
+                    selectQueryResult,
                     /** Selects query loading state. */
-                    selectQueryLoading: (state, query, cacheKey) => {
-                        var _a;
-                        return (_a = selectQueryState(state, query, cacheKey).loading) !== null && _a !== void 0 ? _a : false;
-                    },
+                    selectQueryLoading,
                     /** Selects query latest error. */
-                    selectQueryError: (state, query, cacheKey) => {
-                        return selectQueryState(state, query, cacheKey).error;
-                    },
+                    selectQueryError,
                     /** Selects query latest params. */
-                    selectQueryParams: (state, query, cacheKey) => {
-                        return selectQueryState(state, query, cacheKey).params;
-                    },
+                    selectQueryParams,
                     /** Selects query latest expiresAt. */
-                    selectQueryExpiresAt: (state, query, cacheKey) => {
-                        return selectQueryState(state, query, cacheKey).expiresAt;
-                    },
+                    selectQueryExpiresAt,
                     /** Selects mutation state. */
                     selectMutationState,
                     /** Selects mutation latest result. */
-                    selectMutationResult: (state, mutation) => {
-                        return selectMutationState(state, mutation).result;
-                    },
+                    selectMutationResult,
                     /** Selects mutation loading state. */
-                    selectMutationLoading: (state, mutation) => {
-                        var _a;
-                        return (_a = selectMutationState(state, mutation).loading) !== null && _a !== void 0 ? _a : false;
-                    },
+                    selectMutationLoading,
                     /** Selects mutation latest error. */
-                    selectMutationError: (state, mutation) => {
-                        return selectMutationState(state, mutation).error;
-                    },
+                    selectMutationError,
                     /** Selects mutation latest params. */
-                    selectMutationParams: (state, mutation) => {
-                        return selectMutationState(state, mutation).params;
-                    },
+                    selectMutationParams,
                     /** Selects entity by id and typename. */
                     selectEntityById,
                     /** Selects all entities. */
-                    selectEntities: (state) => {
-                        return cache.cacheStateSelector(state).entities;
-                    },
+                    selectEntities,
                     /** Selects all entities of provided typename. */
-                    selectEntitiesByTypename: (state, typename) => {
-                        return cache.cacheStateSelector(state).entities[typename];
-                    },
+                    selectEntitiesByTypename,
                 },
                 hooks: {
                     /** Returns client object with query and mutate functions. */
@@ -133,12 +116,12 @@ const withTypenames = () => {
                                     const getCacheKey = (_a = cache.queries[queryKey].getCacheKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetCacheKey);
                                     // @ts-expect-error fix later
                                     const cacheKey = getCacheKey(params);
-                                    return (0, query_1.query)('query', store, cache, actions, queryKey, cacheKey, params, options.secondsToLive, options.onlyIfExpired, 
+                                    return (0, query_1.query)('query', store, cache, actions, selectors, queryKey, cacheKey, params, options.secondsToLive, options.onlyIfExpired, 
                                     // @ts-expect-error fix later
                                     options.mergeResults, options.onCompleted, options.onSuccess, options.onError);
                                 },
                                 mutate: (options) => {
-                                    return (0, mutate_1.mutate)('mutate', store, cache, actions, options.mutation, options.params, abortControllers, 
+                                    return (0, mutate_1.mutate)('mutate', store, cache, actions, selectors, options.mutation, options.params, abortControllers, 
                                     // @ts-expect-error fix later
                                     options.onCompleted, options.onSuccess, options.onError);
                                 },
@@ -147,21 +130,17 @@ const withTypenames = () => {
                         }, [store]);
                     },
                     /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
-                    useQuery: (options) => (0, useQuery_1.useQuery)(cache, actions, options),
+                    useQuery: (options) => (0, useQuery_1.useQuery)(cache, actions, selectors, options),
                     /** Subscribes to provided mutation state and provides mutate function. */
-                    useMutation: (options
-                    // @ts-expect-error cache type
-                    ) => (0, useMutation_1.useMutation)(cache, actions, options, abortControllers),
+                    useMutation: (options) => (0, useMutation_1.useMutation)(cache, actions, selectors, options, abortControllers),
                     /** useSelector + selectEntityById. */
                     useSelectEntityById: (id, typename) => {
                         return (0, react_redux_1.useSelector)((state) => selectEntityById(state, id, typename));
                     },
                 },
                 utils: {
-                    /**
-                     * Apply changes to the entities map.
-                     * @return `undefined` if nothing to change, otherwise new entities map with applied changes.
-                     */
+                    /** Apply changes to the entities map.
+                     * @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. */
                     applyEntityChanges: (entities, changes) => {
                         return (0, utilsAndConstants_1.applyEntityChanges)(entities, changes, cache.options);
                     },

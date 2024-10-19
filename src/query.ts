@@ -1,6 +1,7 @@
 import {Store} from 'redux'
 
-import type {ActionMap} from './createActions'
+import type {Actions} from './createActions'
+import {Selectors} from './createSelectors'
 import type {Cache, Key, QueryResult, Typenames} from './types'
 import {log} from './utilsAndConstants'
 
@@ -16,13 +17,13 @@ export const query = async <
   logTag: string,
   store: Store,
   cache: Cache<N, T, QP, QR, MP, MR>,
-  {
-    updateQueryStateAndEntities,
-  }: Pick<ActionMap<N, T, QP, QR, unknown, unknown>, 'updateQueryStateAndEntities'>,
+  actions: Actions<N, T, QP, QR, MP, MR>,
+  selectors: Selectors<N, T, QP, QR, MP, MR>,
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never,
-  secondsToLive: number | undefined = cache.queries[queryKey].secondsToLive ?? cache.globals.secondsToLive,
+  secondsToLive: number | undefined = cache.queries[queryKey].secondsToLive ??
+    cache.globals.queries.secondsToLive,
   onlyIfExpired: boolean | undefined,
   mergeResults = cache.queries[queryKey].mergeResults,
   onCompleted = cache.queries[queryKey].onCompleted,
@@ -58,6 +59,7 @@ export const query = async <
     return CANCELLED_RESULT
   }
 
+  const {updateQueryStateAndEntities} = actions
   store.dispatch(
     updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, {
       loading: true,
@@ -84,11 +86,25 @@ export const query = async <
     )
     // @ts-expect-error params
     if (!onError?.(error, params, store)) {
-      // @ts-expect-error queryKey
-      cache.globals.onError?.(error, queryKey, params, store)
+      cache.globals.onError?.(
+        error,
+        // @ts-expect-error queryKey
+        queryKey,
+        params,
+        store,
+        actions,
+        selectors
+      )
     }
-    // @ts-expect-error params
-    onCompleted?.(undefined, error, params, store)
+    onCompleted?.(
+      undefined,
+      error,
+      // @ts-expect-error params
+      params,
+      store,
+      actions,
+      selectors
+    )
     return {error}
   }
 
@@ -102,16 +118,31 @@ export const query = async <
           cacheStateSelector(store.getState()).queries[queryKey as keyof (QP | QR)][cacheKey]?.result,
           response,
           params,
-          store
+          store,
+          actions,
+          selectors
         )
       : response.result,
   }
 
   store.dispatch(updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, newState, response))
-  // @ts-expect-error response
-  onSuccess?.(response, params, store)
-  // @ts-expect-error response
-  onCompleted?.(response, undefined, params, store)
+  onSuccess?.(
+    // @ts-expect-error response
+    response,
+    params,
+    store,
+    actions,
+    selectors
+  )
+  onCompleted?.(
+    // @ts-expect-error response
+    response,
+    undefined,
+    params,
+    store,
+    actions,
+    selectors
+  )
 
   return {
     // @ts-expect-error fix types

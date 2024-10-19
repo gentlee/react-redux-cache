@@ -9,6 +9,8 @@ import {GET_USERS_ONE_PAGE_STATE} from '../testing/constants'
 import {
   cache,
   invalidateQuery,
+  mergeEntityChanges,
+  selectEntityById,
   selectQueryError,
   selectQueryExpiresAt,
   selectQueryLoading,
@@ -21,7 +23,7 @@ import {
 } from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
 import {advanceApiTimeout, advanceHalfApiTimeout, TTL_TIMEOUT} from '../testing/utils'
-import {defaultGetCacheKey} from '../utilsAndConstants'
+import {defaultGetCacheKey, FetchPolicy} from '../utilsAndConstants'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let client: {query: any}
@@ -192,7 +194,7 @@ test('no refetch on params change with custom cache key', async () => {
   expect(store.getState().cache).toStrictEqual(GET_USERS_ONE_PAGE_STATE)
 })
 
-test('fetch on mount having cache with cache-and-fetch policy', async () => {
+test('fetch on mount having cache with FetchPolicy.Always', async () => {
   store.dispatch(
     updateQueryStateAndEntities(
       'getUser',
@@ -202,19 +204,19 @@ test('fetch on mount having cache with cache-and-fetch policy', async () => {
     )
   )
 
-  render({query: 'getUser', params: 0, cachePolicy: 'cache-and-fetch'})
+  render({query: 'getUser', params: 0, fetchPolicy: FetchPolicy.Always})
   await act(advanceApiTimeout)
   assertEventLog(['first render: 0', 'render: loading', 'render: 0'])
 
   expect(getUser).toBeCalledTimes(1)
 })
 
-test.each(['cache-first', 'cache-and-fetch'] as const)(
+test.each([FetchPolicy.NoCacheOrExpired, FetchPolicy.Always] as const)(
   'no fetch after params change with custom cache key',
-  async (cachePolicy) => {
+  async (fetchPolicy) => {
     render({
       query: 'getUsers',
-      cachePolicy,
+      fetchPolicy,
       params: {page: 1},
     })
     await act(advanceApiTimeout)
@@ -227,7 +229,7 @@ test.each(['cache-first', 'cache-and-fetch'] as const)(
 
     render({
       query: 'getUsers',
-      cachePolicy,
+      fetchPolicy,
       params: {page: 2},
     })
     await act(advanceApiTimeout)
@@ -238,11 +240,11 @@ test.each(['cache-first', 'cache-and-fetch'] as const)(
 )
 
 test('no fetch when skip, without cancelling current request when setting to true', async () => {
-  render({query: 'getUser', params: 0, skip: true})
+  render({query: 'getUser', params: 0, skipFetch: true})
   await act(advanceHalfApiTimeout)
   assertEventLog(['first render: undefined'])
 
-  render({query: 'getUser', params: 1, skip: true})
+  render({query: 'getUser', params: 1, skipFetch: true})
   await act(advanceHalfApiTimeout)
   assertEventLog(['render: undefined'])
 
@@ -250,7 +252,7 @@ test('no fetch when skip, without cancelling current request when setting to tru
   await act(advanceHalfApiTimeout)
   assertEventLog(['render: undefined', 'render: loading'])
 
-  render({query: 'getUser', params: 2, skip: true})
+  render({query: 'getUser', params: 2, skipFetch: true})
   await act(advanceHalfApiTimeout)
   assertEventLog(['render: loading', 'render: 2'])
 
@@ -258,7 +260,7 @@ test('no fetch when skip, without cancelling current request when setting to tru
   await act(advanceApiTimeout)
   assertEventLog(['render: undefined', 'render: loading', 'render: 3'])
 
-  render({query: 'getUser', params: 2, skip: true})
+  render({query: 'getUser', params: 2, skipFetch: true})
   assertEventLog(['render: 2'])
 
   expect(getUser).toBeCalledTimes(2)
@@ -396,6 +398,20 @@ test('expiresAt from query response works and overrides sedondsToLive', async ()
   await act(advanceApiTimeout)
 
   expect(selectQueryExpiresAt(store.getState(), 'getUserExpires', 0)).toBe(Date.now() + TTL_TIMEOUT)
+})
+
+test('custom fetch policy - enitity is not full or expired', async () => {
+  store.dispatch(mergeEntityChanges({merge: {users: {[0]: {id: 0}}}})) // merge not full user
+
+  render({query: 'getFullUser', params: 0}) // should fetch bcs user is not full
+  await act(advanceApiTimeout)
+  assertEventLog(['first render: undefined', 'render: loading', 'render: 0'])
+
+  render({query: 'getFullUser', params: 0}, 'second-mount') // should not fetch, user is full
+  await act(advanceApiTimeout)
+  assertEventLog(['first render: 0'])
+
+  expect(selectEntityById(store.getState(), 0, 'users')).toStrictEqual({id: 0, name: 'User 0', bankId: '0'})
 })
 
 // components

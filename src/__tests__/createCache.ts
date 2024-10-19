@@ -3,6 +3,7 @@ import {createStore} from 'redux'
 import {withTypenames} from '../createCache'
 import {getUsers, removeUser} from '../testing/api/mocks'
 import {Cache, Typenames} from '../types'
+import {FetchPolicy} from '../utilsAndConstants'
 
 test('createCache returns correct result', () => {
   const onError = jest.fn()
@@ -13,9 +14,12 @@ test('createCache returns correct result', () => {
     abortControllers: new WeakMap(),
     cacheStateSelector: cache.cacheStateSelector,
     globals: {
-      cachePolicy: 'cache-and-fetch',
-      secondsToLive: 10,
       onError,
+      queries: {
+        fetchPolicy: FetchPolicy.Always,
+        secondsToLive: 10,
+        skipFetch: false,
+      },
     },
     options: {
       logsEnabled: false,
@@ -144,8 +148,10 @@ const createTestingCache = <N extends string>(
   }>().createCache({
     name,
     globals: {
-      cachePolicy: 'cache-and-fetch',
-      secondsToLive: 10,
+      queries: {
+        fetchPolicy: FetchPolicy.Always,
+        secondsToLive: 10,
+      },
       onError,
     },
     options: {

@@ -46,18 +46,11 @@ const createActions = (name) => {
     });
     clearMutationState.type = clearMutationStateType;
     return {
-        /** Updates query state, and optionally merges entity changes in a single action. */
         updateQueryStateAndEntities,
-        /** Updates mutation state, and optionally merges entity changes in a single action. */
         updateMutationStateAndEntities,
-        /** Merge EntityChanges to the state. */
         mergeEntityChanges,
-        /** Invalidates query states. */
         invalidateQuery,
-        /** Clear states for provided query keys and cache keys.
-         * If cache key for query key is not provided, the whole state for query key is cleared. */
         clearQueryState,
-        /** Clear states for provided mutation keys. */
         clearMutationState,
     };
 };

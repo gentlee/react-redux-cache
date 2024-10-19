@@ -1,4 +1,4 @@
 export { createCache, withTypenames } from './createCache';
-export type { ReduxCacheState } from './createCacheReducer';
 export * from './types';
-export { defaultGetCacheKey } from './utilsAndConstants';
+export { useQuerySelectorStateComparer } from './useQuery';
+export { defaultGetCacheKey, FetchPolicy, isEmptyObject } from './utilsAndConstants';

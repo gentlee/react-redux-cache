@@ -2,15 +2,25 @@ import {useMemo} from 'react'
 import {useSelector, useStore} from 'react-redux'
 import {Store} from 'redux'
 
-import {ActionMap} from './createActions'
+import {Actions} from './createActions'
+import {Selectors} from './createSelectors'
 import {mutate as mutateImpl} from './mutate'
 import {Cache, Key, MutateOptions, MutationState, Typenames} from './types'
 import {EMPTY_OBJECT, log} from './utilsAndConstants'
 
-export const useMutation = <N extends string, T extends Typenames, MP, MR, MK extends keyof (MP & MR)>(
-  cache: Cache<N, T, unknown, unknown, MP, MR>,
-  actions: Pick<ActionMap<N, T, unknown, unknown, MP, MR>, 'updateMutationStateAndEntities'>,
-  options: Omit<MutateOptions<T, MP, MR, MK>, 'params'>,
+export const useMutation = <
+  N extends string,
+  T extends Typenames,
+  QP,
+  QR,
+  MP,
+  MR,
+  MK extends keyof (MP & MR)
+>(
+  cache: Cache<N, T, QP, QR, MP, MR>,
+  actions: Actions<N, T, QP, QR, MP, MR>,
+  selectors: Selectors<N, T, QP, QR, MP, MR>,
+  options: Omit<MutateOptions<N, T, QP, QR, MP, MR, MK>, 'params'>,
   abortControllers: WeakMap<Store, Record<Key, AbortController>>
 ) => {
   type P = MK extends keyof (MP | MR) ? MP[MK] : never
@@ -39,6 +49,7 @@ export const useMutation = <N extends string, T extends Typenames, MP, MR, MK ex
           store,
           cache,
           actions,
+          selectors,
           mutationKey,
           params,
           abortControllers,

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isEmptyObject = exports.applyEntityChanges = exports.log = exports.defaultGetCacheKey = exports.EMPTY_ARRAY = exports.EMPTY_OBJECT = exports.IS_DEV = exports.optionalUtils = exports.PACKAGE_SHORT_NAME = void 0;
+exports.isEmptyObject = exports.applyEntityChanges = exports.FetchPolicy = exports.log = exports.defaultGetCacheKey = exports.EMPTY_ARRAY = exports.EMPTY_OBJECT = exports.IS_DEV = exports.optionalUtils = exports.PACKAGE_SHORT_NAME = void 0;
 exports.PACKAGE_SHORT_NAME = 'rrc';
 exports.optionalUtils = {
     deepEqual: undefined,
@@ -38,6 +38,14 @@ const log = (tag, data) => {
     console.debug(`@${exports.PACKAGE_SHORT_NAME} [${tag}]`, data);
 };
 exports.log = log;
+exports.FetchPolicy = {
+    /** Only if cache does not exist (result is undefined) or expired. */
+    NoCacheOrExpired: (expired, _, state) => {
+        return expired || state.result === undefined;
+    },
+    /** Every fetch trigger. */
+    Always: () => true,
+};
 const applyEntityChanges = (entities, changes, options) => {
     var _a, _b, _c, _d;
     if (changes.merge && changes.entities) {

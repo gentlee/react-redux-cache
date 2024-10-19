@@ -4,6 +4,7 @@ import {Store} from 'redux'
 
 import {createActions} from './createActions'
 import {createCacheReducer} from './createCacheReducer'
+import {createSelectors} from './createSelectors'
 import {mutate as mutateImpl} from './mutate'
 import {query as queryImpl} from './query'
 import type {
@@ -13,22 +14,14 @@ import type {
   Key,
   MutateOptions,
   MutationResult,
-  MutationState,
   OptionalPartial,
   QueryOptions,
   QueryResult,
-  QueryState,
   Typenames,
 } from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
-import {
-  applyEntityChanges,
-  defaultGetCacheKey,
-  EMPTY_OBJECT,
-  IS_DEV,
-  optionalUtils,
-} from './utilsAndConstants'
+import {applyEntityChanges, defaultGetCacheKey, FetchPolicy, IS_DEV, optionalUtils} from './utilsAndConstants'
 
 /**
  * Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.
@@ -45,9 +38,11 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
   return {
     createCache: <N extends string, QP, QR, MP, MR>(
       partialCache: OptionalPartial<
-        Cache<N, T, QP, QR, MP, MR>,
-        'options' | 'queries' | 'mutations' | 'cacheStateSelector' | 'globals'
-      >
+        Omit<Cache<N, T, QP, QR, MP, MR>, 'globals'>,
+        'options' | 'queries' | 'mutations' | 'cacheStateSelector'
+      > & {
+        globals?: OptionalPartial<Cache<N, T, QP, QR, MP, MR>['globals'], 'queries'>
+      }
     ) => {
       type TypedCache = Cache<N, T, QP, QR, MP, MR>
 
@@ -61,8 +56,10 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       partialCache.options.deepComparisonEnabled ??= true
       partialCache.queries ??= {} as TypedCache['queries']
       partialCache.mutations ??= {} as TypedCache['mutations']
-      partialCache.globals ??= {} as Globals
-      partialCache.globals.cachePolicy ??= 'cache-first'
+      partialCache.globals ??= {}
+      partialCache.globals.queries ??= {} as Globals<N, T, QP, QR, MP, MR>['queries']
+      partialCache.globals.queries.fetchPolicy ??= FetchPolicy.NoCacheOrExpired
+      partialCache.globals.queries.skipFetch ??= false
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       partialCache.cacheStateSelector ??= (state: any) => state[cache.name]
       // @ts-expect-error private field for testing
@@ -78,38 +75,27 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         )
       }
 
-      // make selectors
+      // selectors
 
-      const selectEntityById = <TN extends keyof T>(
-        state: unknown,
-        id: Key | null | undefined,
-        typename: TN
-      ) => {
-        return id == null ? undefined : cache.cacheStateSelector(state).entities[typename]?.[id]
-      }
+      const selectors = createSelectors<N, T, QP, QR, MP, MR>(cache)
+      const {
+        selectQueryState,
+        selectQueryResult,
+        selectQueryLoading,
+        selectQueryError,
+        selectQueryParams,
+        selectQueryExpiresAt,
+        selectMutationState,
+        selectMutationResult,
+        selectMutationLoading,
+        selectMutationError,
+        selectMutationParams,
+        selectEntityById,
+        selectEntities,
+        selectEntitiesByTypename,
+      } = selectors
 
-      const selectQueryState = <QK extends keyof (QP & QR)>(
-        state: unknown,
-        query: QK,
-        cacheKey: Key
-      ): QueryState<
-        QK extends keyof (QP | QR) ? QP[QK] : never,
-        QK extends keyof (QP | QR) ? QR[QK] : never
-      > => {
-        // @ts-expect-error fix later
-        return cache.cacheStateSelector(state).queries[query][cacheKey] ?? EMPTY_OBJECT
-      }
-
-      const selectMutationState = <MK extends keyof (MP & MR)>(
-        state: unknown,
-        mutation: MK
-      ): MutationState<
-        MK extends keyof (MP | MR) ? MP[MK] : never,
-        MK extends keyof (MP | MR) ? MR[MK] : never
-      > => {
-        // @ts-expect-error fix later
-        return cache.cacheStateSelector(state).mutations[mutation] ?? EMPTY_OBJECT
-      }
+      // actions
 
       const actions = createActions<N, T, QP, QR, MP, MR>(cache.name)
       const {
@@ -149,53 +135,31 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           /** Selects query state. */
           selectQueryState,
           /** Selects query latest result. */
-          selectQueryResult: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
-            return selectQueryState(state, query, cacheKey).result
-          },
+          selectQueryResult,
           /** Selects query loading state. */
-          selectQueryLoading: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
-            return selectQueryState(state, query, cacheKey).loading ?? false
-          },
+          selectQueryLoading,
           /** Selects query latest error. */
-          selectQueryError: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
-            return selectQueryState(state, query, cacheKey).error
-          },
+          selectQueryError,
           /** Selects query latest params. */
-          selectQueryParams: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
-            return selectQueryState(state, query, cacheKey).params
-          },
+          selectQueryParams,
           /** Selects query latest expiresAt. */
-          selectQueryExpiresAt: <QK extends keyof (QP & QR)>(state: unknown, query: QK, cacheKey: Key) => {
-            return selectQueryState(state, query, cacheKey).expiresAt
-          },
+          selectQueryExpiresAt,
           /** Selects mutation state. */
           selectMutationState,
           /** Selects mutation latest result. */
-          selectMutationResult: <MK extends keyof (MP & MR)>(state: unknown, mutation: MK) => {
-            return selectMutationState(state, mutation).result
-          },
+          selectMutationResult,
           /** Selects mutation loading state. */
-          selectMutationLoading: <MK extends keyof (MP & MR)>(state: unknown, mutation: MK) => {
-            return selectMutationState(state, mutation).loading ?? false
-          },
+          selectMutationLoading,
           /** Selects mutation latest error. */
-          selectMutationError: <MK extends keyof (MP & MR)>(state: unknown, mutation: MK) => {
-            return selectMutationState(state, mutation).error
-          },
+          selectMutationError,
           /** Selects mutation latest params. */
-          selectMutationParams: <MK extends keyof (MP & MR)>(state: unknown, mutation: MK) => {
-            return selectMutationState(state, mutation).params
-          },
+          selectMutationParams,
           /** Selects entity by id and typename. */
           selectEntityById,
           /** Selects all entities. */
-          selectEntities: (state: unknown) => {
-            return cache.cacheStateSelector(state).entities
-          },
+          selectEntities,
           /** Selects all entities of provided typename. */
-          selectEntitiesByTypename: <TN extends keyof T>(state: unknown, typename: TN) => {
-            return cache.cacheStateSelector(state).entities[typename]
-          },
+          selectEntitiesByTypename,
         },
         hooks: {
           /** Returns client object with query and mutate functions. */
@@ -203,7 +167,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
             const store = useStore()
             return useMemo(() => {
               const client = {
-                query: <QK extends keyof (QP & QR)>(options: QueryOptions<T, QP, QR, QK>) => {
+                query: <QK extends keyof (QP & QR)>(options: QueryOptions<N, T, QP, QR, QK, MP, MR>) => {
                   type P = QK extends keyof (QP | QR) ? QP[QK] : never
                   type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
@@ -217,6 +181,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
                     store,
                     cache,
                     actions,
+                    selectors,
                     queryKey,
                     cacheKey,
                     params,
@@ -229,7 +194,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
                     options.onError
                   ) as Promise<QueryResult<R>>
                 },
-                mutate: <MK extends keyof (MP & MR)>(options: MutateOptions<T, MP, MR, MK>) => {
+                mutate: <MK extends keyof (MP & MR)>(options: MutateOptions<N, T, QP, QR, MP, MR, MK>) => {
                   type R = MK extends keyof (MP | MR) ? MR[MK] : never
 
                   return mutateImpl(
@@ -237,6 +202,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
                     store,
                     cache,
                     actions,
+                    selectors,
                     options.mutation,
                     options.params,
                     abortControllers,
@@ -252,12 +218,12 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           },
           /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
           useQuery: <QK extends keyof (QP & QR)>(
-            options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[2]
-          ) => useQuery(cache, actions, options),
+            options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[3]
+          ) => useQuery(cache, actions, selectors, options),
           /** Subscribes to provided mutation state and provides mutate function. */
           useMutation: <MK extends keyof (MP & MR)>(
-            options: Parameters<typeof useMutation<N, T, MP, MR, MK>>[2]
-          ) => useMutation(cache, actions, options, abortControllers),
+            options: Parameters<typeof useMutation<N, T, QP, QR, MP, MR, MK>>[3]
+          ) => useMutation(cache, actions, selectors, options, abortControllers),
           /** useSelector + selectEntityById. */
           useSelectEntityById: <TN extends keyof T>(
             id: Key | null | undefined,

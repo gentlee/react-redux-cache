@@ -1,25 +1,27 @@
 import {useCallback, useEffect} from 'react'
 import {useSelector, useStore} from 'react-redux'
 
-import {ActionMap} from './createActions'
+import {Actions} from './createActions'
+import {Selectors} from './createSelectors'
 import {query as queryImpl} from './query'
 import {Cache, QueryOptions, QueryState, Typenames, UseQueryOptions} from './types'
 import {defaultGetCacheKey, EMPTY_OBJECT, log} from './utilsAndConstants'
 
 export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
   cache: Cache<N, T, QP, QR, MP, MR>,
-  actions: Pick<ActionMap<N, T, QP, QR, MP, MR>, 'updateQueryStateAndEntities'>,
-  options: UseQueryOptions<T, QP, QR, QK>
+  actions: Actions<N, T, QP, QR, MP, MR>,
+  selectors: Selectors<N, T, QP, QR, MP, MR>,
+  options: UseQueryOptions<N, T, QK, QP, QR, MP, MR>
 ) => {
   type P = QK extends keyof (QP | QR) ? QP[QK] : never
   type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
   const {
     query: queryKey,
-    skip,
+    skipFetch = false,
     params,
     secondsToLive,
-    cachePolicy = cache.queries[queryKey].cachePolicy ?? cache.globals.cachePolicy,
+    fetchPolicy = cache.queries[queryKey].fetchPolicy ?? cache.globals.queries.fetchPolicy,
     mergeResults,
     onCompleted,
     onSuccess,
@@ -37,13 +39,14 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
 
   /** Fetch query with the new parameters, or refetch with the same if parameters not provided. */
   const fetch = useCallback(
-    async (options?: Partial<Pick<QueryOptions<T, QP, QR, QK>, 'params' | 'onlyIfExpired'>>) => {
+    async (options?: Partial<Pick<QueryOptions<N, T, QP, QR, QK, MP, MR>, 'params' | 'onlyIfExpired'>>) => {
       const paramsPassed = options && 'params' in options
       return await queryImpl(
         'useQuery.fetch',
         store,
         cache,
         actions,
+        selectors,
         queryKey,
         // @ts-expect-error fix later
         paramsPassed ? getCacheKey(options.params) : cacheKey,
@@ -69,29 +72,27 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
     }, useQuerySelectorStateComparer<P, R>) ?? (EMPTY_OBJECT as QueryState<P, R>)
 
   useEffect(() => {
-    if (skip) {
-      logsEnabled && log('useQuery.useEffect skip fetch', {skip, cacheKey})
+    if (skipFetch) {
+      logsEnabled && log('useQuery.useEffect skip fetch', {skipFetch, queryKey, cacheKey})
       return
     }
 
-    if (
-      queryState.result != null &&
-      cachePolicy === 'cache-first' &&
-      (queryState.expiresAt == null || queryState.expiresAt > Date.now())
-    ) {
+    const expired = queryState.expiresAt != null && queryState.expiresAt <= Date.now()
+    // @ts-expect-error params
+    if (!fetchPolicy(expired, params, queryState, store, selectors)) {
       logsEnabled &&
-        log('useQuery.useEffect no fetch due to cache policy', {
-          result: queryState.result,
-          expiresAt: queryState.expiresAt,
-          now: Date.now(),
-          cachePolicy,
+        log('useQuery.useEffect skip fetch due to fetch policy', {
+          queryState,
+          expired,
+          queryKey,
+          cacheKey,
         })
       return
     }
 
     fetch()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cacheKey, cachePolicy, skip])
+  }, [cacheKey, skipFetch])
 
   logsEnabled &&
     log('useQuery', {
