@@ -200,7 +200,6 @@ const store = configureStore({
 })
 ```
 #### api.ts
-Query result should be of type `QueryResponse`, mutation result should be of type `MutationResponse`.
 For normalization `normalizr` package is used in this example, but any other tool can be used if query result is of proper type.
 Perfect implementation is when the backend already returns normalized data.
 ```typescript
