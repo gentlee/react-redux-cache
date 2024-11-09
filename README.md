@@ -9,7 +9,7 @@
 
 # react-redux-cache (RRC)
 
-**Powerful** yet **lightweight** data fetching and caching library that supports **normalization** unlike `React Query` and `RTK-Query`, while having similar but not over-engineered interface. Another advantage over `RTK-Query` is that it easily supports `Infinite Scroll`. Built on top of `Redux`, covered with tests, fully typed and written on Typescript.
+**Powerful** yet **lightweight** data fetching and caching library that supports **normalization** unlike `React Query` and `RTK-Query`, while having similar but not over-engineered, simple interface. Another advantage over `RTK-Query` is that it easily supports `Infinite Scroll`. Built on top of `Redux`, covered with tests, fully typed and written on Typescript.
 
 **Normalization** is the best way to keep the state of the app **consistent** between different views, reduces the number of fetches and allows to show cached data when navigating, which greatly improves **user experience**.
 
