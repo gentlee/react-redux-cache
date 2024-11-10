@@ -431,7 +431,6 @@ export const GetUsersScreen = () => {
   const onLoadNextPage = () => {
     const lastLoadedPage = usersResult?.page ?? 0
     fetchUsers({
-      query: 'getUsers',
       params: lastLoadedPage + 1,
     })
   }
