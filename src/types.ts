@@ -3,7 +3,6 @@
 import type {Store} from 'redux'
 
 import type {Actions} from './createActions'
-import type {ReduxCacheState} from './createCacheReducer'
 import type {Selectors} from './createSelectors'
 
 export type Key = string | number | symbol
@@ -99,6 +98,16 @@ export type PartialEntitiesMap<T extends Typenames> = {[K in keyof T]?: Dict<Par
 export type EntitiesMap<T extends Typenames> = {[K in keyof T]?: Dict<T[K]>}
 
 export type EntityIds<T extends Typenames> = {[K in keyof T]?: Key[]}
+
+export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = {
+  entities: EntitiesMap<T>
+  queries: {
+    [QK in keyof (QP | QR)]: Dict<QueryState<QP[QK], QR[QK]> | undefined>
+  }
+  mutations: {
+    [MK in keyof (MP | MR)]: MutationState<MP[MK], MR[MK]>
+  }
+}
 
 // Query
 

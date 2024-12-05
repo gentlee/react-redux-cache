@@ -16,17 +16,14 @@ const utilsAndConstants_1 = require("./utilsAndConstants");
 const optionalQueryKeys = ['error', 'expiresAt', 'result', 'params'];
 const optionalMutationKeys = ['error', 'result', 'params'];
 const createCacheReducer = (actions, queryKeys, cacheOptions) => {
-    const entitiesMap = {};
-    const queryStateMap = {};
-    for (const key of queryKeys) {
-        queryStateMap[key] = {};
-    }
-    const mutationStateMap = {};
-    const initialState = {
-        entities: entitiesMap,
-        queries: queryStateMap,
-        mutations: mutationStateMap,
-    };
+    const initialState = Object.freeze({
+        entities: Object.freeze({}),
+        queries: Object.freeze(queryKeys.reduce((result, x) => {
+            result[x] = Object.freeze({});
+            return result;
+        }, {})),
+        mutations: Object.freeze({}),
+    });
     cacheOptions.logsEnabled &&
         (0, utilsAndConstants_1.log)('createCacheReducer', {
             queryKeys,
@@ -204,6 +201,11 @@ const createCacheReducer = (actions, queryKeys, cacheOptions) => {
                 return newMutations === undefined
                     ? state
                     : Object.assign(Object.assign({}, state), { mutations: newMutations });
+            }
+            case actions.clearCache.type: {
+                const { stateToKeep } = action;
+                return stateToKeep
+                    ? Object.assign(Object.assign({}, initialState), stateToKeep) : initialState;
             }
         }
         return state;

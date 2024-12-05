@@ -17,11 +17,7 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
         /** Keeps all options, passed while creating the cache. */
         cache: Cache<N, T, QP, QR, MP, MR>;
         /** Reducer of the cache, should be added to redux store. */
-        reducer: (state: {
-            entities: import("./types").EntitiesMap<T>;
-            queries: { [QK in keyof (QP | QR)]: import("./types").Dict<import("./types").QueryState<QP[QK], QR[QK]> | undefined>; };
-            mutations: { [MK in keyof (MP | MR)]: import("./types").MutationState<MP[MK], MR[MK]>; };
-        } | undefined, action: {
+        reducer: (state: import("./types").ReduxCacheState<T, QP, QR, MP, MR> | undefined, action: {
             type: `@rrc/${N}/updateQueryStateAndEntities`;
             queryKey: keyof QP & keyof QR;
             queryCacheKey: Key;
@@ -51,11 +47,10 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
         } | {
             type: `@rrc/${N}/clearMutationState`;
             mutationKeys: (keyof MP & keyof MR)[];
-        }) => {
-            entities: import("./types").EntitiesMap<T>;
-            queries: { [QK in keyof (QP | QR)]: import("./types").Dict<import("./types").QueryState<QP[QK], QR[QK]> | undefined>; };
-            mutations: { [MK in keyof (MP | MR)]: import("./types").MutationState<MP[MK], MR[MK]>; };
-        };
+        } | {
+            type: `@rrc/${N}/clearCache`;
+            stateToKeep: Partial<import("./types").ReduxCacheState<T, QP, QR, MP, MR>> | undefined;
+        }) => import("./types").ReduxCacheState<T, QP, QR, MP, MR>;
         actions: {
             /** Updates query state, and optionally merges entity changes in a single action. */
             updateQueryStateAndEntities: {
@@ -78,7 +73,7 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
                 };
                 type: `@rrc/${N}/updateMutationStateAndEntities`;
             };
-            /** Merge EntityChanges to the state. */
+            /** Merges EntityChanges to the state. */
             mergeEntityChanges: {
                 (changes: import("./types").EntityChanges<T>): {
                     type: `@rrc/${N}/mergeEntityChanges`;
@@ -102,7 +97,7 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
                 };
                 type: `@rrc/${N}/invalidateQuery`;
             };
-            /** Clear states for provided query keys and cache keys.
+            /** Clears states for provided query keys and cache keys.
              * If cache key for query key is not provided, the whole state for query key is cleared. */
             clearQueryState: {
                 <K extends keyof QP & keyof QR>(queries: {
@@ -117,7 +112,7 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
                 };
                 type: `@rrc/${N}/clearQueryState`;
             };
-            /** Clear states for provided mutation keys. */
+            /** Clears states for provided mutation keys. */
             clearMutationState: {
                 <K extends keyof MP & keyof MR>(mutationKeys: K[]): {
                     type: `@rrc/${N}/clearMutationState`;
@@ -125,8 +120,18 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
                 };
                 type: `@rrc/${N}/clearMutationState`;
             };
+            /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and shoult be used with caution. */
+            clearCache: {
+                (stateToKeep?: Partial<import("./types").ReduxCacheState<T, QP, QR, MP, MR>> | undefined): {
+                    type: `@rrc/${N}/clearCache`;
+                    stateToKeep: Partial<import("./types").ReduxCacheState<T, QP, QR, MP, MR>> | undefined;
+                };
+                type: `@rrc/${N}/clearCache`;
+            };
         };
         selectors: {
+            /** This is a cacheStateSelector from createCache options, or default one if was not provided. */
+            selectCacheState: (state: any) => import("./types").ReduxCacheState<T, QP, QR, MP, MR>;
             /** Selects query state. */
             selectQueryState: <QK extends keyof QP | keyof QR>(state: unknown, query: QK, cacheKey: Key) => import("./types").QueryState<QK extends keyof QP & keyof QR ? QP[QK] : never, QK extends keyof QP & keyof QR ? QR[QK] : never>;
             /** Selects query latest result. */
@@ -183,18 +188,14 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(partialCach
     queries: Partial<{ [QK in keyof (QP & QR)]: QK extends keyof QP & keyof QR ? import("./types").QueryInfo<N, Typenames, QP[QK], QR[QK], QP, QR, MP, MR> : never; }>;
     mutations: Partial<{ [MK in keyof (MP & MR)]: MK extends keyof MP & keyof MR ? import("./types").MutationInfo<N, Typenames, MP[MK], MR[MK], QP, QR, MP, MR> : never; }>;
     options: Partial<CacheOptions>;
-    cacheStateSelector: Partial<(state: any) => import("./createCacheReducer").ReduxCacheState<Typenames, QP, QR, MP, MR>>;
+    cacheStateSelector: Partial<(state: any) => import("./types").ReduxCacheState<Typenames, QP, QR, MP, MR>>;
 }> & Omit<Omit<Cache<N, Typenames, QP, QR, MP, MR>, "globals">, "queries" | "mutations" | "options" | "cacheStateSelector"> & {
     globals?: OptionalPartial<Globals<N, Typenames, QP, QR, MP, MR>, "queries"> | undefined;
 }) => {
     /** Keeps all options, passed while creating the cache. */
     cache: Cache<N, Typenames, QP, QR, MP, MR>;
     /** Reducer of the cache, should be added to redux store. */
-    reducer: (state: {
-        entities: import("./types").EntitiesMap<Typenames>;
-        queries: { [QK_1 in keyof (QP | QR)]: import("./types").Dict<import("./types").QueryState<QP[QK_1], QR[QK_1]> | undefined>; };
-        mutations: { [MK_1 in keyof (MP | MR)]: import("./types").MutationState<MP[MK_1], MR[MK_1]>; };
-    } | undefined, action: {
+    reducer: (state: import("./types").ReduxCacheState<Typenames, QP, QR, MP, MR> | undefined, action: {
         type: `@rrc/${N}/updateQueryStateAndEntities`;
         queryKey: keyof QP & keyof QR;
         queryCacheKey: Key;
@@ -224,11 +225,10 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(partialCach
     } | {
         type: `@rrc/${N}/clearMutationState`;
         mutationKeys: (keyof MP & keyof MR)[];
-    }) => {
-        entities: import("./types").EntitiesMap<Typenames>;
-        queries: { [QK_1 in keyof (QP | QR)]: import("./types").Dict<import("./types").QueryState<QP[QK_1], QR[QK_1]> | undefined>; };
-        mutations: { [MK_1 in keyof (MP | MR)]: import("./types").MutationState<MP[MK_1], MR[MK_1]>; };
-    };
+    } | {
+        type: `@rrc/${N}/clearCache`;
+        stateToKeep: Partial<import("./types").ReduxCacheState<Typenames, QP, QR, MP, MR>> | undefined;
+    }) => import("./types").ReduxCacheState<Typenames, QP, QR, MP, MR>;
     actions: {
         /** Updates query state, and optionally merges entity changes in a single action. */
         updateQueryStateAndEntities: {
@@ -251,7 +251,7 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(partialCach
             };
             type: `@rrc/${N}/updateMutationStateAndEntities`;
         };
-        /** Merge EntityChanges to the state. */
+        /** Merges EntityChanges to the state. */
         mergeEntityChanges: {
             (changes: import("./types").EntityChanges<Typenames>): {
                 type: `@rrc/${N}/mergeEntityChanges`;
@@ -275,7 +275,7 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(partialCach
             };
             type: `@rrc/${N}/invalidateQuery`;
         };
-        /** Clear states for provided query keys and cache keys.
+        /** Clears states for provided query keys and cache keys.
          * If cache key for query key is not provided, the whole state for query key is cleared. */
         clearQueryState: {
             <K extends keyof QP & keyof QR>(queries: {
@@ -290,7 +290,7 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(partialCach
             };
             type: `@rrc/${N}/clearQueryState`;
         };
-        /** Clear states for provided mutation keys. */
+        /** Clears states for provided mutation keys. */
         clearMutationState: {
             <K extends keyof MP & keyof MR>(mutationKeys: K[]): {
                 type: `@rrc/${N}/clearMutationState`;
@@ -298,8 +298,18 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(partialCach
             };
             type: `@rrc/${N}/clearMutationState`;
         };
+        /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and shoult be used with caution. */
+        clearCache: {
+            (stateToKeep?: Partial<import("./types").ReduxCacheState<Typenames, QP, QR, MP, MR>> | undefined): {
+                type: `@rrc/${N}/clearCache`;
+                stateToKeep: Partial<import("./types").ReduxCacheState<Typenames, QP, QR, MP, MR>> | undefined;
+            };
+            type: `@rrc/${N}/clearCache`;
+        };
     };
     selectors: {
+        /** This is a cacheStateSelector from createCache options, or default one if was not provided. */
+        selectCacheState: (state: any) => import("./types").ReduxCacheState<Typenames, QP, QR, MP, MR>;
         /** Selects query state. */
         selectQueryState: <QK_1 extends keyof QP | keyof QR>(state: unknown, query: QK_1, cacheKey: Key) => import("./types").QueryState<QK_1 extends keyof QP & keyof QR ? QP[QK_1] : never, QK_1 extends keyof QP & keyof QR ? QR[QK_1] : never>;
         /** Selects query latest result. */

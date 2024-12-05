@@ -19,8 +19,10 @@ export const {
     invalidateQuery,
     clearQueryState,
     clearMutationState,
+    clearCache,
   },
   selectors: {
+    selectCacheState,
     selectQueryState,
     selectQueryResult,
     selectQueryLoading,

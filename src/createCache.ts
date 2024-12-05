@@ -105,6 +105,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         invalidateQuery,
         clearQueryState,
         clearMutationState,
+        clearCache,
       } = actions
 
       return {
@@ -121,17 +122,21 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           updateQueryStateAndEntities,
           /** Updates mutation state, and optionally merges entity changes in a single action. */
           updateMutationStateAndEntities,
-          /** Merge EntityChanges to the state. */
+          /** Merges EntityChanges to the state. */
           mergeEntityChanges,
           /** Invalidates query states. */
           invalidateQuery,
-          /** Clear states for provided query keys and cache keys.
+          /** Clears states for provided query keys and cache keys.
            * If cache key for query key is not provided, the whole state for query key is cleared. */
           clearQueryState,
-          /** Clear states for provided mutation keys. */
+          /** Clears states for provided mutation keys. */
           clearMutationState,
+          /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and shoult be used with caution. */
+          clearCache,
         },
         selectors: {
+          /** This is a cacheStateSelector from createCache options, or default one if was not provided. */
+          selectCacheState: cache.cacheStateSelector,
           /** Selects query state. */
           selectQueryState,
           /** Selects query latest result. */

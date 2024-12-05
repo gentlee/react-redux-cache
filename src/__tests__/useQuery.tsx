@@ -8,8 +8,10 @@ import {EMPTY_STATE} from '../testing/constants'
 import {GET_USERS_ONE_PAGE_STATE} from '../testing/constants'
 import {
   cache,
+  clearCache,
   invalidateQuery,
   mergeEntityChanges,
+  selectCacheState,
   selectEntityById,
   selectQueryError,
   selectQueryExpiresAt,
@@ -30,16 +32,17 @@ let client: {query: any}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let refetch: any
 
-let store: ReturnType<typeof createReduxStore>
+const store = createReduxStore(false)
 let rerender: ReturnType<typeof renderImpl>['rerender']
 beforeEach(() => {
-  store = createReduxStore(false)
-
   // always use rerender instead of render
   ;({rerender} = renderImpl(<div />))
 })
 
 afterEach(() => {
+  store.dispatch(clearCache())
+  expect(selectCacheState(store.getState())).toStrictEqual(EMPTY_STATE)
+
   getUsers.mockClear()
   getUser.mockClear()
 })

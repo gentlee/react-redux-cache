@@ -27,12 +27,12 @@ Object.defineProperty(exports, "FetchPolicy", { enumerable: true, get: function 
 Object.defineProperty(exports, "isEmptyObject", { enumerable: true, get: function () { return utilsAndConstants_1.isEmptyObject; } });
 // Backlog
 // ! high (1.0.0-rc.0)
+// reset [whole] cache to initial / to provided state
+// optimistic response
 // generate full api docs
 // ! medium
-// optimistic response
 // onCancel & onAbort
 // remove empty entities and queries from state
-// reset [whole] cache to initial / to provided state
 // globals for success, completions and loading states?
 // make query key / cache key difference more clear in the docs
 // check type of function arguments in dev

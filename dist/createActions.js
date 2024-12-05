@@ -45,6 +45,12 @@ const createActions = (name) => {
         mutationKeys,
     });
     clearMutationState.type = clearMutationStateType;
+    const clearCacheType = `${actionPrefix}clearCache`;
+    const clearCache = (stateToKeep) => ({
+        type: clearCacheType,
+        stateToKeep,
+    });
+    clearCache.type = clearCacheType;
     return {
         updateQueryStateAndEntities,
         updateMutationStateAndEntities,
@@ -52,6 +58,7 @@ const createActions = (name) => {
         invalidateQuery,
         clearQueryState,
         clearMutationState,
+        clearCache,
     };
 };
 exports.createActions = createActions;
