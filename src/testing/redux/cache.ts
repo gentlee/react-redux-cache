@@ -2,7 +2,7 @@ import {withTypenames} from '../../createCache'
 import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
 import type {Bank, User} from '../api/types'
 import {logEvent} from '../api/utils'
-import {TTL_TIMEOUT} from '../utils'
+import {throwErrorAfterTimeout, TTL_TIMEOUT} from '../utils'
 
 export type TestTypenames = {
   users: User
@@ -12,6 +12,7 @@ export type TestTypenames = {
 export const {
   cache,
   reducer,
+  actions,
   actions: {
     updateQueryStateAndEntities,
     updateMutationStateAndEntities,
@@ -21,6 +22,7 @@ export const {
     clearMutationState,
     clearCache,
   },
+  selectors,
   selectors: {
     selectCacheState,
     selectQueryState,
@@ -46,6 +48,9 @@ export const {
     // logsEnabled: true,
     additionalValidation: true,
     // deepComparisonEnabled: false,
+  },
+  globals: {
+    onError: jest.fn(),
   },
   queries: {
     getUsers: {
@@ -90,6 +95,9 @@ export const {
         return !user || !('name' in user) || !('bankId' in user)
       },
     },
+    queryWithError: {
+      query: throwErrorAfterTimeout,
+    },
   },
   mutations: {
     updateUser: {
@@ -97,6 +105,9 @@ export const {
     },
     removeUser: {
       mutation: removeUser,
+    },
+    mutationWithError: {
+      mutation: throwErrorAfterTimeout,
     },
   },
 })

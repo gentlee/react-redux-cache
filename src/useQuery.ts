@@ -38,7 +38,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
   const cacheKey = getCacheKey(params)
 
   /** Fetch query with the new parameters, or refetch with the same if parameters not provided. */
-  const fetch = useCallback(
+  const performFetch = useCallback(
     async (options?: Partial<Pick<QueryOptions<N, T, QP, QR, QK, MP, MR>, 'params' | 'onlyIfExpired'>>) => {
       const paramsPassed = options && 'params' in options
       return await queryImpl(
@@ -78,8 +78,16 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
     }
 
     const expired = queryState.expiresAt != null && queryState.expiresAt <= Date.now()
-    // @ts-expect-error params
-    if (!fetchPolicy(expired, params, queryState, store, selectors)) {
+    if (
+      !fetchPolicy(
+        expired,
+        // @ts-expect-error params
+        params,
+        queryState,
+        store,
+        selectors
+      )
+    ) {
       logsEnabled &&
         log('useQuery.useEffect skip fetch due to fetch policy', {
           queryState,
@@ -90,7 +98,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
       return
     }
 
-    fetch()
+    performFetch()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheKey, skipFetch])
 
@@ -101,7 +109,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
       queryState,
     })
 
-  return [queryState as Omit<QueryState<P, R>, 'expiresAt'>, fetch] as const
+  return [queryState as Omit<QueryState<P, R>, 'expiresAt'>, performFetch] as const
 }
 
 /** Omit `expiresAt` from comparison */

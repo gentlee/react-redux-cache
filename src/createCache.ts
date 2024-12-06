@@ -77,8 +77,12 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
 
       // selectors
 
-      const selectors = createSelectors<N, T, QP, QR, MP, MR>(cache)
+      const selectors = {
+        selectCacheState: cache.cacheStateSelector,
+        ...createSelectors<N, T, QP, QR, MP, MR>(cache),
+      }
       const {
+        selectCacheState,
         selectQueryState,
         selectQueryResult,
         selectQueryLoading,
@@ -136,7 +140,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         },
         selectors: {
           /** This is a cacheStateSelector from createCache options, or default one if was not provided. */
-          selectCacheState: cache.cacheStateSelector,
+          selectCacheState,
           /** Selects query state. */
           selectQueryState,
           /** Selects query latest result. */

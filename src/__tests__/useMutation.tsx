@@ -5,11 +5,14 @@ import {Provider} from 'react-redux'
 import {assertEventLog, generateTestEntitiesMap, generateTestUser, logEvent} from '../testing/api/utils'
 import {EMPTY_STATE} from '../testing/constants'
 import {
+  actions,
+  cache,
   selectMutationError,
   selectMutationLoading,
   selectMutationParams,
   selectMutationResult,
   selectMutationState,
+  selectors,
   useMutation,
 } from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
@@ -17,6 +20,7 @@ import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
 
 let store: ReturnType<typeof createReduxStore>
 let updateUser: ReturnType<typeof useMutation<'updateUser'>>[0]
+let mutationWithError: ReturnType<typeof useMutation<'mutationWithError'>>[0]
 let abort: () => void
 
 beforeEach(() => {
@@ -38,7 +42,7 @@ test('should be able to abort started mutation, mutation selectors work', async 
   await act(() => {
     updateUser({id: 0, name: 'New name'}).then((x) => (mutationResult1 = x))
   })
-  await act(() => advanceApiTimeout())
+  await act(advanceApiTimeout)
   const abortResult2 = await act(() => abort())
 
   // abort 3
@@ -90,6 +94,25 @@ test('should be able to abort started mutation, mutation selectors work', async 
   ])
 })
 
+test('handles errors', async () => {
+  await act(() => render())
+
+  await act(() => {
+    mutationWithError(undefined)
+  })
+  await act(advanceApiTimeout)
+
+  expect(selectMutationError(store.getState(), 'mutationWithError')).toHaveProperty('message', 'Test error')
+  expect(cache.globals.onError).toBeCalledWith(
+    new Error('Test error'),
+    'mutationWithError',
+    undefined,
+    store,
+    actions,
+    selectors
+  )
+})
+
 const render = () => {
   return renderImpl(
     <Provider store={store}>
@@ -101,6 +124,7 @@ const render = () => {
 const UseMutationComponent = () => {
   let state
   ;[updateUser, state, abort] = useMutation({mutation: 'updateUser'})
+  ;[mutationWithError] = useMutation({mutation: 'mutationWithError'})
   logEvent(`render: loading: ${state.loading}, result: ${state.result}`)
   return null
 }

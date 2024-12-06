@@ -6,7 +6,6 @@ export {defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstant
 // Backlog
 
 // ! high (1.0.0-rc.0)
-// reset [whole] cache to initial / to provided state
 // optimistic response
 // generate full api docs
 

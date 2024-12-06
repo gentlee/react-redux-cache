@@ -7,12 +7,14 @@ import {assertEventLog, clearEventLog, generateTestEntitiesMap, logEvent} from '
 import {EMPTY_STATE} from '../testing/constants'
 import {GET_USERS_ONE_PAGE_STATE} from '../testing/constants'
 import {
+  actions,
   cache,
   clearCache,
   invalidateQuery,
   mergeEntityChanges,
   selectCacheState,
   selectEntityById,
+  selectors,
   selectQueryError,
   selectQueryExpiresAt,
   selectQueryLoading,
@@ -417,18 +419,38 @@ test('custom fetch policy - enitity is not full or expired', async () => {
   expect(selectEntityById(store.getState(), 0, 'users')).toStrictEqual({id: 0, name: 'User 0', bankId: '0'})
 })
 
+test('handles errors', async () => {
+  render({query: 'queryWithError', params: undefined}) // should fetch bcs user is not full
+
+  await act(advanceApiTimeout)
+  assertEventLog(['first render: undefined', 'render: loading', 'error: Test error'])
+
+  expect(selectQueryError(store.getState(), 'queryWithError', 'undefined')).toHaveProperty(
+    'message',
+    'Test error'
+  )
+  expect(cache.globals.onError).toBeCalledWith(
+    new Error('Test error'),
+    'queryWithError',
+    undefined,
+    store,
+    actions,
+    selectors
+  )
+})
+
 // components
 
 const TestUseQueryComponent = ({options}: {options: Parameters<typeof useQuery>[0]}) => {
   client = useClient()
   const firstMountRef = useRef(true)
 
-  const [{result, loading}, refetchImpl] = useQuery(options)
+  const [{result, error, loading}, refetchImpl] = useQuery(options)
   refetch = refetchImpl
 
   logEvent(
     (firstMountRef.current ? 'first ' : '') +
-      (loading ? 'render: loading' : 'render: ' + JSON.stringify(result))
+      (loading ? 'render: loading' : error ? 'error: ' + error.message : 'render: ' + JSON.stringify(result))
   )
 
   firstMountRef.current = false
