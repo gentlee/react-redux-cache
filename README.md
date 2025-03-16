@@ -145,15 +145,14 @@ export type CacheTypenames = {
   banks: Bank,
 }
 
+// `withTypenames` is only needed to provide proper Typenames for normalization - limitation of Typescript.
+// `createCache` can be imported directly without `withTypenames`.
 export const {
   cache,
   reducer,
   hooks: {useClient, useMutation, useQuery},
-  // `withTypenames` is only needed to provide proper Typenames for normalization - limitation of Typescript.
-  // `createCache` can be imported directly without `withTypenames`.
 } = withTypenames<CacheTypenames>().createCache({
-  // Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state.
-  name: 'cache',
+  name: 'cache', // Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state.
   queries: {
     getUsers: { query: getUsers },
     getUser: {
@@ -176,15 +175,11 @@ For normalization two things are required:
 - Return an object from queries and mutations that contains the following fields (besides `result`):
 
 ```typescript
-type EntityChanges<T extends Typenames> = {  
-  /** Entities that will be merged with existing. */
-  merge?: PartialEntitiesMap<T>
-  /** Entities that will replace existing. */
-  replace?: Partial<EntitiesMap<T>>
-  /** Ids of entities that will be removed. */
-  remove?: EntityIds<T>
-  /** Alias for `merge` to support normalizr. */
-  entities?: EntityChanges<T>['merge']
+type EntityChanges<T extends Typenames> = {
+  merge?: PartialEntitiesMap<T>         /** Entities that will be merged with existing. */
+  replace?: Partial<EntitiesMap<T>>     /** Entities that will replace existing. */
+  remove?: EntityIds<T>                 /** Ids of entities that will be removed. */
+  entities?: EntityChanges<T>['merge']  /** Alias for `merge` to support normalizr. */
 }
 ```
 
@@ -206,14 +201,12 @@ Perfect implementation is when the backend already returns normalized data.
 
 // Example of query with normalization (recommended)
 
+// 1. Result can be get by any way - fetch, axios etc, even with database connection. There is no limitation here.
+// 2. `satisfies` keyword is used here for proper typing of params and returned value.
 export const getUser = (async (id) => {
-  // Result can be get by any way - fetch, axios etc, even with database connection.
-  // There is no limitation here.
   const response = await ...
 
-  // In this example normalizr package is used, but it is not necessary.
   return normalize(response, getUserSchema)
-  // satisfies keyword is used here for proper typing of params and returned value.
 }) satisfies NormalizedQuery<CacheTypenames, number>
 
 // Example of query without normalization (not recommended), with selecting access token from the store
@@ -277,10 +270,8 @@ export const updateBank = (async (bank) => {
   const {httpError, response} = ...
   return {
     result: {
-      // Error is a part of the result, containing e.g. map of not valid fields and threir error messages
-      httpError,
-      // Bank still can be returned from the backend with error e.g. when only some of fields were udpated
-      bank: response?.bank
+      httpError,            // Error is a part of the result, containing e.g. map of not valid fields and threir error messages
+      bank: response?.bank  // Bank still can be returned from the backend with error e.g. when only some of fields were udpated
     }
   }
 }) satisfies Mutation<Partial<Bank>>
