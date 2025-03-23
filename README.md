@@ -272,7 +272,7 @@ export const removeUser = (async (id, _, abortSignal) => {
 
 ### Usage
 
-Please check `example/` folder (`npm run example` to run).
+Please check `example/` folder (`npm run example` to run). There are examples for both Redux and Zustand.
 
 #### UserScreen.tsx
 ```typescript
