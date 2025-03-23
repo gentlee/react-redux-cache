@@ -21,7 +21,7 @@ export const UserScreen = () => {
   const [{result: user, loading, error}] = useQuery({
     query: 'getUser',
     params: userId,
-    skip: skip || isNaN(userId),
+    skipFetch: skip || isNaN(userId),
   })
 
   const [updateUser, {loading: updatingUser}] = useMutation({
