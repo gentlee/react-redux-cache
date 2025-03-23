@@ -3,7 +3,7 @@
   "author": "Alexander Danilov",
   "license": "MIT",
   "version": "0.16.1-rc.0",
-  "description": "Powerful data fetching and caching library that supports normalization, built on top of redux",
+  "description": "Powerful data fetching and caching library for Redux and Zustand that supports normalization.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -65,6 +65,7 @@
   "keywords": [
     "react",
     "redux",
+    "zustand",
     "cache",
     "query",
     "normalization"
