@@ -1,5 +1,5 @@
 import type { EntityChanges, Key, MutationState, QueryState, Typenames } from './types';
-import { ReduxCacheState } from './types';
+import { CacheState } from './types';
 export type Actions<N extends string = string, T extends Typenames = Typenames, QP = unknown, QR = unknown, MP = unknown, MR = unknown> = ReturnType<typeof createActions<N, T, QP, QR, MP, MR>>;
 export declare const createActions: <N extends string, T extends Typenames, QP, QR, MP, MR>(name: N) => {
     updateQueryStateAndEntities: {
@@ -74,9 +74,9 @@ export declare const createActions: <N extends string, T extends Typenames, QP, 
         type: `@rrc/${N}/clearMutationState`;
     };
     clearCache: {
-        (stateToKeep?: Partial<ReduxCacheState<T, QP, QR, MP, MR>>): {
+        (stateToKeep?: Partial<CacheState<T, QP, QR, MP, MR>>): {
             type: `@rrc/${N}/clearCache`;
-            stateToKeep: Partial<ReduxCacheState<T, QP, QR, MP, MR>> | undefined;
+            stateToKeep: Partial<CacheState<T, QP, QR, MP, MR>> | undefined;
         };
         type: `@rrc/${N}/clearCache`;
     };

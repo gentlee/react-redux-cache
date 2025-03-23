@@ -1,4 +1,3 @@
-import type { Store } from 'redux';
 import type { Actions } from './createActions';
 import type { Selectors } from './createSelectors';
 export type Key = string | number | symbol;
@@ -6,7 +5,7 @@ export type Dict<T> = Record<Key, T>;
 export type OptionalPartial<T, K extends keyof T> = Partial<{
     [A in K]: Partial<T[A]>;
 }> & Omit<T, K>;
-/** Entity changes to be merged to redux state. */
+/** Entity changes to be merged to the state. */
 export type EntityChanges<T extends Typenames> = {
     /** Entities that will be merged with existing. */
     merge?: PartialEntitiesMap<T>;
@@ -17,22 +16,34 @@ export type EntityChanges<T extends Typenames> = {
     /** Alias for `merge` to support normalizr. */
     entities?: EntityChanges<T>['merge'];
 };
+export type Store<S = unknown> = {
+    dispatch: (action: ReturnType<Actions[keyof Actions]>) => unknown;
+    getState: () => S;
+};
 /** Record of typename and its corresponding entity type */
 export type Typenames = Record<string, object>;
 export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
-    /** Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state. */
+    /** Used as prefix for actions and in default cacheStateSelector for selecting cache state from store root state. */
     name: N;
+    /** Cache options. */
+    options: CacheOptions;
+    /** Default options for queries and mutations. */
+    globals: Globals<N, T, QP, QR, MP, MR>;
+    /** Hooks to access and subscribe to the store. Imported from react-redux if not overridden. */
+    storeHooks: {
+        useStore: () => Store;
+        useSelector: <R>(selector: (state: unknown) => R, comparer?: (x: R, y: R) => boolean) => R;
+    };
+    /** Should return cache state from store root state. Default implementation returns `state[name]`. */
+    cacheStateSelector: (state: any) => CacheState<T, QP, QR, MP, MR>;
+    /** Queries. */
     queries: {
         [QK in keyof (QP & QR)]: QK extends keyof (QP | QR) ? QueryInfo<N, T, QP[QK], QR[QK], QP, QR, MP, MR> : never;
     };
+    /** Mutations. */
     mutations: {
         [MK in keyof (MP & MR)]: MK extends keyof (MP | MR) ? MutationInfo<N, T, MP[MK], MR[MK], QP, QR, MP, MR> : never;
     };
-    /** Default options for queries and mutations. */
-    globals: Globals<N, T, QP, QR, MP, MR>;
-    options: CacheOptions;
-    /** Should return cache state from redux root state. Default implementation returns `state[name]`. */
-    cacheStateSelector: (state: any) => ReduxCacheState<T, QP, QR, MP, MR>;
 };
 export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
     /** Handles errors, not handled by onError from queries and mutations. @Default undefined. */
@@ -71,7 +82,7 @@ export type EntitiesMap<T extends Typenames> = {
 export type EntityIds<T extends Typenames> = {
     [K in keyof T]?: Key[];
 };
-export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = {
+export type CacheState<T extends Typenames, QP, QR, MP, MR> = {
     entities: EntitiesMap<T>;
     queries: {
         [QK in keyof (QP | QR)]: Dict<QueryState<QP[QK], QR[QK]> | undefined>;
@@ -104,7 +115,7 @@ export type QueryInfo<N extends string, T extends Typenames = Typenames, P = unk
 export type Query<P = unknown, R = unknown> = (
 /** Query parameters */
 params: P, 
-/** Redux store */
+/** Store */
 store: Store) => Promise<QueryResponse<R>>;
 export type NormalizedQuery<T extends Typenames = Typenames, P = unknown, R = unknown> = (...args: Parameters<Query<P, R>>) => Promise<NormalizedQueryResponse<T, R>>;
 export type QueryState<P, R> = MutationState<P, R> & {
@@ -135,7 +146,7 @@ export type MutationInfo<N extends string, T extends Typenames = Typenames, P = 
 export type Mutation<P = unknown, R = unknown> = (
 /** Mutation parameters */
 params: P, 
-/** Redux store */
+/** Store */
 store: Store, 
 /** Signal is aborted for current mutation when the same mutation was called once again. */
 abortSignal: AbortSignal) => Promise<MutationResponse<R>>;

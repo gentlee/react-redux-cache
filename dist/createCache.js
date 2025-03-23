@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCache = exports.withTypenames = void 0;
 const react_1 = require("react");
-const react_redux_1 = require("react-redux");
 const createActions_1 = require("./createActions");
 const createCacheReducer_1 = require("./createCacheReducer");
 const createSelectors_1 = require("./createSelectors");
@@ -25,22 +24,26 @@ const withTypenames = () => {
      */
     return {
         createCache: (partialCache) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-            var _m, _o, _p, _q, _r, _s;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
+            var _q, _r, _s, _t, _u, _v, _w, _x;
             const abortControllers = new WeakMap();
             // provide all optional fields
             (_a = partialCache.options) !== null && _a !== void 0 ? _a : (partialCache.options = {});
-            (_b = (_m = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_m.logsEnabled = false);
-            (_c = (_o = partialCache.options).additionalValidation) !== null && _c !== void 0 ? _c : (_o.additionalValidation = utilsAndConstants_1.IS_DEV);
-            (_d = (_p = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_p.deepComparisonEnabled = true);
-            (_e = partialCache.queries) !== null && _e !== void 0 ? _e : (partialCache.queries = {});
-            (_f = partialCache.mutations) !== null && _f !== void 0 ? _f : (partialCache.mutations = {});
-            (_g = partialCache.globals) !== null && _g !== void 0 ? _g : (partialCache.globals = {});
-            (_h = (_q = partialCache.globals).queries) !== null && _h !== void 0 ? _h : (_q.queries = {});
-            (_j = (_r = partialCache.globals.queries).fetchPolicy) !== null && _j !== void 0 ? _j : (_r.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired);
-            (_k = (_s = partialCache.globals.queries).skipFetch) !== null && _k !== void 0 ? _k : (_s.skipFetch = false);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (_l = partialCache.cacheStateSelector) !== null && _l !== void 0 ? _l : (partialCache.cacheStateSelector = (state) => state[cache.name]);
+            (_b = (_q = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_q.logsEnabled = false);
+            (_c = (_r = partialCache.options).additionalValidation) !== null && _c !== void 0 ? _c : (_r.additionalValidation = utilsAndConstants_1.IS_DEV);
+            (_d = (_s = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_s.deepComparisonEnabled = true);
+            (_e = partialCache.globals) !== null && _e !== void 0 ? _e : (partialCache.globals = {});
+            (_f = (_t = partialCache.globals).queries) !== null && _f !== void 0 ? _f : (_t.queries = {});
+            (_g = (_u = partialCache.globals.queries).fetchPolicy) !== null && _g !== void 0 ? _g : (_u.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired);
+            (_h = (_v = partialCache.globals.queries).skipFetch) !== null && _h !== void 0 ? _h : (_v.skipFetch = false);
+            (_j = partialCache.storeHooks) !== null && _j !== void 0 ? _j : (partialCache.storeHooks = {});
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            (_k = (_w = partialCache.storeHooks).useStore) !== null && _k !== void 0 ? _k : (_w.useStore = require('react-redux').useStore);
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            (_l = (_x = partialCache.storeHooks).useSelector) !== null && _l !== void 0 ? _l : (_x.useSelector = require('react-redux').useSelector);
+            (_m = partialCache.cacheStateSelector) !== null && _m !== void 0 ? _m : (partialCache.cacheStateSelector = (state) => state[cache.name]);
+            (_o = partialCache.mutations) !== null && _o !== void 0 ? _o : (partialCache.mutations = {});
+            (_p = partialCache.queries) !== null && _p !== void 0 ? _p : (partialCache.queries = {});
             // @ts-expect-error private field for testing
             partialCache.abortControllers = abortControllers;
             const cache = partialCache;
@@ -49,8 +52,8 @@ const withTypenames = () => {
                 console.warn('react-redux-cache: optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true');
             }
             // selectors
-            const selectors = (0, createSelectors_1.createSelectors)(cache);
-            const { selectQueryState, selectQueryResult, selectQueryLoading, selectQueryError, selectQueryParams, selectQueryExpiresAt, selectMutationState, selectMutationResult, selectMutationLoading, selectMutationError, selectMutationParams, selectEntityById, selectEntities, selectEntitiesByTypename, } = selectors;
+            const selectors = Object.assign({ selectCacheState: cache.cacheStateSelector }, (0, createSelectors_1.createSelectors)(cache));
+            const { selectCacheState, selectQueryState, selectQueryResult, selectQueryLoading, selectQueryError, selectQueryParams, selectQueryExpiresAt, selectMutationState, selectMutationResult, selectMutationLoading, selectMutationError, selectMutationParams, selectEntityById, selectEntities, selectEntitiesByTypename, } = selectors;
             // actions
             const actions = (0, createActions_1.createActions)(cache.name);
             const { updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges, invalidateQuery, clearQueryState, clearMutationState, clearCache, } = actions;
@@ -78,7 +81,7 @@ const withTypenames = () => {
                 },
                 selectors: {
                     /** This is a cacheStateSelector from createCache options, or default one if was not provided. */
-                    selectCacheState: cache.cacheStateSelector,
+                    selectCacheState,
                     /** Selects query state. */
                     selectQueryState,
                     /** Selects query latest result. */
@@ -111,7 +114,7 @@ const withTypenames = () => {
                 hooks: {
                     /** Returns client object with query and mutate functions. */
                     useClient: () => {
-                        const store = (0, react_redux_1.useStore)();
+                        const store = cache.storeHooks.useStore();
                         return (0, react_1.useMemo)(() => {
                             const client = {
                                 query: (options) => {
@@ -139,7 +142,7 @@ const withTypenames = () => {
                     useMutation: (options) => (0, useMutation_1.useMutation)(cache, actions, selectors, options, abortControllers),
                     /** useSelector + selectEntityById. */
                     useSelectEntityById: (id, typename) => {
-                        return (0, react_redux_1.useSelector)((state) => selectEntityById(state, id, typename));
+                        return cache.storeHooks.useSelector((state) => selectEntityById(state, id, typename));
                     },
                 },
                 utils: {
