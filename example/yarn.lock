@@ -1401,10 +1401,10 @@ react-is@^18.0.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-18.3.1.tgz#e83557dc12eae63a99e003a46388b1dcbb44db7e"
   integrity sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==
 
-react-redux-cache@0.14.0:
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/react-redux-cache/-/react-redux-cache-0.14.0.tgz#eadf09db9bcb16ad1dc394016e90368133a4a09c"
-  integrity sha512-bp+ZS8O5kaPQdj0SGiuFM8uOYN8OZmtjrvTAKofwjvZ71YvG+gG0DlSwkfKXyCQ/1PAKzv11lg/MZcSDNDFTMQ==
+react-redux-cache@0.16.1-rc.0:
+  version "0.16.1-rc.0"
+  resolved "https://registry.yarnpkg.com/react-redux-cache/-/react-redux-cache-0.16.1-rc.0.tgz#0182ac42adb1780bee34ee9c37efafd2fb0a2f60"
+  integrity sha512-cjGeWGlIQ9r5y1LOED6HsgtUjgf64ntcxs0g57FhZMMbS1/gfYFdc7RMDhSjdhUH17SYrGPzCBSHO9xee+kzCQ==
 
 react-redux@8.0.5:
   version "8.0.5"
@@ -1652,3 +1652,8 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
+
+zustand@5.0.3:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/zustand/-/zustand-5.0.3.tgz#b323435b73d06b2512e93c77239634374b0e407f"
+  integrity sha512-14fwWQtU3pH4dE0dOpdMiWjddcH+QzKIgk1cl8epwSE7yag43k/AD/m4L6+K7DytAOr9gGBe3/EXj9g7cdostg==

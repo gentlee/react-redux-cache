@@ -6,6 +6,8 @@ import {PersistGate} from 'redux-persist/integration/react'
 
 import {UserScreen} from '../normalized/UserScreen'
 import {UsersScreen} from '../normalized/UsersScreen'
+import {UserScreenZustand} from '../normalized-zustand/UserScreen'
+import {UsersScreenZustand} from '../normalized-zustand/UsersScreen'
 import {UserScreen as UserScreenNotNormalized} from '../not-normalized/UserScreen'
 import {UsersScreen as UsersScreenNotNormalized} from '../not-normalized/UsersScreen'
 import {UserScreen as UserScreenNotNormalizedOptimized} from '../not-normalized-optimized/UserScreen'
@@ -32,6 +34,8 @@ export const App = ({
         <Route path="/not-normalized/user/:id" element={<UserScreenNotNormalized />} />
         <Route path="/not-normalized-optimized/users" element={<UsersScreenNotNormalizedOptimized />} />
         <Route path="/not-normalized-optimized/user/:id" element={<UserScreenNotNormalizedOptimized />} />
+        <Route path="/zustand/users" element={<UsersScreenZustand />} />
+        <Route path="/zustand/user/:id" element={<UserScreenZustand />} />
       </Routes>
     </BrowserRouter>
   )
