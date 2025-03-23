@@ -1,8 +1,6 @@
-import {Store} from 'redux'
-
 import type {Actions} from './createActions'
 import {Selectors} from './createSelectors'
-import type {Cache, Key, MutationResult, Typenames} from './types'
+import type {Cache, Key, MutationResult, Store, Typenames} from './types'
 import {log} from './utilsAndConstants'
 
 export const mutate = async <

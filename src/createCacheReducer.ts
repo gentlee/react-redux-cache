@@ -1,5 +1,5 @@
 import type {Actions} from './createActions'
-import type {CacheOptions, MutationState, QueryState, ReduxCacheState, Typenames} from './types'
+import type {CacheOptions, CacheState, MutationState, QueryState, Typenames} from './types'
 import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, log, optionalUtils} from './utilsAndConstants'
 
 const optionalQueryKeys: (keyof QueryState<unknown, unknown>)[] = ['error', 'expiresAt', 'result', 'params']
@@ -11,17 +11,17 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
   queryKeys: (keyof (QP | QR))[],
   cacheOptions: CacheOptions
 ) => {
-  type CacheState = ReduxCacheState<T, QP, QR, MP, MR>
+  type TypedCacheState = CacheState<T, QP, QR, MP, MR>
 
-  const initialState: CacheState = Object.freeze({
-    entities: Object.freeze({} as CacheState['entities']),
+  const initialState: TypedCacheState = Object.freeze({
+    entities: Object.freeze({} as TypedCacheState['entities']),
     queries: Object.freeze(
       queryKeys.reduce((result, x) => {
         result[x] = Object.freeze({})
         return result
-      }, {} as CacheState['queries'])
+      }, {} as TypedCacheState['queries'])
     ),
-    mutations: Object.freeze({} as CacheState['mutations']),
+    mutations: Object.freeze({} as TypedCacheState['mutations']),
   })
 
   cacheOptions.logsEnabled &&
@@ -32,7 +32,10 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
 
   const deepEqual = cacheOptions.deepComparisonEnabled ? optionalUtils.deepEqual : undefined
 
-  return (state = initialState, action: ReturnType<(typeof actions)[keyof typeof actions]>): CacheState => {
+  return (
+    state = initialState,
+    action: ReturnType<(typeof actions)[keyof typeof actions]>
+  ): TypedCacheState => {
     switch (action.type) {
       case actions.updateQueryStateAndEntities.type: {
         const {

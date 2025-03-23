@@ -1,11 +1,9 @@
 import {useMemo} from 'react'
-import {useSelector, useStore} from 'react-redux'
-import {Store} from 'redux'
 
 import {Actions} from './createActions'
 import {Selectors} from './createSelectors'
 import {mutate as mutateImpl} from './mutate'
-import {Cache, Key, MutateOptions, MutationState, Typenames} from './types'
+import {Cache, Key, MutateOptions, MutationState, Store, Typenames} from './types'
 import {EMPTY_OBJECT, log} from './utilsAndConstants'
 
 export const useMutation = <
@@ -28,7 +26,7 @@ export const useMutation = <
 
   const {mutation: mutationKey, onCompleted, onSuccess, onError} = options
 
-  const store = useStore()
+  const store = cache.storeHooks.useStore()
 
   // Using single useMemo for performance reasons
   const [mutationStateSelector, mutate, abort] = useMemo(() => {
@@ -78,7 +76,8 @@ export const useMutation = <
   }, [mutationKey, store])
 
   // @ts-expect-error fix later
-  const mutationState: MutationState<P, R> = useSelector(mutationStateSelector) ?? EMPTY_OBJECT
+  const mutationState: MutationState<P, R> =
+    cache.storeHooks.useSelector(mutationStateSelector) ?? EMPTY_OBJECT
 
   cache.options.logsEnabled &&
     log('useMutation', {

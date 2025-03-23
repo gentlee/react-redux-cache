@@ -2,7 +2,7 @@
   "name": "react-redux-cache",
   "author": "Alexander Danilov",
   "license": "MIT",
-  "version": "0.14.0",
+  "version": "0.15.0-rc.0",
   "description": "Powerful data fetching and caching library that supports normalization, built on top of redux",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,11 +19,13 @@
   "peerDependencies": {
     "fast-deep-equal": "*",
     "react": "^16",
-    "react-redux": "^4",
-    "redux": "^4"
+    "react-redux": "^4"
   },
   "peerDependenciesMeta": {
     "fast-deep-equal": {
+      "optional": true
+    },
+    "react-redux": {
       "optional": true
     }
   },

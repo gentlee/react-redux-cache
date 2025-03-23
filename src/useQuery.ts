@@ -1,5 +1,4 @@
 import {useCallback, useEffect} from 'react'
-import {useSelector, useStore} from 'react-redux'
 
 import {Actions} from './createActions'
 import {Selectors} from './createSelectors'
@@ -32,7 +31,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
   const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
   const cacheStateSelector = cache.cacheStateSelector
 
-  const store = useStore()
+  const store = cache.storeHooks.useStore()
 
   // @ts-expect-error fix types later
   const cacheKey = getCacheKey(params)
@@ -66,7 +65,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
 
   /** Query state */
   const queryState =
-    useSelector((state: unknown) => {
+    cache.storeHooks.useSelector((state: unknown) => {
       const queryState = cacheStateSelector(state).queries[queryKey as keyof (QP | QR)][cacheKey]
       return queryState as QueryState<P, R> | undefined // TODO proper type
     }, useQuerySelectorStateComparer<P, R>) ?? (EMPTY_OBJECT as QueryState<P, R>)

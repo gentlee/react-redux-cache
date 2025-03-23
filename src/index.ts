@@ -21,7 +21,6 @@ export {defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstant
 // ! low
 // make error type generic
 // allow multiple mutation with same keys?
-// custom useStore & useSelector to support multiple stores?
 // easy access to all currently loading queries and mutations?
 // cancellation to queries
 // if mutation & query already loading - make options: last, throttle, debounce, parallel?

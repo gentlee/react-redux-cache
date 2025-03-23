@@ -1,6 +1,4 @@
 import {useMemo} from 'react'
-import {useSelector, useStore} from 'react-redux'
-import {Store} from 'redux'
 
 import {createActions} from './createActions'
 import {createCacheReducer} from './createCacheReducer'
@@ -17,6 +15,7 @@ import type {
   OptionalPartial,
   QueryOptions,
   QueryResult,
+  Store,
   Typenames,
 } from './types'
 import {useMutation} from './useMutation'
@@ -39,7 +38,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
     createCache: <N extends string, QP, QR, MP, MR>(
       partialCache: OptionalPartial<
         Omit<Cache<N, T, QP, QR, MP, MR>, 'globals'>,
-        'options' | 'queries' | 'mutations' | 'cacheStateSelector'
+        'options' | 'queries' | 'mutations' | 'cacheStateSelector' | 'storeHooks'
       > & {
         globals?: OptionalPartial<Cache<N, T, QP, QR, MP, MR>['globals'], 'queries'>
       }
@@ -54,14 +53,18 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       partialCache.options.logsEnabled ??= false
       partialCache.options.additionalValidation ??= IS_DEV
       partialCache.options.deepComparisonEnabled ??= true
-      partialCache.queries ??= {} as TypedCache['queries']
-      partialCache.mutations ??= {} as TypedCache['mutations']
       partialCache.globals ??= {}
       partialCache.globals.queries ??= {} as Globals<N, T, QP, QR, MP, MR>['queries']
       partialCache.globals.queries.fetchPolicy ??= FetchPolicy.NoCacheOrExpired
       partialCache.globals.queries.skipFetch ??= false
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      partialCache.cacheStateSelector ??= (state: any) => state[cache.name]
+      partialCache.storeHooks ??= {} as TypedCache['storeHooks']
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      partialCache.storeHooks.useStore ??= require('react-redux').useStore
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      partialCache.storeHooks.useSelector ??= require('react-redux').useSelector
+      partialCache.cacheStateSelector ??= (state: Record<string, unknown>) => state[cache.name]
+      partialCache.mutations ??= {} as TypedCache['mutations']
+      partialCache.queries ??= {} as TypedCache['queries']
       // @ts-expect-error private field for testing
       partialCache.abortControllers = abortControllers
 
@@ -173,7 +176,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         hooks: {
           /** Returns client object with query and mutate functions. */
           useClient: () => {
-            const store = useStore()
+            const store = cache.storeHooks.useStore()
             return useMemo(() => {
               const client = {
                 query: <QK extends keyof (QP & QR)>(options: QueryOptions<N, T, QP, QR, QK, MP, MR>) => {
@@ -238,7 +241,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
             id: Key | null | undefined,
             typename: TN
           ): T[TN] | undefined => {
-            return useSelector((state) => selectEntityById(state, id, typename))
+            return cache.storeHooks.useSelector((state) => selectEntityById(state, id, typename))
           },
         },
         utils: {
