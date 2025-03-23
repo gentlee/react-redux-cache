@@ -24,26 +24,27 @@ const withTypenames = () => {
      */
     return {
         createCache: (partialCache) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
-            var _q, _r, _s, _t, _u, _v, _w, _x;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+            var _o, _p, _q, _r, _s, _t;
             const abortControllers = new WeakMap();
             // provide all optional fields
             (_a = partialCache.options) !== null && _a !== void 0 ? _a : (partialCache.options = {});
-            (_b = (_q = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_q.logsEnabled = false);
-            (_c = (_r = partialCache.options).additionalValidation) !== null && _c !== void 0 ? _c : (_r.additionalValidation = utilsAndConstants_1.IS_DEV);
-            (_d = (_s = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_s.deepComparisonEnabled = true);
+            (_b = (_o = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_o.logsEnabled = false);
+            (_c = (_p = partialCache.options).additionalValidation) !== null && _c !== void 0 ? _c : (_p.additionalValidation = utilsAndConstants_1.IS_DEV);
+            (_d = (_q = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_q.deepComparisonEnabled = true);
             (_e = partialCache.globals) !== null && _e !== void 0 ? _e : (partialCache.globals = {});
-            (_f = (_t = partialCache.globals).queries) !== null && _f !== void 0 ? _f : (_t.queries = {});
-            (_g = (_u = partialCache.globals.queries).fetchPolicy) !== null && _g !== void 0 ? _g : (_u.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired);
-            (_h = (_v = partialCache.globals.queries).skipFetch) !== null && _h !== void 0 ? _h : (_v.skipFetch = false);
-            (_j = partialCache.storeHooks) !== null && _j !== void 0 ? _j : (partialCache.storeHooks = {});
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            (_k = (_w = partialCache.storeHooks).useStore) !== null && _k !== void 0 ? _k : (_w.useStore = require('react-redux').useStore);
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            (_l = (_x = partialCache.storeHooks).useSelector) !== null && _l !== void 0 ? _l : (_x.useSelector = require('react-redux').useSelector);
-            (_m = partialCache.cacheStateSelector) !== null && _m !== void 0 ? _m : (partialCache.cacheStateSelector = (state) => state[cache.name]);
-            (_o = partialCache.mutations) !== null && _o !== void 0 ? _o : (partialCache.mutations = {});
-            (_p = partialCache.queries) !== null && _p !== void 0 ? _p : (partialCache.queries = {});
+            (_f = (_r = partialCache.globals).queries) !== null && _f !== void 0 ? _f : (_r.queries = {});
+            (_g = (_s = partialCache.globals.queries).fetchPolicy) !== null && _g !== void 0 ? _g : (_s.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired);
+            (_h = (_t = partialCache.globals.queries).skipFetch) !== null && _h !== void 0 ? _h : (_t.skipFetch = false);
+            (_j = partialCache.storeHooks) !== null && _j !== void 0 ? _j : (partialCache.storeHooks = {
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                useStore: require('react-redux').useStore,
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                useSelector: require('react-redux').useSelector,
+            });
+            (_k = partialCache.cacheStateSelector) !== null && _k !== void 0 ? _k : (partialCache.cacheStateSelector = (state) => state[cache.name]);
+            (_l = partialCache.mutations) !== null && _l !== void 0 ? _l : (partialCache.mutations = {});
+            (_m = partialCache.queries) !== null && _m !== void 0 ? _m : (partialCache.queries = {});
             // @ts-expect-error private field for testing
             partialCache.abortControllers = abortControllers;
             const cache = partialCache;

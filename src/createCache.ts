@@ -57,11 +57,12 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       partialCache.globals.queries ??= {} as Globals<N, T, QP, QR, MP, MR>['queries']
       partialCache.globals.queries.fetchPolicy ??= FetchPolicy.NoCacheOrExpired
       partialCache.globals.queries.skipFetch ??= false
-      partialCache.storeHooks ??= {} as TypedCache['storeHooks']
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      partialCache.storeHooks.useStore ??= require('react-redux').useStore
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      partialCache.storeHooks.useSelector ??= require('react-redux').useSelector
+      partialCache.storeHooks ??= {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        useStore: require('react-redux').useStore,
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        useSelector: require('react-redux').useSelector,
+      } as TypedCache['storeHooks']
       partialCache.cacheStateSelector ??= (state: Record<string, unknown>) => state[cache.name]
       partialCache.mutations ??= {} as TypedCache['mutations']
       partialCache.queries ??= {} as TypedCache['queries']
