@@ -11,9 +11,7 @@ const initialState: State = {cache: reducer(undefined, {} as any)}
 
 export const useStore = create<State & Actions>((set, get) => ({
   ...initialState,
-  dispatch: (action: CacheAction) => {
-    set({cache: reducer(get().cache, action)})
-  },
+  dispatch: (action) => set({cache: reducer(get().cache, action)}),
 }))
 
 const store = {dispatch: useStore.getState().dispatch, getState: useStore.getState}
