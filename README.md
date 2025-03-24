@@ -9,7 +9,7 @@
 
 # react-redux-cache (RRC)
 
-### Supports both `Redux` and `Zustand`
+### Supports both `Redux` and `Zustand` (check /example)
 
 **Powerful**, **performant** yet **lightweight** data fetching and caching library that supports **normalization** unlike `React Query` and `RTK-Query`, while having similar but not over-engineered, simple interface. Another advantage over `RTK-Query` is that it **doesn't use Immer** ([perf issue](https://github.com/reduxjs/redux-toolkit/issues/4793)). Covered with tests, fully typed and written on Typescript.
 
