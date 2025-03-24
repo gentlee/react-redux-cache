@@ -221,8 +221,7 @@ const store = configureStore({
 Zustand:
 ```typescript
 type State = {[cache.name]: ReturnType<typeof reducer>}
-type Actions = {dispatch: (action: CacheAction) => void}
-type CacheAction = Parameters<typeof reducer>[1]
+type Actions = {dispatch: (action: Parameters<typeof reducer>[1]) => void}
 
 const initialState: State = {[cache.name]: reducer(undefined, {} as any)}
 

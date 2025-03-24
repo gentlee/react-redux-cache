@@ -3,8 +3,7 @@ import {create} from 'zustand'
 import {cache, reducer} from './cache'
 
 type State = {[cache.name]: ReturnType<typeof reducer>}
-type Actions = {dispatch: (action: CacheAction) => void}
-type CacheAction = Parameters<typeof reducer>[1]
+type Actions = {dispatch: (action: Parameters<typeof reducer>[1]) => void}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const initialState: State = {cache: reducer(undefined, {} as any)}
