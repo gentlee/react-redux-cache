@@ -228,7 +228,7 @@ export const useStore = create<State & Actions>((set, get) => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [cache.name]: reducer(undefined, {} as any),
   dispatch: (action: CacheAction) => {
-    set({cache: reducer(get().cache, action)})
+    set({[cache.name]: reducer(get()[cache.name], action)})
   },
 }))
 
