@@ -6,9 +6,11 @@ type State = {[cache.name]: ReturnType<typeof reducer>}
 type Actions = {dispatch: (action: CacheAction) => void}
 type CacheAction = Parameters<typeof reducer>[1]
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const initialState: State = {cache: reducer(undefined, {} as any)}
+
 export const useStore = create<State & Actions>((set, get) => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [cache.name]: reducer(undefined, {} as any),
+  ...initialState,
   dispatch: (action: CacheAction) => {
     set({cache: reducer(get().cache, action)})
   },

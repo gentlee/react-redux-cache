@@ -224,8 +224,10 @@ type State = {[cache.name]: ReturnType<typeof reducer>}
 type Actions = {dispatch: (action: CacheAction) => void}
 type CacheAction = Parameters<typeof reducer>[1]
 
+const initialState: State = {[cache.name]: reducer(undefined, {} as any)}
+
 export const useStore = create<State & Actions>((set, get) => ({
-  [cache.name]: reducer(undefined, {} as any),
+  ...initialState,
   dispatch: (action: CacheAction) => {
     set({[cache.name]: reducer(get()[cache.name], action)})
   },
