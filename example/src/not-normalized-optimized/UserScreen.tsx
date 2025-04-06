@@ -62,7 +62,7 @@ export const UserScreen = () => {
       dispatch(updateQueryStateAndEntities('getUser', defaultGetCacheKey(result.id), {result}))
 
       // Update getUsers result
-      const getUsersState = selectQueryState(getState(), 'getUsers', 'all-pages')
+      const getUsersState = selectQueryState(getState(), 'getUsers', 'feed')
       if (getUsersState) {
         const userIndex = getUsersState.result?.items.findIndex((x) => x.id === result.id)
         if (getUsersState.result && userIndex != null && userIndex != -1) {
@@ -71,7 +71,7 @@ export const UserScreen = () => {
             items: [...getUsersState.result.items],
           }
           newUsersResult.items.splice(userIndex, 1, result)
-          dispatch(updateQueryStateAndEntities('getUsers', 'all-pages', {result: newUsersResult}))
+          dispatch(updateQueryStateAndEntities('getUsers', 'feed', {result: newUsersResult}))
         }
       }
     }

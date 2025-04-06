@@ -12,7 +12,7 @@ export const cacheNotNormalizedOptimized = createCache({
   queries: {
     getUsers: {
       query: getUsers,
-      getCacheKey: () => 'all-pages',
+      getCacheKey: () => 'feed',
       mergeResults: (oldResult, {result: newResult}, _, store, {updateQueryStateAndEntities}) => {
         // we set getUser query results to prevent them from loading when UserScreen is opened for the first time
         const updateGetUserResults = () => {
@@ -34,7 +34,7 @@ export const cacheNotNormalizedOptimized = createCache({
           updateGetUserResults()
           return {
             ...newResult,
-            items: [...oldResult.items, ...newResult.items],
+            items: oldResult.items.concat(newResult.items),
           }
         }
         return oldResult

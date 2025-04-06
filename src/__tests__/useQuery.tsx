@@ -86,7 +86,7 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
   store.dispatch(
     updateQueryStateAndEntities(
       'getUsers',
-      'all-pages',
+      'feed',
       {
         result: {items: [0, 1, 2], page: 1},
         error: undefined,
@@ -137,14 +137,14 @@ test('loads three pages sequentially with useQuery, refetch and client; query se
   assertEventLog(['render: loading', 'merge results: next page', 'render: ' + JSON.stringify(finalState)])
 
   expect(getUsers).toBeCalledTimes(2)
-  expect(selectQueryState(store.getState(), 'getUsers', 'all-pages')).toStrictEqual({
+  expect(selectQueryState(store.getState(), 'getUsers', 'feed')).toStrictEqual({
     result: finalState,
     params: {page: 3},
   })
-  expect(selectQueryResult(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(finalState)
-  expect(selectQueryLoading(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(false)
-  expect(selectQueryError(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(undefined)
-  expect(selectQueryParams(store.getState(), 'getUsers', 'all-pages')).toStrictEqual({page: 3})
+  expect(selectQueryResult(store.getState(), 'getUsers', 'feed')).toStrictEqual(finalState)
+  expect(selectQueryLoading(store.getState(), 'getUsers', 'feed')).toStrictEqual(false)
+  expect(selectQueryError(store.getState(), 'getUsers', 'feed')).toStrictEqual(undefined)
+  expect(selectQueryParams(store.getState(), 'getUsers', 'feed')).toStrictEqual({page: 3})
 })
 
 test('should not cancel current loading query on refetch with different params', async () => {

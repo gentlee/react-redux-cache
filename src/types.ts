@@ -197,6 +197,11 @@ export type NormalizedQuery<T extends Typenames = Typenames, P = unknown, R = un
 ) => Promise<NormalizedQueryResponse<T, R>>
 
 export type QueryState<P, R> = MutationState<P, R> & {
+  /**
+   * Timestamp in milliseconds, after which state is considered expired.
+   * Hooks may refetch the query again when component mounts, cache key or skip option change, depending on the fetch policy.
+   * Client query calls also start making fetch if onlyIfExpired argument is truthy.
+   * */
   expiresAt?: number
 }
 

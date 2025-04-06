@@ -7,9 +7,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "example": "(cd example && yarn && yarn start)",
+    "example": "(cd example && yarn && yarn dev)",
     "clean": "rm -rf dist",
     "lint": "yarn eslint src",
+    "lint-fix": "yarn eslint --fix src",
     "build": "yarn clean && yarn lint && tsc && rm -rf dist/testing && rm -rf dist/__tests__",
     "test": "node node_modules/jest/bin/jest.js",
     "preminor-rc": "yarn build && npm version preminor --preid rc",

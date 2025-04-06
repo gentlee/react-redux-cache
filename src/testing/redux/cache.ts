@@ -55,7 +55,7 @@ export const {
   queries: {
     getUsers: {
       query: getUsers,
-      getCacheKey: () => 'all-pages',
+      getCacheKey: () => 'feed',
       mergeResults: (oldResult, {result: newResult}) => {
         if (!oldResult || newResult.page === 1) {
           logEvent('merge results: first page')
@@ -65,7 +65,7 @@ export const {
           logEvent('merge results: next page')
           return {
             ...newResult,
-            items: [...oldResult.items, ...newResult.items],
+            items: oldResult.items.concat(newResult.items),
           }
         }
         logEvent('merge results: cancelled')

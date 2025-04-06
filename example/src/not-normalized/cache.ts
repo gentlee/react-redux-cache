@@ -12,7 +12,7 @@ export const cacheNotNormalized = createCache({
   queries: {
     getUsers: {
       query: getUsers,
-      getCacheKey: () => 'all-pages',
+      getCacheKey: () => 'feed',
       mergeResults: (oldResult, {result: newResult}) => {
         if (!oldResult || newResult.page === 1) {
           return newResult
@@ -20,7 +20,7 @@ export const cacheNotNormalized = createCache({
         if (newResult.page === oldResult.page + 1) {
           return {
             ...newResult,
-            items: [...oldResult.items, ...newResult.items],
+            items: oldResult.items.concat(newResult.items),
           }
         }
         return oldResult
