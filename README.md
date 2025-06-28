@@ -223,7 +223,7 @@ Zustand:
 type State = {[cache.name]: ReturnType<typeof reducer>}
 type Actions = {dispatch: (action: Parameters<typeof reducer>[1]) => void}
 
-const initialState = getInitialState()
+const initialState = {[cache.name]: getInitialState()}
 
 export const useStore = create<State & Actions>((set, get) => ({
   ...initialState,

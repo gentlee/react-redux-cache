@@ -1,12 +1,11 @@
 import {create} from 'zustand'
 
-import {cache, reducer} from './cache'
+import {cache, getInitialState, reducer} from './cache'
 
 type State = {[cache.name]: ReturnType<typeof reducer>}
 type Actions = {dispatch: (action: Parameters<typeof reducer>[1]) => void}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const initialState: State = {cache: reducer(undefined, {} as any)}
+const initialState = {[cache.name]: getInitialState()}
 
 export const useStore = create<State & Actions>((set, get) => ({
   ...initialState,

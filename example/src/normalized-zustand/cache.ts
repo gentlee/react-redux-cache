@@ -14,6 +14,7 @@ export const {
   selectors: {selectEntitiesByTypename},
   actions: {updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges},
   hooks: {useClient, useMutation, useQuery, useSelectEntityById},
+  utils: {getInitialState},
 } = withTypenames<Typenames>().createCache({
   name: 'cache',
   globals: {
