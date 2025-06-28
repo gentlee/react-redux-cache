@@ -175,6 +175,8 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
             useSelectEntityById: <TN extends keyof T>(id: Key | null | undefined, typename: TN) => T[TN] | undefined;
         };
         utils: {
+            /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
+            getInitialState: () => import("./types").CacheState<T, QP, QR, MP, MR>;
             /** Apply changes to the entities map.
              * @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. */
             applyEntityChanges: (entities: Parameters<typeof applyEntityChanges<T>>[0], changes: Parameters<typeof applyEntityChanges<T>>[1]) => import("./types").EntitiesMap<T> | undefined;
@@ -357,6 +359,8 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(partialCach
         useSelectEntityById: <TN extends string>(id: Key | null | undefined, typename: TN) => object | undefined;
     };
     utils: {
+        /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
+        getInitialState: () => import("./types").CacheState<Typenames, QP, QR, MP, MR>;
         /** Apply changes to the entities map.
          * @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. */
         applyEntityChanges: (entities: import("./types").EntitiesMap<Typenames>, changes: import("./types").EntityChanges<Typenames>) => import("./types").EntitiesMap<Typenames> | undefined;

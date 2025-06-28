@@ -58,11 +58,13 @@ const withTypenames = () => {
             // actions
             const actions = (0, createActions_1.createActions)(cache.name);
             const { updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges, invalidateQuery, clearQueryState, clearMutationState, clearCache, } = actions;
+            // reducer
+            const reducer = (0, createCacheReducer_1.createCacheReducer)(actions, Object.keys(cache.queries), cache.options);
             return {
                 /** Keeps all options, passed while creating the cache. */
                 cache,
                 /** Reducer of the cache, should be added to redux store. */
-                reducer: (0, createCacheReducer_1.createCacheReducer)(actions, Object.keys(cache.queries), cache.options),
+                reducer,
                 actions: {
                     /** Updates query state, and optionally merges entity changes in a single action. */
                     updateQueryStateAndEntities,
@@ -147,6 +149,11 @@ const withTypenames = () => {
                     },
                 },
                 utils: {
+                    /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
+                    getInitialState: () => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        return reducer(undefined, utilsAndConstants_1.EMPTY_OBJECT);
+                    },
                     /** Apply changes to the entities map.
                      * @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. */
                     applyEntityChanges: (entities, changes) => {

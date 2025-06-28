@@ -56,8 +56,13 @@ test('createCache returns correct result', () => {
     },
   })
 
-  // @ts-expect-error test type not supported
-  expect(reducer(undefined, {type: 'test'})).toStrictEqual({
+  expect(
+    reducer(
+      undefined,
+      // @ts-expect-error Empty action
+      {}
+    )
+  ).toStrictEqual({
     entities: {},
     queries: {
       getUser: {},
@@ -91,6 +96,7 @@ test('createCache returns correct result', () => {
   expect(hooks.useClient).toBeDefined()
   expect(hooks.useSelectEntityById).toBeDefined()
 
+  expect(utils.getInitialState).toBeDefined()
   expect(utils.applyEntityChanges).toBeDefined()
 })
 
@@ -158,7 +164,7 @@ const updateUser = async (id: number) => ({
   result: id,
 })
 
-const createTestingCache = <N extends string>(
+export const createTestingCache = <N extends string>(
   name: N,
   overrideHooks = true,
   cacheStateSelector?: Cache<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateSelector'],

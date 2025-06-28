@@ -41,7 +41,7 @@ export const {
     selectEntitiesByTypename,
   },
   hooks: {useClient, useMutation, useQuery},
-  utils: {applyEntityChanges},
+  utils: {getInitialState, applyEntityChanges},
 } = withTypenames<TestTypenames>().createCache({
   name: 'cache',
   options: {

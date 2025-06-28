@@ -20,7 +20,14 @@ import type {
 } from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
-import {applyEntityChanges, defaultGetCacheKey, FetchPolicy, IS_DEV, optionalUtils} from './utilsAndConstants'
+import {
+  applyEntityChanges,
+  defaultGetCacheKey,
+  EMPTY_OBJECT,
+  FetchPolicy,
+  IS_DEV,
+  optionalUtils,
+} from './utilsAndConstants'
 
 /**
  * Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.
@@ -116,15 +123,19 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         clearCache,
       } = actions
 
+      // reducer
+
+      const reducer = createCacheReducer<N, T, QP, QR, MP, MR>(
+        actions,
+        Object.keys(cache.queries) as (keyof (QP | QR))[],
+        cache.options
+      )
+
       return {
         /** Keeps all options, passed while creating the cache. */
         cache,
         /** Reducer of the cache, should be added to redux store. */
-        reducer: createCacheReducer<N, T, QP, QR, MP, MR>(
-          actions,
-          Object.keys(cache.queries) as (keyof (QP | QR))[],
-          cache.options
-        ),
+        reducer,
         actions: {
           /** Updates query state, and optionally merges entity changes in a single action. */
           updateQueryStateAndEntities,
@@ -246,6 +257,11 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           },
         },
         utils: {
+          /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
+          getInitialState: () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return reducer(undefined, EMPTY_OBJECT as any)
+          },
           /** Apply changes to the entities map.
            * @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. */
           applyEntityChanges: (
