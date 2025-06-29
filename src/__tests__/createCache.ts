@@ -1,3 +1,4 @@
+import {useSelector, useStore} from 'react-redux'
 import {createStore} from 'redux'
 
 import {withTypenames} from '../createCache'
@@ -5,13 +6,24 @@ import {getUsers, removeUser} from '../testing/api/mocks'
 import {Cache, Typenames} from '../types'
 import {FetchPolicy} from '../utilsAndConstants'
 
+const overridenHooks = {
+  useStore: jest.fn(),
+  useSelector: jest.fn(),
+}
+
 test('createCache returns correct result', () => {
   const onError = jest.fn()
-  const {cache, actions, hooks, reducer, selectors, utils} = createTestingCache('cache', undefined, onError)
+  const {cache, actions, hooks, reducer, selectors, utils} = createTestingCache(
+    'cache',
+    true,
+    undefined,
+    onError
+  )
 
   expect(cache).toStrictEqual({
     name: 'cache',
     abortControllers: new WeakMap(),
+    storeHooks: overridenHooks,
     cacheStateSelector: cache.cacheStateSelector,
     globals: {
       onError,
@@ -44,8 +56,13 @@ test('createCache returns correct result', () => {
     },
   })
 
-  // @ts-expect-error test type not supported
-  expect(reducer(undefined, {type: 'test'})).toStrictEqual({
+  expect(
+    reducer(
+      undefined,
+      // @ts-expect-error Empty action
+      {}
+    )
+  ).toStrictEqual({
     entities: {},
     queries: {
       getUser: {},
@@ -79,6 +96,7 @@ test('createCache returns correct result', () => {
   expect(hooks.useClient).toBeDefined()
   expect(hooks.useSelectEntityById).toBeDefined()
 
+  expect(utils.getInitialState).toBeDefined()
   expect(utils.applyEntityChanges).toBeDefined()
 })
 
@@ -118,11 +136,19 @@ test('custom cacheStateSelector', () => {
   const {
     reducer,
     selectors: {selectEntities},
-  } = createTestingCache('cache', (state) => state)
+  } = createTestingCache('cache', true, (state) => state)
   const store = createStore(reducer)
 
   // cacheStateSelector is used in all selectors
   expect(selectEntities(store.getState())).toBe(store.getState().entities)
+})
+
+test('using react-redux store hooks when not overriden', () => {
+  const {
+    cache: {storeHooks},
+  } = createTestingCache('cache', false)
+
+  expect(storeHooks).toStrictEqual({useStore, useSelector})
 })
 
 // utils & constants
@@ -138,8 +164,9 @@ const updateUser = async (id: number) => ({
   result: id,
 })
 
-const createTestingCache = <N extends string>(
+export const createTestingCache = <N extends string>(
   name: N,
+  overrideHooks = true,
   cacheStateSelector?: Cache<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateSelector'],
   onError?: () => void
 ) => {
@@ -147,6 +174,10 @@ const createTestingCache = <N extends string>(
     users: {id: number}
   }>().createCache({
     name,
+    options: {
+      logsEnabled: false,
+      additionalValidation: true,
+    },
     globals: {
       queries: {
         fetchPolicy: FetchPolicy.Always,
@@ -154,10 +185,7 @@ const createTestingCache = <N extends string>(
       },
       onError,
     },
-    options: {
-      logsEnabled: false,
-      additionalValidation: true,
-    },
+    storeHooks: overrideHooks ? overridenHooks : undefined,
     queries: {
       getUser: {
         query: getUser,

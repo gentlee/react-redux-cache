@@ -1,8 +1,6 @@
-import {Store} from 'redux'
-
 import type {Actions} from './createActions'
 import {Selectors} from './createSelectors'
-import type {Cache, Key, QueryResult, Typenames} from './types'
+import type {Cache, Key, QueryResult, Store, Typenames} from './types'
 import {log} from './utilsAndConstants'
 
 export const query = async <

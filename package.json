@@ -2,28 +2,32 @@
   "name": "react-redux-cache",
   "author": "Alexander Danilov",
   "license": "MIT",
-  "version": "0.13.0",
-  "description": "Powerful data fetching and caching library that supports normalization, built on top of redux",
+  "version": "0.17.0",
+  "description": "Powerful data fetching and caching library for Redux and Zustand that supports normalization.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "example": "(cd example && yarn && yarn start)",
+    "example": "(cd example && yarn && yarn dev)",
     "clean": "rm -rf dist",
     "lint": "yarn eslint src",
+    "lint-fix": "yarn eslint --fix src",
     "build": "yarn clean && yarn lint && tsc && rm -rf dist/testing && rm -rf dist/__tests__",
     "test": "node node_modules/jest/bin/jest.js",
     "preminor-rc": "yarn build && npm version preminor --preid rc",
+    "prepatch-rc": "yarn build && npm version prepatch --preid rc",
     "publish-rc": "npm publish --tag rc",
     "prepublishOnly": "yarn build && yarn test"
   },
   "peerDependencies": {
     "fast-deep-equal": "*",
     "react": "^16",
-    "react-redux": "^4",
-    "redux": "^4"
+    "react-redux": "^4"
   },
   "peerDependenciesMeta": {
     "fast-deep-equal": {
+      "optional": true
+    },
+    "react-redux": {
       "optional": true
     }
   },
@@ -62,6 +66,7 @@
   "keywords": [
     "react",
     "redux",
+    "zustand",
     "cache",
     "query",
     "normalization"

@@ -1,10 +1,6 @@
 import type {Actions} from './createActions'
-import type {CacheOptions, Dict, EntitiesMap, MutationState, QueryState, Typenames} from './types'
+import type {CacheOptions, CacheState, MutationState, QueryState, Typenames} from './types'
 import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, log, optionalUtils} from './utilsAndConstants'
-
-export type ReduxCacheState<T extends Typenames, QP, QR, MP, MR> = ReturnType<
-  ReturnType<typeof createReducer<string, T, QP, QR, MP, MR>>
->
 
 const optionalQueryKeys: (keyof QueryState<unknown, unknown>)[] = ['error', 'expiresAt', 'result', 'params']
 
@@ -15,20 +11,18 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
   queryKeys: (keyof (QP | QR))[],
   cacheOptions: CacheOptions
 ) => {
-  const entitiesMap = {} as EntitiesMap<T>
+  type TypedCacheState = CacheState<T, QP, QR, MP, MR>
 
-  const queryStateMap = {} as {[QK in keyof (QP | QR)]: Dict<QueryState<QP[QK], QR[QK]> | undefined>}
-  for (const key of queryKeys) {
-    queryStateMap[key] = {}
-  }
-
-  const mutationStateMap = {} as {[MK in keyof (MP | MR)]: MutationState<MP[MK], MR[MK]>}
-
-  const initialState = {
-    entities: entitiesMap,
-    queries: queryStateMap,
-    mutations: mutationStateMap,
-  }
+  const initialState: TypedCacheState = Object.freeze({
+    entities: Object.freeze({} as TypedCacheState['entities']),
+    queries: Object.freeze(
+      queryKeys.reduce((result, x) => {
+        result[x] = Object.freeze({})
+        return result
+      }, {} as TypedCacheState['queries'])
+    ),
+    mutations: Object.freeze({} as TypedCacheState['mutations']),
+  })
 
   cacheOptions.logsEnabled &&
     log('createCacheReducer', {
@@ -41,7 +35,7 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
   return (
     state = initialState,
     action: ReturnType<(typeof actions)[keyof typeof actions]>
-  ): typeof initialState => {
+  ): TypedCacheState => {
     switch (action.type) {
       case actions.updateQueryStateAndEntities.type: {
         const {
@@ -277,6 +271,15 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
               ...state,
               mutations: newMutations,
             }
+      }
+      case actions.clearCache.type: {
+        const {stateToKeep} = action as ReturnType<typeof actions.clearCache>
+        return stateToKeep
+          ? {
+              ...initialState,
+              ...stateToKeep,
+            }
+          : initialState
       }
     }
     return state

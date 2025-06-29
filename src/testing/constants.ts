@@ -8,7 +8,7 @@ export const GET_USERS_ONE_PAGE_STATE = {
   queries: {
     ...EMPTY_STATE.queries,
     getUsers: {
-      'all-pages': {
+      feed: {
         result: {
           items: [0, 1, 2],
           page: 1,

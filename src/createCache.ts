@@ -1,6 +1,4 @@
 import {useMemo} from 'react'
-import {useSelector, useStore} from 'react-redux'
-import {Store} from 'redux'
 
 import {createActions} from './createActions'
 import {createReducer} from './createReducer'
@@ -17,11 +15,19 @@ import type {
   OptionalPartial,
   QueryOptions,
   QueryResult,
+  Store,
   Typenames,
 } from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
-import {applyEntityChanges, defaultGetCacheKey, FetchPolicy, IS_DEV, optionalUtils} from './utilsAndConstants'
+import {
+  applyEntityChanges,
+  defaultGetCacheKey,
+  EMPTY_OBJECT,
+  FetchPolicy,
+  IS_DEV,
+  optionalUtils,
+} from './utilsAndConstants'
 
 /**
  * Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.
@@ -37,7 +43,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
     createCache: <N extends string, QP, QR, MP, MR>(
       partialCache: OptionalPartial<
         Omit<Cache<N, T, QP, QR, MP, MR>, 'globals'>,
-        'options' | 'queries' | 'mutations' | 'cacheStateSelector'
+        'options' | 'queries' | 'mutations' | 'cacheStateSelector' | 'storeHooks'
       > & {
         globals?: OptionalPartial<Cache<N, T, QP, QR, MP, MR>['globals'], 'queries'>
       }
@@ -52,14 +58,19 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       partialCache.options.logsEnabled ??= false
       partialCache.options.additionalValidation ??= IS_DEV
       partialCache.options.deepComparisonEnabled ??= true
-      partialCache.queries ??= {} as TypedCache['queries']
-      partialCache.mutations ??= {} as TypedCache['mutations']
       partialCache.globals ??= {}
       partialCache.globals.queries ??= {} as Globals<N, T, QP, QR, MP, MR>['queries']
       partialCache.globals.queries.fetchPolicy ??= FetchPolicy.NoCacheOrExpired
       partialCache.globals.queries.skipFetch ??= false
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      partialCache.cacheStateSelector ??= (state: any) => state[cache.name]
+      partialCache.storeHooks ??= {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        useStore: require('react-redux').useStore,
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        useSelector: require('react-redux').useSelector,
+      } as TypedCache['storeHooks']
+      partialCache.cacheStateSelector ??= (state: Record<string, unknown>) => state[cache.name]
+      partialCache.mutations ??= {} as TypedCache['mutations']
+      partialCache.queries ??= {} as TypedCache['queries']
       // @ts-expect-error private field for testing
       partialCache.abortControllers = abortControllers
 
@@ -75,8 +86,12 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
 
       // selectors
 
-      const selectors = createSelectors<N, T, QP, QR, MP, MR>(cache)
+      const selectors = {
+        selectCacheState: cache.cacheStateSelector,
+        ...createSelectors<N, T, QP, QR, MP, MR>(cache),
+      }
       const {
+        selectCacheState,
         selectQueryState,
         selectQueryResult,
         selectQueryLoading,
@@ -103,33 +118,42 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         invalidateQuery,
         clearQueryState,
         clearMutationState,
+        clearCache,
       } = actions
+
+      // reducer
+
+      const reducer = createReducer<N, T, QP, QR, MP, MR>(
+        actions,
+        Object.keys(cache.queries) as (keyof (QP | QR))[],
+        cache.options
+      )
 
       return {
         /** Keeps all options, passed while creating the cache. */
         cache,
         /** Reducer of the cache, should be added to redux store. */
-        reducer: createReducer<N, T, QP, QR, MP, MR>(
-          actions,
-          Object.keys(cache.queries) as (keyof (QP | QR))[],
-          cache.options
-        ),
+        reducer,
         actions: {
           /** Updates query state, and optionally merges entity changes in a single action. */
           updateQueryStateAndEntities,
           /** Updates mutation state, and optionally merges entity changes in a single action. */
           updateMutationStateAndEntities,
-          /** Merge EntityChanges to the state. */
+          /** Merges EntityChanges to the state. */
           mergeEntityChanges,
           /** Invalidates query states. */
           invalidateQuery,
-          /** Clear states for provided query keys and cache keys.
+          /** Clears states for provided query keys and cache keys.
            * If cache key for query key is not provided, the whole state for query key is cleared. */
           clearQueryState,
-          /** Clear states for provided mutation keys. */
+          /** Clears states for provided mutation keys. */
           clearMutationState,
+          /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and shoult be used with caution. */
+          clearCache,
         },
         selectors: {
+          /** This is a cacheStateSelector from createCache options, or default one if was not provided. */
+          selectCacheState,
           /** Selects query state. */
           selectQueryState,
           /** Selects query latest result. */
@@ -162,7 +186,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         hooks: {
           /** Returns client object with query and mutate functions. */
           useClient: () => {
-            const store = useStore()
+            const store = cache.storeHooks.useStore()
             return useMemo(() => {
               const client = {
                 query: <QK extends keyof (QP & QR)>(options: QueryOptions<N, T, QP, QR, QK, MP, MR>) => {
@@ -227,10 +251,15 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
             id: Key | null | undefined,
             typename: TN
           ): T[TN] | undefined => {
-            return useSelector((state) => selectEntityById(state, id, typename))
+            return cache.storeHooks.useSelector((state) => selectEntityById(state, id, typename))
           },
         },
         utils: {
+          /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
+          getInitialState: () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return reducer(undefined, EMPTY_OBJECT as any)
+          },
           /** Apply changes to the entities map.
            * @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. */
           applyEntityChanges: (

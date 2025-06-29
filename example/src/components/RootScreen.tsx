@@ -4,13 +4,16 @@ export const RootScreen = () => {
   return (
     <div className="screen">
       <Link className={'link'} to={'/users'}>
-        Normalized (best)
+        Redux: Normalized
       </Link>
       <Link className={'link'} to={'/not-normalized/users'}>
-        Not normalized (invalidation)
+        Redux: Not normalized (invalidation)
       </Link>
       <Link className={'link'} to={'/not-normalized-optimized/users'}>
-        Not normalized, optimized (better state updates)
+        Redux: Not normalized, optimized (better state updates)
+      </Link>
+      <Link className={'link'} to={'/zustand/users'}>
+        Zustand: Normalized
       </Link>
     </div>
   )

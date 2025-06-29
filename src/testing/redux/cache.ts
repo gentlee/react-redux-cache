@@ -2,7 +2,7 @@ import {withTypenames} from '../../createCache'
 import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
 import type {Bank, User} from '../api/types'
 import {logEvent} from '../api/utils'
-import {TTL_TIMEOUT} from '../utils'
+import {throwErrorAfterTimeout, TTL_TIMEOUT} from '../utils'
 
 export type TestTypenames = {
   users: User
@@ -12,6 +12,7 @@ export type TestTypenames = {
 export const {
   cache,
   reducer,
+  actions,
   actions: {
     updateQueryStateAndEntities,
     updateMutationStateAndEntities,
@@ -19,8 +20,11 @@ export const {
     invalidateQuery,
     clearQueryState,
     clearMutationState,
+    clearCache,
   },
+  selectors,
   selectors: {
+    selectCacheState,
     selectQueryState,
     selectQueryResult,
     selectQueryLoading,
@@ -37,7 +41,7 @@ export const {
     selectEntitiesByTypename,
   },
   hooks: {useClient, useMutation, useQuery},
-  utils: {applyEntityChanges},
+  utils: {getInitialState, applyEntityChanges},
 } = withTypenames<TestTypenames>().createCache({
   name: 'cache',
   options: {
@@ -45,10 +49,13 @@ export const {
     additionalValidation: true,
     // deepComparisonEnabled: false,
   },
+  globals: {
+    onError: jest.fn(),
+  },
   queries: {
     getUsers: {
       query: getUsers,
-      getCacheKey: () => 'all-pages',
+      getCacheKey: () => 'feed',
       mergeResults: (oldResult, {result: newResult}) => {
         if (!oldResult || newResult.page === 1) {
           logEvent('merge results: first page')
@@ -58,7 +65,7 @@ export const {
           logEvent('merge results: next page')
           return {
             ...newResult,
-            items: [...oldResult.items, ...newResult.items],
+            items: oldResult.items.concat(newResult.items),
           }
         }
         logEvent('merge results: cancelled')
@@ -88,6 +95,9 @@ export const {
         return !user || !('name' in user) || !('bankId' in user)
       },
     },
+    queryWithError: {
+      query: throwErrorAfterTimeout,
+    },
   },
   mutations: {
     updateUser: {
@@ -95,6 +105,9 @@ export const {
     },
     removeUser: {
       mutation: removeUser,
+    },
+    mutationWithError: {
+      mutation: throwErrorAfterTimeout,
     },
   },
 })

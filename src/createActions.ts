@@ -1,4 +1,5 @@
 import type {EntityChanges, Key, MutationState, QueryState, Typenames} from './types'
+import {CacheState} from './types'
 import {PACKAGE_SHORT_NAME} from './utilsAndConstants'
 
 export type Actions<
@@ -85,6 +86,13 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
   })
   clearMutationState.type = clearMutationStateType
 
+  const clearCacheType = `${actionPrefix}clearCache` as const
+  const clearCache = (stateToKeep?: Partial<CacheState<T, QP, QR, MP, MR>>) => ({
+    type: clearCacheType,
+    stateToKeep,
+  })
+  clearCache.type = clearCacheType
+
   return {
     updateQueryStateAndEntities,
     updateMutationStateAndEntities,
@@ -92,5 +100,6 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
     invalidateQuery,
     clearQueryState,
     clearMutationState,
+    clearCache,
   }
 }

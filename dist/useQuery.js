@@ -11,7 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useQuerySelectorStateComparer = exports.useQuery = void 0;
 const react_1 = require("react");
-const react_redux_1 = require("react-redux");
 const query_1 = require("./query");
 const utilsAndConstants_1 = require("./utilsAndConstants");
 const useQuery = (cache, actions, selectors, options) => {
@@ -20,11 +19,11 @@ const useQuery = (cache, actions, selectors, options) => {
     const logsEnabled = cache.options.logsEnabled;
     const getCacheKey = (_b = cache.queries[queryKey].getCacheKey) !== null && _b !== void 0 ? _b : (utilsAndConstants_1.defaultGetCacheKey);
     const cacheStateSelector = cache.cacheStateSelector;
-    const store = (0, react_redux_1.useStore)();
+    const store = cache.storeHooks.useStore();
     // @ts-expect-error fix types later
     const cacheKey = getCacheKey(params);
     /** Fetch query with the new parameters, or refetch with the same if parameters not provided. */
-    const fetch = (0, react_1.useCallback)((options) => __awaiter(void 0, void 0, void 0, function* () {
+    const performFetch = (0, react_1.useCallback)((options) => __awaiter(void 0, void 0, void 0, function* () {
         const paramsPassed = options && 'params' in options;
         return yield (0, query_1.query)('useQuery.fetch', store, cache, actions, selectors, queryKey, 
         // @ts-expect-error fix later
@@ -36,7 +35,7 @@ const useQuery = (cache, actions, selectors, options) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [store, queryKey, cacheKey]);
     /** Query state */
-    const queryState = (_c = (0, react_redux_1.useSelector)((state) => {
+    const queryState = (_c = cache.storeHooks.useSelector((state) => {
         const queryState = cacheStateSelector(state).queries[queryKey][cacheKey];
         return queryState; // TODO proper type
     }, (exports.useQuerySelectorStateComparer))) !== null && _c !== void 0 ? _c : utilsAndConstants_1.EMPTY_OBJECT;
@@ -46,8 +45,9 @@ const useQuery = (cache, actions, selectors, options) => {
             return;
         }
         const expired = queryState.expiresAt != null && queryState.expiresAt <= Date.now();
+        if (!fetchPolicy(expired, 
         // @ts-expect-error params
-        if (!fetchPolicy(expired, params, queryState, store, selectors)) {
+        params, queryState, store, selectors)) {
             logsEnabled &&
                 (0, utilsAndConstants_1.log)('useQuery.useEffect skip fetch due to fetch policy', {
                     queryState,
@@ -57,7 +57,7 @@ const useQuery = (cache, actions, selectors, options) => {
                 });
             return;
         }
-        fetch();
+        performFetch();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cacheKey, skipFetch]);
     logsEnabled &&
@@ -66,7 +66,7 @@ const useQuery = (cache, actions, selectors, options) => {
             options,
             queryState,
         });
-    return [queryState, fetch];
+    return [queryState, performFetch];
 };
 exports.useQuery = useQuery;
 /** Omit `expiresAt` from comparison */

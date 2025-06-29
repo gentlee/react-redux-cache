@@ -7,10 +7,14 @@ import {assertEventLog, clearEventLog, generateTestEntitiesMap, logEvent} from '
 import {EMPTY_STATE} from '../testing/constants'
 import {GET_USERS_ONE_PAGE_STATE} from '../testing/constants'
 import {
+  actions,
   cache,
+  clearCache,
   invalidateQuery,
   mergeEntityChanges,
+  selectCacheState,
   selectEntityById,
+  selectors,
   selectQueryError,
   selectQueryExpiresAt,
   selectQueryLoading,
@@ -30,16 +34,17 @@ let client: {query: any}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let refetch: any
 
-let store: ReturnType<typeof createReduxStore>
+const store = createReduxStore(false)
 let rerender: ReturnType<typeof renderImpl>['rerender']
 beforeEach(() => {
-  store = createReduxStore(false)
-
   // always use rerender instead of render
   ;({rerender} = renderImpl(<div />))
 })
 
 afterEach(() => {
+  store.dispatch(clearCache())
+  expect(selectCacheState(store.getState())).toStrictEqual(EMPTY_STATE)
+
   getUsers.mockClear()
   getUser.mockClear()
 })
@@ -81,7 +86,7 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
   store.dispatch(
     updateQueryStateAndEntities(
       'getUsers',
-      'all-pages',
+      'feed',
       {
         result: {items: [0, 1, 2], page: 1},
         error: undefined,
@@ -132,14 +137,14 @@ test('loads three pages sequentially with useQuery, refetch and client; query se
   assertEventLog(['render: loading', 'merge results: next page', 'render: ' + JSON.stringify(finalState)])
 
   expect(getUsers).toBeCalledTimes(2)
-  expect(selectQueryState(store.getState(), 'getUsers', 'all-pages')).toStrictEqual({
+  expect(selectQueryState(store.getState(), 'getUsers', 'feed')).toStrictEqual({
     result: finalState,
     params: {page: 3},
   })
-  expect(selectQueryResult(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(finalState)
-  expect(selectQueryLoading(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(false)
-  expect(selectQueryError(store.getState(), 'getUsers', 'all-pages')).toStrictEqual(undefined)
-  expect(selectQueryParams(store.getState(), 'getUsers', 'all-pages')).toStrictEqual({page: 3})
+  expect(selectQueryResult(store.getState(), 'getUsers', 'feed')).toStrictEqual(finalState)
+  expect(selectQueryLoading(store.getState(), 'getUsers', 'feed')).toStrictEqual(false)
+  expect(selectQueryError(store.getState(), 'getUsers', 'feed')).toStrictEqual(undefined)
+  expect(selectQueryParams(store.getState(), 'getUsers', 'feed')).toStrictEqual({page: 3})
 })
 
 test('should not cancel current loading query on refetch with different params', async () => {
@@ -414,18 +419,38 @@ test('custom fetch policy - enitity is not full or expired', async () => {
   expect(selectEntityById(store.getState(), 0, 'users')).toStrictEqual({id: 0, name: 'User 0', bankId: '0'})
 })
 
+test('handles errors', async () => {
+  render({query: 'queryWithError', params: undefined}) // should fetch bcs user is not full
+
+  await act(advanceApiTimeout)
+  assertEventLog(['first render: undefined', 'render: loading', 'error: Test error'])
+
+  expect(selectQueryError(store.getState(), 'queryWithError', 'undefined')).toHaveProperty(
+    'message',
+    'Test error'
+  )
+  expect(cache.globals.onError).toBeCalledWith(
+    new Error('Test error'),
+    'queryWithError',
+    undefined,
+    store,
+    actions,
+    selectors
+  )
+})
+
 // components
 
 const TestUseQueryComponent = ({options}: {options: Parameters<typeof useQuery>[0]}) => {
   client = useClient()
   const firstMountRef = useRef(true)
 
-  const [{result, loading}, refetchImpl] = useQuery(options)
+  const [{result, error, loading}, refetchImpl] = useQuery(options)
   refetch = refetchImpl
 
   logEvent(
     (firstMountRef.current ? 'first ' : '') +
-      (loading ? 'render: loading' : 'render: ' + JSON.stringify(result))
+      (loading ? 'render: loading' : error ? 'error: ' + error.message : 'render: ' + JSON.stringify(result))
   )
 
   firstMountRef.current = false

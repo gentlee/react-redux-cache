@@ -1,11 +1,9 @@
 import {useMemo} from 'react'
-import {useSelector, useStore} from 'react-redux'
-import {Store} from 'redux'
 
 import {Actions} from './createActions'
 import {Selectors} from './createSelectors'
 import {mutate as mutateImpl} from './mutate'
-import {Cache, Key, MutateOptions, MutationState, Typenames} from './types'
+import {Cache, Key, MutateOptions, MutationState, Store, Typenames} from './types'
 import {EMPTY_OBJECT, log} from './utilsAndConstants'
 
 export const useMutation = <
@@ -17,7 +15,7 @@ export const useMutation = <
   MR,
   MK extends keyof (MP & MR)
 >(
-  cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'mutations'>,
+  cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'mutations' | 'storeHooks'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
   selectors: Selectors<N, T, QP, QR, MP, MR>,
   options: Omit<MutateOptions<N, T, QP, QR, MP, MR, MK>, 'params'>,
@@ -30,7 +28,7 @@ export const useMutation = <
   const {updateMutationStateAndEntities} = actions
   const {mutation: mutationKey, onCompleted, onSuccess, onError} = options
 
-  const store = useStore()
+  const store = cache.storeHooks.useStore()
 
   // Using single useMemo for better performance
   const [mutationStateSelector, mutate, abort] = useMemo(() => {
@@ -73,7 +71,8 @@ export const useMutation = <
   }, [mutationKey, store])
 
   // @ts-expect-error fix later
-  const mutationState: MutationState<P, R> = useSelector(mutationStateSelector) ?? EMPTY_OBJECT
+  const mutationState: MutationState<P, R> =
+    cache.storeHooks.useSelector(mutationStateSelector) ?? EMPTY_OBJECT
 
   cache.options.logsEnabled &&
     log('useMutation', {

@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCache = exports.withTypenames = void 0;
 const react_1 = require("react");
-const react_redux_1 = require("react-redux");
 const createActions_1 = require("./createActions");
 const createCacheReducer_1 = require("./createCacheReducer");
 const createSelectors_1 = require("./createSelectors");
@@ -25,22 +24,27 @@ const withTypenames = () => {
      */
     return {
         createCache: (partialCache) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-            var _m, _o, _p, _q, _r, _s;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+            var _o, _p, _q, _r, _s, _t;
             const abortControllers = new WeakMap();
             // provide all optional fields
             (_a = partialCache.options) !== null && _a !== void 0 ? _a : (partialCache.options = {});
-            (_b = (_m = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_m.logsEnabled = false);
-            (_c = (_o = partialCache.options).additionalValidation) !== null && _c !== void 0 ? _c : (_o.additionalValidation = utilsAndConstants_1.IS_DEV);
-            (_d = (_p = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_p.deepComparisonEnabled = true);
-            (_e = partialCache.queries) !== null && _e !== void 0 ? _e : (partialCache.queries = {});
-            (_f = partialCache.mutations) !== null && _f !== void 0 ? _f : (partialCache.mutations = {});
-            (_g = partialCache.globals) !== null && _g !== void 0 ? _g : (partialCache.globals = {});
-            (_h = (_q = partialCache.globals).queries) !== null && _h !== void 0 ? _h : (_q.queries = {});
-            (_j = (_r = partialCache.globals.queries).fetchPolicy) !== null && _j !== void 0 ? _j : (_r.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired);
-            (_k = (_s = partialCache.globals.queries).skipFetch) !== null && _k !== void 0 ? _k : (_s.skipFetch = false);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (_l = partialCache.cacheStateSelector) !== null && _l !== void 0 ? _l : (partialCache.cacheStateSelector = (state) => state[cache.name]);
+            (_b = (_o = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_o.logsEnabled = false);
+            (_c = (_p = partialCache.options).additionalValidation) !== null && _c !== void 0 ? _c : (_p.additionalValidation = utilsAndConstants_1.IS_DEV);
+            (_d = (_q = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0 ? _d : (_q.deepComparisonEnabled = true);
+            (_e = partialCache.globals) !== null && _e !== void 0 ? _e : (partialCache.globals = {});
+            (_f = (_r = partialCache.globals).queries) !== null && _f !== void 0 ? _f : (_r.queries = {});
+            (_g = (_s = partialCache.globals.queries).fetchPolicy) !== null && _g !== void 0 ? _g : (_s.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired);
+            (_h = (_t = partialCache.globals.queries).skipFetch) !== null && _h !== void 0 ? _h : (_t.skipFetch = false);
+            (_j = partialCache.storeHooks) !== null && _j !== void 0 ? _j : (partialCache.storeHooks = {
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                useStore: require('react-redux').useStore,
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                useSelector: require('react-redux').useSelector,
+            });
+            (_k = partialCache.cacheStateSelector) !== null && _k !== void 0 ? _k : (partialCache.cacheStateSelector = (state) => state[cache.name]);
+            (_l = partialCache.mutations) !== null && _l !== void 0 ? _l : (partialCache.mutations = {});
+            (_m = partialCache.queries) !== null && _m !== void 0 ? _m : (partialCache.queries = {});
             // @ts-expect-error private field for testing
             partialCache.abortControllers = abortControllers;
             const cache = partialCache;
@@ -49,32 +53,38 @@ const withTypenames = () => {
                 console.warn('react-redux-cache: optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true');
             }
             // selectors
-            const selectors = (0, createSelectors_1.createSelectors)(cache);
-            const { selectQueryState, selectQueryResult, selectQueryLoading, selectQueryError, selectQueryParams, selectQueryExpiresAt, selectMutationState, selectMutationResult, selectMutationLoading, selectMutationError, selectMutationParams, selectEntityById, selectEntities, selectEntitiesByTypename, } = selectors;
+            const selectors = Object.assign({ selectCacheState: cache.cacheStateSelector }, (0, createSelectors_1.createSelectors)(cache));
+            const { selectCacheState, selectQueryState, selectQueryResult, selectQueryLoading, selectQueryError, selectQueryParams, selectQueryExpiresAt, selectMutationState, selectMutationResult, selectMutationLoading, selectMutationError, selectMutationParams, selectEntityById, selectEntities, selectEntitiesByTypename, } = selectors;
             // actions
             const actions = (0, createActions_1.createActions)(cache.name);
-            const { updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges, invalidateQuery, clearQueryState, clearMutationState, } = actions;
+            const { updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges, invalidateQuery, clearQueryState, clearMutationState, clearCache, } = actions;
+            // reducer
+            const reducer = (0, createCacheReducer_1.createCacheReducer)(actions, Object.keys(cache.queries), cache.options);
             return {
                 /** Keeps all options, passed while creating the cache. */
                 cache,
                 /** Reducer of the cache, should be added to redux store. */
-                reducer: (0, createCacheReducer_1.createCacheReducer)(actions, Object.keys(cache.queries), cache.options),
+                reducer,
                 actions: {
                     /** Updates query state, and optionally merges entity changes in a single action. */
                     updateQueryStateAndEntities,
                     /** Updates mutation state, and optionally merges entity changes in a single action. */
                     updateMutationStateAndEntities,
-                    /** Merge EntityChanges to the state. */
+                    /** Merges EntityChanges to the state. */
                     mergeEntityChanges,
                     /** Invalidates query states. */
                     invalidateQuery,
-                    /** Clear states for provided query keys and cache keys.
+                    /** Clears states for provided query keys and cache keys.
                      * If cache key for query key is not provided, the whole state for query key is cleared. */
                     clearQueryState,
-                    /** Clear states for provided mutation keys. */
+                    /** Clears states for provided mutation keys. */
                     clearMutationState,
+                    /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and shoult be used with caution. */
+                    clearCache,
                 },
                 selectors: {
+                    /** This is a cacheStateSelector from createCache options, or default one if was not provided. */
+                    selectCacheState,
                     /** Selects query state. */
                     selectQueryState,
                     /** Selects query latest result. */
@@ -107,7 +117,7 @@ const withTypenames = () => {
                 hooks: {
                     /** Returns client object with query and mutate functions. */
                     useClient: () => {
-                        const store = (0, react_redux_1.useStore)();
+                        const store = cache.storeHooks.useStore();
                         return (0, react_1.useMemo)(() => {
                             const client = {
                                 query: (options) => {
@@ -135,10 +145,15 @@ const withTypenames = () => {
                     useMutation: (options) => (0, useMutation_1.useMutation)(cache, actions, selectors, options, abortControllers),
                     /** useSelector + selectEntityById. */
                     useSelectEntityById: (id, typename) => {
-                        return (0, react_redux_1.useSelector)((state) => selectEntityById(state, id, typename));
+                        return cache.storeHooks.useSelector((state) => selectEntityById(state, id, typename));
                     },
                 },
                 utils: {
+                    /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
+                    getInitialState: () => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        return reducer(undefined, utilsAndConstants_1.EMPTY_OBJECT);
+                    },
                     /** Apply changes to the entities map.
                      * @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. */
                     applyEntityChanges: (entities, changes) => {
