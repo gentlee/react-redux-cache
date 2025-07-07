@@ -37,10 +37,8 @@ const withTypenames = () => {
             (_g = (_s = partialCache.globals.queries).fetchPolicy) !== null && _g !== void 0 ? _g : (_s.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired);
             (_h = (_t = partialCache.globals.queries).skipFetch) !== null && _h !== void 0 ? _h : (_t.skipFetch = false);
             (_j = partialCache.storeHooks) !== null && _j !== void 0 ? _j : (partialCache.storeHooks = {
-                // eslint-disable-next-line @typescript-eslint/no-var-requires
-                useStore: require('react-redux').useStore,
-                // eslint-disable-next-line @typescript-eslint/no-var-requires
-                useSelector: require('react-redux').useSelector,
+                useStore: require.call(undefined, 'react-redux').useStore,
+                useSelector: require.call(undefined, 'react-redux').useSelector,
             });
             (_k = partialCache.cacheStateSelector) !== null && _k !== void 0 ? _k : (partialCache.cacheStateSelector = (state) => state[cache.name]);
             (_l = partialCache.mutations) !== null && _l !== void 0 ? _l : (partialCache.mutations = {});
@@ -60,6 +58,27 @@ const withTypenames = () => {
             const { updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges, invalidateQuery, clearQueryState, clearMutationState, clearCache, } = actions;
             // reducer
             const reducer = (0, createCacheReducer_1.createCacheReducer)(actions, Object.keys(cache.queries), cache.options);
+            // createClient
+            const createClient = (store) => {
+                const client = {
+                    query: (options) => {
+                        var _a;
+                        const { query: queryKey, params } = options;
+                        const getCacheKey = (_a = cache.queries[queryKey].getCacheKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetCacheKey);
+                        // @ts-expect-error fix later
+                        const cacheKey = getCacheKey(params);
+                        return (0, query_1.query)('query', store, cache, actions, selectors, queryKey, cacheKey, params, options.secondsToLive, options.onlyIfExpired, 
+                        // @ts-expect-error fix later
+                        options.mergeResults, options.onCompleted, options.onSuccess, options.onError);
+                    },
+                    mutate: (options) => {
+                        return (0, mutate_1.mutate)('mutate', store, cache, actions, selectors, options.mutation, options.params, abortControllers, 
+                        // @ts-expect-error fix later
+                        options.onCompleted, options.onSuccess, options.onError);
+                    },
+                };
+                return client;
+            };
             return {
                 /** Keeps all options, passed while creating the cache. */
                 cache,
@@ -118,26 +137,7 @@ const withTypenames = () => {
                     /** Returns client object with query and mutate functions. */
                     useClient: () => {
                         const store = cache.storeHooks.useStore();
-                        return (0, react_1.useMemo)(() => {
-                            const client = {
-                                query: (options) => {
-                                    var _a;
-                                    const { query: queryKey, params } = options;
-                                    const getCacheKey = (_a = cache.queries[queryKey].getCacheKey) !== null && _a !== void 0 ? _a : (utilsAndConstants_1.defaultGetCacheKey);
-                                    // @ts-expect-error fix later
-                                    const cacheKey = getCacheKey(params);
-                                    return (0, query_1.query)('query', store, cache, actions, selectors, queryKey, cacheKey, params, options.secondsToLive, options.onlyIfExpired, 
-                                    // @ts-expect-error fix later
-                                    options.mergeResults, options.onCompleted, options.onSuccess, options.onError);
-                                },
-                                mutate: (options) => {
-                                    return (0, mutate_1.mutate)('mutate', store, cache, actions, selectors, options.mutation, options.params, abortControllers, 
-                                    // @ts-expect-error fix later
-                                    options.onCompleted, options.onSuccess, options.onError);
-                                },
-                            };
-                            return client;
-                        }, [store]);
+                        return (0, react_1.useMemo)(() => createClient(store), [store]);
                     },
                     /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
                     useQuery: (options) => (0, useQuery_1.useQuery)(cache, actions, selectors, options),
@@ -149,6 +149,8 @@ const withTypenames = () => {
                     },
                 },
                 utils: {
+                    /** Creates client by providing the store. Can be used when the store is a singleton - to not use a hook for getting the client, but import it directly. */
+                    createClient,
                     /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
                     getInitialState: () => {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
