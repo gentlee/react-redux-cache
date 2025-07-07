@@ -91,7 +91,7 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
         result: {items: [0, 1, 2], page: 1},
         error: undefined,
         params: {page: 1},
-        loading: false,
+        loading: undefined,
       },
       {merge: generateTestEntitiesMap(3)}
     )
@@ -271,7 +271,7 @@ test('no fetch when skip, without cancelling current request when setting to tru
   expect(getUser).toBeCalledTimes(2)
 })
 
-test('cancel manual refetch when currently loading same params', async () => {
+test('cancel manual refetch when currently loading same params, but return result', async () => {
   render({query: 'getUser', params: 0})
 
   let shouldBeCancelledResult
@@ -302,7 +302,7 @@ test('cancel manual refetch when currently loading same params', async () => {
       },
     },
   })
-  expect(shouldBeCancelledResult).toStrictEqual({cancelled: true})
+  expect(shouldBeCancelledResult).toStrictEqual({cancelled: 'loading', result: 0})
   expect(refetchResult).toStrictEqual({result: 0})
   assertEventLog(['first render: undefined', 'render: loading', 'render: 0', 'render: loading', 'render: 0'])
 })
@@ -327,7 +327,7 @@ test('cancel manual refetch when currently loading same params', async () => {
         {
           result: 0,
           params: 0,
-          loading: false,
+          loading: undefined,
         },
         {
           merge: generateTestEntitiesMap(1),

@@ -6,11 +6,12 @@ export declare const optionalUtils: {
 export declare const IS_DEV: boolean;
 export declare const EMPTY_OBJECT: Readonly<{}>;
 export declare const EMPTY_ARRAY: readonly never[];
+export declare const NOOP: () => void;
 export declare const defaultGetCacheKey: <P = unknown>(params: P) => Key;
 export declare const log: (tag: string, data?: unknown) => void;
 export declare const FetchPolicy: {
     /** Only if cache does not exist (result is undefined) or expired. */
-    NoCacheOrExpired: (expired: boolean, _: unknown, state: QueryState<unknown, unknown>) => boolean;
+    NoCacheOrExpired: <T extends Typenames = Typenames, P = unknown, R = unknown>(expired: boolean, _params: P, state: QueryState<T, P, R>) => boolean;
     /** Every fetch trigger. */
     Always: () => boolean;
 };

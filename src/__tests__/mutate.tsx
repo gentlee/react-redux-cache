@@ -61,7 +61,7 @@ test('should update mutation state and return result', async () => {
   ])
 })
 
-test('mutate should cancel previous not finished mutation', async () => {
+test('mutate should cancel previous not finished mutation and update loading promise & params', async () => {
   store.dispatch({
     type: '@rrc/cache/mergeEntityChanges',
     changes: {merge: generateTestEntitiesMap(2)},
@@ -94,7 +94,7 @@ test('mutate should cancel previous not finished mutation', async () => {
       mutations: {
         updateUser: {
           result: 1,
-          params: {id: 0, name: 'New name'},
+          params: {id: 1, name: 'New name 2'},
         },
       },
       entities: {
@@ -109,8 +109,9 @@ test('mutate should cancel previous not finished mutation', async () => {
   assertEventLog([
     '@rrc/cache/mergeEntityChanges',
     'render',
-    '@rrc/cache/updateMutationStateAndEntities',
-    '@rrc/cache/updateMutationStateAndEntities',
+    '@rrc/cache/updateMutationStateAndEntities', // loading 1
+    '@rrc/cache/updateMutationStateAndEntities', // loading 2
+    '@rrc/cache/updateMutationStateAndEntities', // result
   ])
 })
 

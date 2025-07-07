@@ -5,9 +5,15 @@ export {defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstant
 
 // Backlog
 
+// highest
+
+// generate full api docs
+// cancel all queries / mutations
+// selectors optional cache key
+
 // ! high (1.0.0-rc.0)
 // optimistic response
-// generate full api docs
+// features list
 
 // ! medium
 // onCancel & onAbort

@@ -2,9 +2,20 @@ import type {Actions} from './createActions'
 import type {CacheOptions, CacheState, MutationState, QueryState, Typenames} from './types'
 import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, log, optionalUtils} from './utilsAndConstants'
 
-const optionalQueryKeys: (keyof QueryState<unknown, unknown>)[] = ['error', 'expiresAt', 'result', 'params']
+const optionalQueryKeys: (keyof QueryState<Typenames, unknown, unknown>)[] = [
+  'error',
+  'expiresAt',
+  'result',
+  'params',
+  'loading',
+]
 
-const optionalMutationKeys: (keyof MutationState<unknown, unknown>)[] = ['error', 'result', 'params']
+const optionalMutationKeys: (keyof MutationState<Typenames, unknown, unknown>)[] = [
+  'error',
+  'result',
+  'params',
+  'loading',
+]
 
 export const createCacheReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
   actions: Actions<N, T, QP, QR, MP, MR>,
@@ -114,9 +125,6 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
             if (key in newMutationState && newMutationState[key] === undefined) {
               delete newMutationState[key]
             }
-          }
-          if ('loading' in newMutationState && !newMutationState.loading) {
-            delete newMutationState.loading
           }
 
           // skip if new state deep equals to the old state

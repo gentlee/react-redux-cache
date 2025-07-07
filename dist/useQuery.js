@@ -16,9 +16,9 @@ const utilsAndConstants_1 = require("./utilsAndConstants");
 const useQuery = (cache, actions, selectors, options) => {
     var _a, _b, _c;
     const { query: queryKey, skipFetch = false, params, secondsToLive, fetchPolicy = (_a = cache.queries[queryKey].fetchPolicy) !== null && _a !== void 0 ? _a : cache.globals.queries.fetchPolicy, mergeResults, onCompleted, onSuccess, onError, } = options;
+    const { selectQueryState } = selectors;
     const logsEnabled = cache.options.logsEnabled;
     const getCacheKey = (_b = cache.queries[queryKey].getCacheKey) !== null && _b !== void 0 ? _b : (utilsAndConstants_1.defaultGetCacheKey);
-    const cacheStateSelector = cache.cacheStateSelector;
     const store = cache.storeHooks.useStore();
     // @ts-expect-error fix types later
     const cacheKey = getCacheKey(params);
@@ -36,8 +36,7 @@ const useQuery = (cache, actions, selectors, options) => {
     [store, queryKey, cacheKey]);
     /** Query state */
     const queryState = (_c = cache.storeHooks.useSelector((state) => {
-        const queryState = cacheStateSelector(state).queries[queryKey][cacheKey];
-        return queryState; // TODO proper type
+        return selectQueryState(state, queryKey, cacheKey); // TODO proper type
     }, (exports.useQuerySelectorStateComparer))) !== null && _c !== void 0 ? _c : utilsAndConstants_1.EMPTY_OBJECT;
     (0, react_1.useEffect)(() => {
         if (skipFetch) {

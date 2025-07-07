@@ -30,23 +30,22 @@ const mutate = (logTag_1, store_1, cache_1, actions_1, selectors_1, mutationKey_
         if (abortController !== undefined) {
             abortController.abort();
         }
-        else {
-            store.dispatch(updateMutationStateAndEntities(mutationKey, {
-                loading: true,
-                params,
-                result: undefined,
-            }));
-        }
     }
     const abortController = new AbortController();
     abortControllersOfStore[mutationKey] = abortController;
+    const mutatePromise = cache.mutations[mutationKey].mutation(
+    // @ts-expect-error fix later
+    params, store, abortController.signal);
+    store.dispatch(updateMutationStateAndEntities(mutationKey, {
+        // @ts-expect-error TODO fix types
+        loading: mutatePromise,
+        params,
+        result: undefined,
+    }));
     let response;
     let error;
-    const fetchFn = cache.mutations[mutationKey].mutation;
     try {
-        response = yield fetchFn(
-        // @ts-expect-error fix later
-        params, store, abortController.signal);
+        response = yield mutatePromise;
     }
     catch (e) {
         error = e;
@@ -64,7 +63,7 @@ const mutate = (logTag_1, store_1, cache_1, actions_1, selectors_1, mutationKey_
     if (error) {
         store.dispatch(updateMutationStateAndEntities(mutationKey, {
             error: error,
-            loading: false,
+            loading: undefined,
         }));
         // @ts-expect-error params
         if (!(onError === null || onError === void 0 ? void 0 : onError(error, params, store, actions, selectors))) {
@@ -80,7 +79,7 @@ const mutate = (logTag_1, store_1, cache_1, actions_1, selectors_1, mutationKey_
     if (response) {
         const newState = {
             error: undefined,
-            loading: false,
+            loading: undefined,
             result: response.result,
         };
         store.dispatch(updateMutationStateAndEntities(mutationKey, newState, response));

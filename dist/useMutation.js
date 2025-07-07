@@ -43,9 +43,7 @@ const useMutation = (cache, actions, selectors, options, abortControllers) => {
                     return false;
                 }
                 abortController.abort();
-                store.dispatch(actions.updateMutationStateAndEntities(mutationKey, {
-                    loading: false,
-                }));
+                store.dispatch(actions.updateMutationStateAndEntities(mutationKey, { loading: undefined }));
                 return true;
             },
         ];

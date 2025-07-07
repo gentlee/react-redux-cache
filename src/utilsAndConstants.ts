@@ -27,6 +27,9 @@ export const EMPTY_OBJECT = Object.freeze({})
 
 export const EMPTY_ARRAY = Object.freeze([])
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export const NOOP = () => {}
+
 export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
   switch (typeof params) {
     case 'string':
@@ -45,7 +48,11 @@ export const log = (tag: string, data?: unknown) => {
 
 export const FetchPolicy = {
   /** Only if cache does not exist (result is undefined) or expired. */
-  NoCacheOrExpired: (expired: boolean, _: unknown, state: QueryState<unknown, unknown>) => {
+  NoCacheOrExpired: <T extends Typenames = Typenames, P = unknown, R = unknown>(
+    expired: boolean,
+    _params: P,
+    state: QueryState<T, P, R>
+  ) => {
     return expired || state.result === undefined
   },
   /** Every fetch trigger. */

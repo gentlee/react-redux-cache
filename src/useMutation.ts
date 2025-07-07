@@ -65,9 +65,7 @@ export const useMutation = <
         }
         abortController.abort()
         store.dispatch(
-          actions.updateMutationStateAndEntities(mutationKey as keyof (MP | MR), {
-            loading: false,
-          })
+          actions.updateMutationStateAndEntities(mutationKey as keyof (MP | MR), {loading: undefined})
         )
         return true
       },
@@ -76,7 +74,7 @@ export const useMutation = <
   }, [mutationKey, store])
 
   // @ts-expect-error fix later
-  const mutationState: MutationState<P, R> =
+  const mutationState: MutationState<T, P, R> =
     cache.storeHooks.useSelector(mutationStateSelector) ?? EMPTY_OBJECT
 
   cache.options.logsEnabled &&

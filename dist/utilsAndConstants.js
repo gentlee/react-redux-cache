@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isEmptyObject = exports.applyEntityChanges = exports.FetchPolicy = exports.log = exports.defaultGetCacheKey = exports.EMPTY_ARRAY = exports.EMPTY_OBJECT = exports.IS_DEV = exports.optionalUtils = exports.PACKAGE_SHORT_NAME = void 0;
+exports.isEmptyObject = exports.applyEntityChanges = exports.FetchPolicy = exports.log = exports.defaultGetCacheKey = exports.NOOP = exports.EMPTY_ARRAY = exports.EMPTY_OBJECT = exports.IS_DEV = exports.optionalUtils = exports.PACKAGE_SHORT_NAME = void 0;
 exports.PACKAGE_SHORT_NAME = 'rrc';
 exports.optionalUtils = {
     deepEqual: undefined,
@@ -22,6 +22,9 @@ exports.IS_DEV = (() => {
 })();
 exports.EMPTY_OBJECT = Object.freeze({});
 exports.EMPTY_ARRAY = Object.freeze([]);
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const NOOP = () => { };
+exports.NOOP = NOOP;
 const defaultGetCacheKey = (params) => {
     switch (typeof params) {
         case 'string':
@@ -40,7 +43,7 @@ const log = (tag, data) => {
 exports.log = log;
 exports.FetchPolicy = {
     /** Only if cache does not exist (result is undefined) or expired. */
-    NoCacheOrExpired: (expired, _, state) => {
+    NoCacheOrExpired: (expired, _params, state) => {
         return expired || state.result === undefined;
     },
     /** Every fetch trigger. */

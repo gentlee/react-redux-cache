@@ -1,7 +1,8 @@
 import type {Actions} from './createActions'
 import {Selectors} from './createSelectors'
+import {selectQueryState} from './testing/redux/cache'
 import type {Cache, Key, QueryResult, Store, Typenames} from './types'
-import {log} from './utilsAndConstants'
+import {log, NOOP} from './utilsAndConstants'
 
 export const query = async <
   N extends string,
@@ -28,39 +29,64 @@ export const query = async <
   onSuccess = cache.queries[queryKey].onSuccess,
   onError = cache.queries[queryKey].onError
 ): Promise<QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>> => {
-  const logsEnabled = cache.options.logsEnabled
-  const cacheStateSelector = cache.cacheStateSelector
+  const {selectQueryResult} = selectors
 
-  const queryStateOnStart = cacheStateSelector(store.getState()).queries[queryKey as keyof (QP | QR)][
+  const logsEnabled = cache.options.logsEnabled
+
+  const queryStateOnStart = selectQueryState(
+    store.getState(),
+    // @ts-expect-error TODO fix types
+    queryKey,
     cacheKey
-  ]
+  )
 
   if (queryStateOnStart?.loading) {
     logsEnabled &&
-      log(`${logTag} cancelled: already loading`, {
+      log(`${logTag} fetch cancelled: already loading`, {
         queryStateOnStart,
         params,
         cacheKey,
       })
 
-    return CANCELLED_RESULT
+    const error = await queryStateOnStart.loading.then(NOOP).catch(catchAndReturn)
+    return error
+      ? {
+          cancelled: 'loading',
+          error,
+        }
+      : {
+          cancelled: 'loading',
+          result: selectQueryResult(store.getState(), queryKey, cacheKey),
+        }
   }
 
   if (onlyIfExpired && queryStateOnStart?.expiresAt != null && queryStateOnStart.expiresAt > Date.now()) {
     logsEnabled &&
-      log(`${logTag} cancelled: not expired yet`, {
+      log(`${logTag} fetch cancelled: not expired yet`, {
         queryStateOnStart,
         params,
         cacheKey,
         onlyIfExpired,
       })
-    return CANCELLED_RESULT
+
+    return {
+      cancelled: 'not-expired',
+      // @ts-expect-error TODO fix types
+      result: queryStateOnStart.result,
+    }
   }
 
   const {updateQueryStateAndEntities} = actions
+
+  const fetchPromise = cache.queries[queryKey].query(
+    // @ts-expect-error fix later
+    params,
+    store
+  )
+
   store.dispatch(
     updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, {
-      loading: true,
+      loading: fetchPromise,
       params,
     })
   )
@@ -68,18 +94,13 @@ export const query = async <
   logsEnabled && log(`${logTag} started`, {queryKey, params, cacheKey, queryStateOnStart, onlyIfExpired})
 
   let response
-  const fetchFn = cache.queries[queryKey].query
   try {
-    response = await fetchFn(
-      // @ts-expect-error fix later
-      params,
-      store
-    )
+    response = await fetchPromise
   } catch (error) {
     store.dispatch(
       updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, {
         error: error as Error,
-        loading: false,
+        loading: undefined,
       })
     )
     // @ts-expect-error params
@@ -108,12 +129,12 @@ export const query = async <
 
   const newState = {
     error: undefined,
-    loading: false,
+    loading: undefined,
     expiresAt: response.expiresAt ?? (secondsToLive != null ? Date.now() + secondsToLive * 1000 : undefined),
     result: mergeResults
       ? mergeResults(
           // @ts-expect-error fix later
-          cacheStateSelector(store.getState()).queries[queryKey as keyof (QP | QR)][cacheKey]?.result,
+          selectQueryResult(store.getState(), queryKey, cacheKey),
           response,
           params,
           store,
@@ -148,4 +169,4 @@ export const query = async <
   }
 }
 
-const CANCELLED_RESULT = Object.freeze({cancelled: true})
+const catchAndReturn = (x: unknown) => x

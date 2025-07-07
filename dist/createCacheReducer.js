@@ -13,8 +13,19 @@ var __rest = (this && this.__rest) || function (s, e) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCacheReducer = void 0;
 const utilsAndConstants_1 = require("./utilsAndConstants");
-const optionalQueryKeys = ['error', 'expiresAt', 'result', 'params'];
-const optionalMutationKeys = ['error', 'result', 'params'];
+const optionalQueryKeys = [
+    'error',
+    'expiresAt',
+    'result',
+    'params',
+    'loading',
+];
+const optionalMutationKeys = [
+    'error',
+    'result',
+    'params',
+    'loading',
+];
 const createCacheReducer = (actions, queryKeys, cacheOptions) => {
     const initialState = Object.freeze({
         entities: Object.freeze({}),
@@ -81,9 +92,6 @@ const createCacheReducer = (actions, queryKeys, cacheOptions) => {
                         if (key in newMutationState && newMutationState[key] === undefined) {
                             delete newMutationState[key];
                         }
-                    }
-                    if ('loading' in newMutationState && !newMutationState.loading) {
-                        delete newMutationState.loading;
                     }
                     // skip if new state deep equals to the old state
                     if (deepEqual === null || deepEqual === void 0 ? void 0 : deepEqual(oldMutationState !== null && oldMutationState !== void 0 ? oldMutationState : utilsAndConstants_1.EMPTY_OBJECT, newMutationState)) {

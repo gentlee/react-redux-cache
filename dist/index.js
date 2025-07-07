@@ -26,9 +26,13 @@ Object.defineProperty(exports, "defaultGetCacheKey", { enumerable: true, get: fu
 Object.defineProperty(exports, "FetchPolicy", { enumerable: true, get: function () { return utilsAndConstants_1.FetchPolicy; } });
 Object.defineProperty(exports, "isEmptyObject", { enumerable: true, get: function () { return utilsAndConstants_1.isEmptyObject; } });
 // Backlog
+// highest
+// generate full api docs
+// cancel all queries / mutations
+// selectors optional cache key
 // ! high (1.0.0-rc.0)
 // optimistic response
-// generate full api docs
+// features list
 // ! medium
 // onCancel & onAbort
 // remove empty entities and queries from state

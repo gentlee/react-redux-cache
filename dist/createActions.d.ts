@@ -3,20 +3,20 @@ import { CacheState } from './types';
 export type Actions<N extends string = string, T extends Typenames = Typenames, QP = unknown, QR = unknown, MP = unknown, MR = unknown> = ReturnType<typeof createActions<N, T, QP, QR, MP, MR>>;
 export declare const createActions: <N extends string, T extends Typenames, QP, QR, MP, MR>(name: N) => {
     updateQueryStateAndEntities: {
-        <K extends keyof (QP | QR)>(queryKey: K, queryCacheKey: Key, state?: Partial<QueryState<QP[K], QR[K]>>, entityChanges?: EntityChanges<T>): {
+        <K extends keyof (QP | QR)>(queryKey: K, queryCacheKey: Key, state?: Partial<QueryState<T, QP[K], QR[K]>>, entityChanges?: EntityChanges<T>): {
             type: `@rrc/${N}/updateQueryStateAndEntities`;
             queryKey: K;
             queryCacheKey: Key;
-            state: Partial<QueryState<QP[K], QR[K]>> | undefined;
+            state: Partial<QueryState<T, QP[K], QR[K]>> | undefined;
             entityChanges: EntityChanges<T> | undefined;
         };
         type: `@rrc/${N}/updateQueryStateAndEntities`;
     };
     updateMutationStateAndEntities: {
-        <K extends keyof (MP | MR)>(mutationKey: K, state?: Partial<MutationState<MP[K], MR[K]>>, entityChanges?: EntityChanges<T>): {
+        <K extends keyof (MP | MR)>(mutationKey: K, state?: Partial<MutationState<T, MP[K], MR[K]>>, entityChanges?: EntityChanges<T>): {
             type: `@rrc/${N}/updateMutationStateAndEntities`;
             mutationKey: K;
-            state: Partial<MutationState<MP[K], MR[K]>> | undefined;
+            state: Partial<MutationState<T, MP[K], MR[K]>> | undefined;
             entityChanges: EntityChanges<T> | undefined;
         };
         type: `@rrc/${N}/updateMutationStateAndEntities`;
