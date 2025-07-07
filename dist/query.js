@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.query = void 0;
-const cache_1 = require("./testing/redux/cache");
 const utilsAndConstants_1 = require("./utilsAndConstants");
 const query = (logTag, store, cache, actions, selectors, queryKey, cacheKey, params, secondsToLive, onlyIfExpired, mergeResults, onCompleted, onSuccess, onError) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
@@ -19,11 +18,9 @@ const query = (logTag, store, cache, actions, selectors, queryKey, cacheKey, par
     if (onCompleted === void 0) { onCompleted = cache.queries[queryKey].onCompleted; }
     if (onSuccess === void 0) { onSuccess = cache.queries[queryKey].onSuccess; }
     if (onError === void 0) { onError = cache.queries[queryKey].onError; }
-    const { selectQueryResult } = selectors;
+    const { selectQueryResult, selectQueryState } = selectors;
     const logsEnabled = cache.options.logsEnabled;
-    const queryStateOnStart = (0, cache_1.selectQueryState)(store.getState(), 
-    // @ts-expect-error TODO fix types
-    queryKey, cacheKey);
+    const queryStateOnStart = selectQueryState(store.getState(), queryKey, cacheKey);
     if (queryStateOnStart === null || queryStateOnStart === void 0 ? void 0 : queryStateOnStart.loading) {
         logsEnabled &&
             (0, utilsAndConstants_1.log)(`${logTag} fetch cancelled: already loading`, {
@@ -52,7 +49,6 @@ const query = (logTag, store, cache, actions, selectors, queryKey, cacheKey, par
             });
         return {
             cancelled: 'not-expired',
-            // @ts-expect-error TODO fix types
             result: queryStateOnStart.result,
         };
     }

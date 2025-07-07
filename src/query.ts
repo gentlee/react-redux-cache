@@ -1,6 +1,5 @@
 import type {Actions} from './createActions'
 import {Selectors} from './createSelectors'
-import {selectQueryState} from './testing/redux/cache'
 import type {Cache, Key, QueryResult, Store, Typenames} from './types'
 import {log, NOOP} from './utilsAndConstants'
 
@@ -29,16 +28,11 @@ export const query = async <
   onSuccess = cache.queries[queryKey].onSuccess,
   onError = cache.queries[queryKey].onError
 ): Promise<QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>> => {
-  const {selectQueryResult} = selectors
+  const {selectQueryResult, selectQueryState} = selectors
 
   const logsEnabled = cache.options.logsEnabled
 
-  const queryStateOnStart = selectQueryState(
-    store.getState(),
-    // @ts-expect-error TODO fix types
-    queryKey,
-    cacheKey
-  )
+  const queryStateOnStart = selectQueryState(store.getState(), queryKey, cacheKey)
 
   if (queryStateOnStart?.loading) {
     logsEnabled &&
@@ -71,7 +65,6 @@ export const query = async <
 
     return {
       cancelled: 'not-expired',
-      // @ts-expect-error TODO fix types
       result: queryStateOnStart.result,
     }
   }
