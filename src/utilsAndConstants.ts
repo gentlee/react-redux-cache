@@ -9,7 +9,7 @@ export const optionalUtils: {
   deepEqual: undefined,
 }
 try {
-  optionalUtils.deepEqual = require('fast-deep-equal/es6')
+  optionalUtils.deepEqual = require.call(undefined, 'fast-deep-equal/es6')
 } catch {
   console.debug(PACKAGE_SHORT_NAME + ': fast-deep-equal optional dependency was not installed')
 }

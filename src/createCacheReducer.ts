@@ -63,14 +63,29 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
         }
 
         if (newQueryState) {
+          if (oldQueryState && deepEqual) {
+            // set back params if deeply same value
+            if (
+              newQueryState.params !== oldQueryState.params &&
+              deepEqual(newQueryState.params, oldQueryState.params)
+            ) {
+              newQueryState.params = oldQueryState.params
+            }
+
+            // set back if deeply same value
+            if (
+              newQueryState.result !== oldQueryState.result &&
+              deepEqual(newQueryState.result, oldQueryState.result)
+            ) {
+              newQueryState.result = oldQueryState.result
+            }
+          }
+
           // remove undefined optional fields
           for (const key of optionalQueryKeys) {
             if (key in newQueryState && newQueryState[key] === undefined) {
               delete newQueryState[key]
             }
-          }
-          if ('loading' in newQueryState && !newQueryState.loading) {
-            delete newQueryState.loading
           }
 
           // skip if new state deep equals to the old state
@@ -120,6 +135,24 @@ export const createCacheReducer = <N extends string, T extends Typenames, QP, QR
         }
 
         if (newMutationState) {
+          if (oldMutationState && deepEqual) {
+            // set back params if deeply same value
+            if (
+              newMutationState.params !== oldMutationState.params &&
+              deepEqual(newMutationState.params, oldMutationState.params)
+            ) {
+              newMutationState.params = oldMutationState.params
+            }
+
+            // set back if deeply same value
+            if (
+              newMutationState.result !== oldMutationState.result &&
+              deepEqual(newMutationState.result, oldMutationState.result)
+            ) {
+              newMutationState.result = oldMutationState.result
+            }
+          }
+
           // remove optional fields with default values
           for (const key of optionalMutationKeys) {
             if (key in newMutationState && newMutationState[key] === undefined) {

@@ -48,14 +48,23 @@ const createCacheReducer = (actions, queryKeys, cacheOptions) => {
                 const oldQueryState = state.queries[queryKey][queryCacheKey];
                 let newQueryState = queryState && Object.assign(Object.assign({}, oldQueryState), queryState);
                 if (newQueryState) {
+                    if (oldQueryState && deepEqual) {
+                        // set back params if deeply same value
+                        if (newQueryState.params !== oldQueryState.params &&
+                            deepEqual(newQueryState.params, oldQueryState.params)) {
+                            newQueryState.params = oldQueryState.params;
+                        }
+                        // set back if deeply same value
+                        if (newQueryState.result !== oldQueryState.result &&
+                            deepEqual(newQueryState.result, oldQueryState.result)) {
+                            newQueryState.result = oldQueryState.result;
+                        }
+                    }
                     // remove undefined optional fields
                     for (const key of optionalQueryKeys) {
                         if (key in newQueryState && newQueryState[key] === undefined) {
                             delete newQueryState[key];
                         }
-                    }
-                    if ('loading' in newQueryState && !newQueryState.loading) {
-                        delete newQueryState.loading;
                     }
                     // skip if new state deep equals to the old state
                     if (deepEqual === null || deepEqual === void 0 ? void 0 : deepEqual(oldQueryState !== null && oldQueryState !== void 0 ? oldQueryState : utilsAndConstants_1.EMPTY_OBJECT, newQueryState)) {
@@ -87,6 +96,18 @@ const createCacheReducer = (actions, queryKeys, cacheOptions) => {
                 const oldMutationState = state.mutations[mutationKey];
                 let newMutationState = mutationState && Object.assign(Object.assign({}, oldMutationState), mutationState);
                 if (newMutationState) {
+                    if (oldMutationState && deepEqual) {
+                        // set back params if deeply same value
+                        if (newMutationState.params !== oldMutationState.params &&
+                            deepEqual(newMutationState.params, oldMutationState.params)) {
+                            newMutationState.params = oldMutationState.params;
+                        }
+                        // set back if deeply same value
+                        if (newMutationState.result !== oldMutationState.result &&
+                            deepEqual(newMutationState.result, oldMutationState.result)) {
+                            newMutationState.result = oldMutationState.result;
+                        }
+                    }
                     // remove optional fields with default values
                     for (const key of optionalMutationKeys) {
                         if (key in newMutationState && newMutationState[key] === undefined) {

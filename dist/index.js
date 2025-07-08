@@ -26,13 +26,10 @@ Object.defineProperty(exports, "defaultGetCacheKey", { enumerable: true, get: fu
 Object.defineProperty(exports, "FetchPolicy", { enumerable: true, get: function () { return utilsAndConstants_1.FetchPolicy; } });
 Object.defineProperty(exports, "isEmptyObject", { enumerable: true, get: function () { return utilsAndConstants_1.isEmptyObject; } });
 // Backlog
-// highest
-// generate full api docs
-// cancel all queries / mutations
-// selectors optional cache key
 // ! high (1.0.0-rc.0)
+// generate full api docs
 // optimistic response
-// features list
+// features list (table)
 // ! medium
 // onCancel & onAbort
 // remove empty entities and queries from state
@@ -51,3 +48,7 @@ Object.defineProperty(exports, "isEmptyObject", { enumerable: true, get: functio
 // readonly types?
 // proper types, remove as, any, todo
 // add number of retries param?
+// mutation state wrong type - can be undefined?
+// ! on hold
+// better support queries without params: useQuery & selectors optional cache key (making useQuery params optional doesn't seem like a good idea)
+// cancel all queries / mutations (already possible by recreating the store - this lib is pure)

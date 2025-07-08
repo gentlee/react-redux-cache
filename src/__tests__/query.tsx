@@ -16,7 +16,7 @@ beforeEach(() => {
   EMPTY_STATE = store.getState()
 })
 
-test('should cancel fetch when already loading or not expited, but return the previous result', async () => {
+test('should cancel fetch when already loading or not expited, and return the previous result', async () => {
   await act(() => render())
 
   let result_user0_1_first

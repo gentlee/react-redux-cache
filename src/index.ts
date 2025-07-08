@@ -29,6 +29,7 @@ export {defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstant
 // readonly types?
 // proper types, remove as, any, todo
 // add number of retries param?
+// mutation state wrong type - can be undefined?
 
 // ! on hold
 // better support queries without params: useQuery & selectors optional cache key (making useQuery params optional doesn't seem like a good idea)
