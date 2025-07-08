@@ -1,8 +1,10 @@
+import {act} from '@testing-library/react'
 import {useSelector, useStore} from 'react-redux'
 import {createStore} from 'redux'
 
 import {withTypenames} from '../createCache'
 import {getUsers, removeUser} from '../testing/api/mocks'
+import {advanceApiTimeout, advanceHalfApiTimeout, apiTimeout} from '../testing/utils'
 import {Cache, Typenames} from '../types'
 import {FetchPolicy} from '../utilsAndConstants'
 
@@ -151,18 +153,50 @@ test('using react-redux store hooks when not overriden', () => {
   expect(storeHooks).toStrictEqual({useStore, useSelector})
 })
 
+test('same cache works with the new store, previous async operations are ignored', async () => {
+  const {
+    reducer,
+    utils: {createClient, getInitialState},
+  } = createTestingCache('cache', false, (x) => x)
+
+  {
+    const store = createStore(reducer)
+    const client = createClient(store)
+
+    client.query({query: 'getUser', params: 0})
+    client.query({query: 'getUsers', params: {page: 1}})
+    client.mutate({mutation: 'updateUser', params: 2})
+
+    await act(() => advanceHalfApiTimeout())
+
+    client.query({query: 'getUser', params: 1})
+    client.query({query: 'getUsers', params: {page: 2}})
+    client.mutate({mutation: 'removeUser', params: 1})
+  }
+
+  const store = createStore(reducer)
+
+  await act(() => advanceApiTimeout())
+
+  expect(store.getState()).toBe(getInitialState())
+})
+
 // utils & constants
 
-const getUser = async (id: number) => ({
-  result: id,
-  merge: {
-    [id]: {id},
-  },
-})
+const getUser = async (id: number) => {
+  await apiTimeout()
+  return {
+    result: id,
+    merge: {[id]: {id}},
+  }
+}
 
-const updateUser = async (id: number) => ({
-  result: id,
-})
+const updateUser = async (id: number) => {
+  await apiTimeout()
+  return {
+    result: id,
+  }
+}
 
 export const createTestingCache = <N extends string>(
   name: N,

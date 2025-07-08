@@ -5,15 +5,10 @@ export {defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstant
 
 // Backlog
 
-// highest
-
-// generate full api docs
-// cancel all queries / mutations
-// selectors optional cache key
-
 // ! high (1.0.0-rc.0)
+// generate full api docs
 // optimistic response
-// features list
+// features list (table)
 
 // ! medium
 // onCancel & onAbort
@@ -34,3 +29,7 @@ export {defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstant
 // readonly types?
 // proper types, remove as, any, todo
 // add number of retries param?
+
+// ! on hold
+// better support queries without params: useQuery & selectors optional cache key (making useQuery params optional doesn't seem like a good idea)
+// cancel all queries / mutations (already possible by recreating the store - this lib is pure)
