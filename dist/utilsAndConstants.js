@@ -6,7 +6,7 @@ exports.optionalUtils = {
     deepEqual: undefined,
 };
 try {
-    exports.optionalUtils.deepEqual = require.call(undefined, 'fast-deep-equal/es6');
+    exports.optionalUtils.deepEqual = require('fast-deep-equal/es6');
 }
 catch (_a) {
     console.debug(exports.PACKAGE_SHORT_NAME + ': fast-deep-equal optional dependency was not installed');
