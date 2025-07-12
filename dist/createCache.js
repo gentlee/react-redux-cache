@@ -37,8 +37,8 @@ const withTypenames = () => {
             (_g = (_s = partialCache.globals.queries).fetchPolicy) !== null && _g !== void 0 ? _g : (_s.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired);
             (_h = (_t = partialCache.globals.queries).skipFetch) !== null && _h !== void 0 ? _h : (_t.skipFetch = false);
             (_j = partialCache.storeHooks) !== null && _j !== void 0 ? _j : (partialCache.storeHooks = {
-                useStore: require.call(undefined, 'react-redux').useStore,
-                useSelector: require.call(undefined, 'react-redux').useSelector,
+                useStore: require('react-redux').useStore,
+                useSelector: require('react-redux').useSelector,
             });
             (_k = partialCache.cacheStateSelector) !== null && _k !== void 0 ? _k : (partialCache.cacheStateSelector = (state) => state[cache.name]);
             (_l = partialCache.mutations) !== null && _l !== void 0 ? _l : (partialCache.mutations = {});

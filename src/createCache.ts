@@ -66,8 +66,8 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       partialCache.globals.queries.fetchPolicy ??= FetchPolicy.NoCacheOrExpired
       partialCache.globals.queries.skipFetch ??= false
       partialCache.storeHooks ??= {
-        useStore: require.call(undefined, 'react-redux').useStore,
-        useSelector: require.call(undefined, 'react-redux').useSelector,
+        useStore: require('react-redux').useStore,
+        useSelector: require('react-redux').useSelector,
       } as TypedCache['storeHooks']
       partialCache.cacheStateSelector ??= (state: Record<string, unknown>) => state[cache.name]
       partialCache.mutations ??= {} as TypedCache['mutations']
