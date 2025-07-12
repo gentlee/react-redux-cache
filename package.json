@@ -2,7 +2,7 @@
   "name": "react-redux-cache",
   "author": "Alexander Danilov",
   "license": "MIT",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "description": "Powerful data fetching and caching library for Redux and Zustand that supports normalization.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
