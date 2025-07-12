@@ -20,8 +20,8 @@
   },
   "peerDependencies": {
     "fast-deep-equal": "*",
-    "react": "^16",
-    "react-redux": "^4"
+    "react": ">=16",
+    "react-redux": ">=4"
   },
   "peerDependenciesMeta": {
     "fast-deep-equal": {
