@@ -14,7 +14,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-redux": "8.0.5",
-    "react-redux-cache": "0.18.1",
+    "react-redux-cache": "0.19.1",
     "react-router-dom": "6.11.2",
     "redux": "4.2.1",
     "redux-persist": "6.0.0",
