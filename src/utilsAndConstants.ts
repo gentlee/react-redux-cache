@@ -1,4 +1,12 @@
-import type {CacheOptions, EntitiesMap, EntityChanges, Key, QueryState, Typenames} from './types'
+import type {
+  CacheOptions,
+  EntitiesMap,
+  EntityChanges,
+  Key,
+  QueryState,
+  QueryStateComparer,
+  Typenames,
+} from './types'
 
 export const PACKAGE_SHORT_NAME = 'rrc'
 
@@ -173,4 +181,24 @@ export const isEmptyObject = (o: object) => {
     return false
   }
   return true
+}
+
+export const createStateComparer = <T extends Typenames = Typenames, Q = unknown, P = unknown>(
+  fields: (keyof QueryState<T, Q, P>)[]
+): QueryStateComparer<T, Q, P> => {
+  return (x: QueryState<T, Q, P> | undefined, y: QueryState<T, Q, P> | undefined) => {
+    if (x === y) {
+      return true
+    }
+    if (x === undefined || y === undefined) {
+      return false
+    }
+    for (let i = 0; i < fields.length; i += 1) {
+      const key = fields[i]
+      if (x[key] !== y[key]) {
+        return false
+      }
+    }
+    return true
+  }
 }

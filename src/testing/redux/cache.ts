@@ -98,6 +98,10 @@ export const {
     queryWithError: {
       query: throwErrorAfterTimeout,
     },
+    getUserWithResultComparer: {
+      query: getUser,
+      selectorComparer: ['result'],
+    },
   },
   mutations: {
     updateUser: {

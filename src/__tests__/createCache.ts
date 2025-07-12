@@ -5,7 +5,7 @@ import {createStore} from 'redux'
 import {withTypenames} from '../createCache'
 import {getUsers, removeUser} from '../testing/api/mocks'
 import {advanceApiTimeout, advanceHalfApiTimeout, apiTimeout} from '../testing/utils'
-import {Cache, Typenames} from '../types'
+import {Cache, QueryStateComparer, Typenames} from '../types'
 import {FetchPolicy} from '../utilsAndConstants'
 
 const overridenHooks = {
@@ -33,6 +33,7 @@ test('createCache returns correct result', () => {
         fetchPolicy: FetchPolicy.Always,
         secondsToLive: 10,
         skipFetch: false,
+        selectorComparer: undefined,
       },
     },
     options: {
@@ -202,7 +203,8 @@ export const createTestingCache = <N extends string>(
   name: N,
   overrideHooks = true,
   cacheStateSelector?: Cache<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateSelector'],
-  onError?: () => void
+  onError?: () => void,
+  selectorComparer?: QueryStateComparer<Typenames, unknown, unknown>
 ) => {
   return withTypenames<{
     users: {id: number}
@@ -216,6 +218,7 @@ export const createTestingCache = <N extends string>(
       queries: {
         fetchPolicy: FetchPolicy.Always,
         secondsToLive: 10,
+        selectorComparer,
       },
       onError,
     },

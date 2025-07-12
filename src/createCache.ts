@@ -22,6 +22,7 @@ import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
 import {
   applyEntityChanges,
+  createStateComparer,
   defaultGetCacheKey,
   EMPTY_OBJECT,
   FetchPolicy,
@@ -54,7 +55,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
 
       const abortControllers = new WeakMap<Store, Record<Key, AbortController>>()
 
-      // provide all optional fields
+      // Provide all optional fields
 
       partialCache.options ??= {} as CacheOptions
       partialCache.options.logsEnabled ??= false
@@ -76,7 +77,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
 
       const cache = partialCache as TypedCache
 
-      // validate options
+      // Validate options
 
       if (cache.options.deepComparisonEnabled && !optionalUtils.deepEqual) {
         console.warn(
@@ -84,7 +85,24 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         )
       }
 
-      // selectors
+      // State comparers
+
+      /** Transforms array of keys to comparer function. */
+      const setDefaultComparer = (
+        target: Pick<TypedCache['globals']['queries'], 'selectorComparer'> | undefined
+      ) => {
+        if (target?.selectorComparer != null && typeof target.selectorComparer === 'object') {
+          target.selectorComparer = createStateComparer(target.selectorComparer)
+        }
+      }
+
+      setDefaultComparer(cache.globals.queries)
+      for (const queryKey in partialCache.queries) {
+        // @ts-expect-error TODO fix types
+        setDefaultComparer(partialCache.queries[queryKey as keyof TypedCache['queries']])
+      }
+
+      // Selectors
 
       const selectors = {
         selectCacheState: cache.cacheStateSelector,
@@ -108,7 +126,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         selectEntitiesByTypename,
       } = selectors
 
-      // actions
+      // Actions
 
       const actions = createActions<N, T, QP, QR, MP, MR>(cache.name)
       const {
@@ -121,7 +139,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         clearCache,
       } = actions
 
-      // reducer
+      // Reducer
 
       const reducer = createCacheReducer<N, T, QP, QR, MP, MR>(
         actions,
@@ -129,7 +147,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         cache.options
       )
 
-      // createClient
+      // Client creator
 
       const createClient = (store: Store) => {
         const client = {

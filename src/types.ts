@@ -61,6 +61,11 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
   }
 }
 
+export type QueryStateComparer<T extends Typenames, P, R> = (
+  x: QueryState<T, P, R> | undefined,
+  y: QueryState<T, P, R> | undefined
+) => boolean
+
 export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
   /** Handles errors, not handled by onError from queries and mutations. @Default undefined. */
   onError?: (
@@ -87,6 +92,8 @@ export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
     skipFetch: boolean
     /** If set, this value updates expiresAt value of query state when query result is received. @Default undefined */
     secondsToLive?: number
+    /** Either comparer function, or array of keys to subscribe by useQuery's useSelector. @Default compares result, loading, params, error. */
+    selectorComparer?: QueryStateComparer<T, unknown, unknown> | (keyof QueryState<T, unknown, unknown>)[]
   }
 }
 
@@ -183,6 +190,8 @@ export type QueryInfo<
     actions: Actions<N, T, QP, QR, MP, MR>,
     selectors: Selectors<N, T, QP, QR, MP, MR>
   ) => boolean | void | null | undefined
+  /** Either comparer function, or array of keys to subscribe by useQuery's useSelector. Default compares params, result, loading, error. */
+  selectorComparer?: QueryStateComparer<T, P, R> | (keyof QueryState<T, P, R>)[]
 }
 
 export type Query<P = unknown, R = unknown> = (
@@ -227,7 +236,14 @@ export type UseQueryOptions<
     MP,
     MR
   >,
-  'fetchPolicy' | 'skipFetch' | 'secondsToLive' | 'mergeResults' | 'onCompleted' | 'onSuccess' | 'onError'
+  | 'fetchPolicy'
+  | 'skipFetch'
+  | 'secondsToLive'
+  | 'selectorComparer'
+  | 'mergeResults'
+  | 'onCompleted'
+  | 'onSuccess'
+  | 'onError'
 >
 
 export type QueryOptions<

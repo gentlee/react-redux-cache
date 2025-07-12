@@ -1,4 +1,4 @@
-import type { CacheOptions, EntitiesMap, EntityChanges, Key, QueryState, Typenames } from './types';
+import type { CacheOptions, EntitiesMap, EntityChanges, Key, QueryState, QueryStateComparer, Typenames } from './types';
 export declare const PACKAGE_SHORT_NAME = "rrc";
 export declare const optionalUtils: {
     deepEqual?: (a: any, b: any) => boolean;
@@ -17,3 +17,4 @@ export declare const FetchPolicy: {
 };
 export declare const applyEntityChanges: <T extends Typenames>(entities: EntitiesMap<T>, changes: EntityChanges<T>, options: CacheOptions) => EntitiesMap<T> | undefined;
 export declare const isEmptyObject: (o: object) => boolean;
+export declare const createStateComparer: <T extends Typenames = Typenames, Q = unknown, P = unknown>(fields: (keyof QueryState<T, Q, P>)[]) => QueryStateComparer<T, Q, P>;

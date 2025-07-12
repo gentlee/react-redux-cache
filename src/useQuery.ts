@@ -3,8 +3,8 @@ import {useCallback, useEffect} from 'react'
 import {Actions} from './createActions'
 import {Selectors} from './createSelectors'
 import {query as queryImpl} from './query'
-import {Cache, QueryOptions, QueryState, Typenames, UseQueryOptions} from './types'
-import {defaultGetCacheKey, EMPTY_OBJECT, log} from './utilsAndConstants'
+import {Cache, QueryOptions, QueryState, QueryStateComparer, Typenames, UseQueryOptions} from './types'
+import {createStateComparer, defaultGetCacheKey, EMPTY_OBJECT, log} from './utilsAndConstants'
 
 export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
   cache: Cache<N, T, QP, QR, MP, MR>,
@@ -20,6 +20,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
     skipFetch = false,
     params,
     secondsToLive,
+    selectorComparer,
     fetchPolicy = cache.queries[queryKey].fetchPolicy ?? cache.globals.queries.fetchPolicy,
     mergeResults,
     onCompleted,
@@ -29,8 +30,18 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
 
   const {selectQueryState} = selectors
 
+  const queryInfo = cache.queries[queryKey]
+
   const logsEnabled = cache.options.logsEnabled
-  const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
+  const getCacheKey = queryInfo.getCacheKey ?? defaultGetCacheKey<P>
+  const comparer =
+    selectorComparer === undefined
+      ? (queryInfo.selectorComparer as QueryStateComparer<T, P, R>) ??
+        (cache.globals.queries.selectorComparer as QueryStateComparer<T, P, R>) ??
+        defaultStateComparer
+      : typeof selectorComparer === 'function'
+      ? selectorComparer
+      : createStateComparer(selectorComparer)
 
   const store = cache.storeHooks.useStore()
 
@@ -68,7 +79,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
   const queryState =
     cache.storeHooks.useSelector((state: unknown) => {
       return selectQueryState(state, queryKey, cacheKey) as QueryState<T, P, R> | undefined // TODO proper type
-    }, useQuerySelectorStateComparer<T, P, R>) ?? (EMPTY_OBJECT as QueryState<T, P, R>)
+    }, comparer) ?? (EMPTY_OBJECT as QueryState<T, P, R>)
 
   useEffect(() => {
     if (skipFetch) {
@@ -111,21 +122,4 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
   return [queryState as Omit<QueryState<T, P, R>, 'expiresAt'>, performFetch] as const
 }
 
-/** Omit `expiresAt` from comparison */
-export const useQuerySelectorStateComparer = <T extends Typenames, P, R>(
-  state1: QueryState<T, P, R> | undefined,
-  state2: QueryState<T, P, R> | undefined
-) => {
-  if (state1 === state2) {
-    return true
-  }
-  if (state1 === undefined || state2 === undefined) {
-    return false
-  }
-  return (
-    state1.params === state2.params &&
-    state1.loading === state2.loading &&
-    state1.result === state2.result &&
-    state1.error === state2.error
-  )
-}
+const defaultStateComparer = createStateComparer(['result', 'loading', 'params', 'error'])

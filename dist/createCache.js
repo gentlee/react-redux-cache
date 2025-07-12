@@ -27,7 +27,7 @@ const withTypenames = () => {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
             var _o, _p, _q, _r, _s, _t;
             const abortControllers = new WeakMap();
-            // provide all optional fields
+            // Provide all optional fields
             (_a = partialCache.options) !== null && _a !== void 0 ? _a : (partialCache.options = {});
             (_b = (_o = partialCache.options).logsEnabled) !== null && _b !== void 0 ? _b : (_o.logsEnabled = false);
             (_c = (_p = partialCache.options).additionalValidation) !== null && _c !== void 0 ? _c : (_p.additionalValidation = utilsAndConstants_1.IS_DEV);
@@ -46,19 +46,31 @@ const withTypenames = () => {
             // @ts-expect-error private field for testing
             partialCache.abortControllers = abortControllers;
             const cache = partialCache;
-            // validate options
+            // Validate options
             if (cache.options.deepComparisonEnabled && !utilsAndConstants_1.optionalUtils.deepEqual) {
                 console.warn('react-redux-cache: optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true');
             }
-            // selectors
+            // State comparers
+            /** Transforms array of keys to comparer function. */
+            const setDefaultComparer = (target) => {
+                if ((target === null || target === void 0 ? void 0 : target.selectorComparer) != null && typeof target.selectorComparer === 'object') {
+                    target.selectorComparer = (0, utilsAndConstants_1.createStateComparer)(target.selectorComparer);
+                }
+            };
+            setDefaultComparer(cache.globals.queries);
+            for (const queryKey in partialCache.queries) {
+                // @ts-expect-error TODO fix types
+                setDefaultComparer(partialCache.queries[queryKey]);
+            }
+            // Selectors
             const selectors = Object.assign({ selectCacheState: cache.cacheStateSelector }, (0, createSelectors_1.createSelectors)(cache));
             const { selectCacheState, selectQueryState, selectQueryResult, selectQueryLoading, selectQueryError, selectQueryParams, selectQueryExpiresAt, selectMutationState, selectMutationResult, selectMutationLoading, selectMutationError, selectMutationParams, selectEntityById, selectEntities, selectEntitiesByTypename, } = selectors;
-            // actions
+            // Actions
             const actions = (0, createActions_1.createActions)(cache.name);
             const { updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges, invalidateQuery, clearQueryState, clearMutationState, clearCache, } = actions;
-            // reducer
+            // Reducer
             const reducer = (0, createCacheReducer_1.createCacheReducer)(actions, Object.keys(cache.queries), cache.options);
-            // createClient
+            // Client creator
             const createClient = (store) => {
                 const client = {
                     query: (options) => {

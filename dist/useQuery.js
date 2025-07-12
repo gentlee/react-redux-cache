@@ -9,16 +9,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.useQuerySelectorStateComparer = exports.useQuery = void 0;
+exports.useQuery = void 0;
 const react_1 = require("react");
 const query_1 = require("./query");
 const utilsAndConstants_1 = require("./utilsAndConstants");
 const useQuery = (cache, actions, selectors, options) => {
-    var _a, _b, _c;
-    const { query: queryKey, skipFetch = false, params, secondsToLive, fetchPolicy = (_a = cache.queries[queryKey].fetchPolicy) !== null && _a !== void 0 ? _a : cache.globals.queries.fetchPolicy, mergeResults, onCompleted, onSuccess, onError, } = options;
+    var _a, _b, _c, _d, _e;
+    const { query: queryKey, skipFetch = false, params, secondsToLive, selectorComparer, fetchPolicy = (_a = cache.queries[queryKey].fetchPolicy) !== null && _a !== void 0 ? _a : cache.globals.queries.fetchPolicy, mergeResults, onCompleted, onSuccess, onError, } = options;
     const { selectQueryState } = selectors;
+    const queryInfo = cache.queries[queryKey];
     const logsEnabled = cache.options.logsEnabled;
-    const getCacheKey = (_b = cache.queries[queryKey].getCacheKey) !== null && _b !== void 0 ? _b : (utilsAndConstants_1.defaultGetCacheKey);
+    const getCacheKey = (_b = queryInfo.getCacheKey) !== null && _b !== void 0 ? _b : (utilsAndConstants_1.defaultGetCacheKey);
+    const comparer = selectorComparer === undefined
+        ? (_d = (_c = queryInfo.selectorComparer) !== null && _c !== void 0 ? _c : cache.globals.queries.selectorComparer) !== null && _d !== void 0 ? _d : defaultStateComparer
+        : typeof selectorComparer === 'function'
+            ? selectorComparer
+            : (0, utilsAndConstants_1.createStateComparer)(selectorComparer);
     const store = cache.storeHooks.useStore();
     // @ts-expect-error fix types later
     const cacheKey = getCacheKey(params);
@@ -35,9 +41,9 @@ const useQuery = (cache, actions, selectors, options) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [store, queryKey, cacheKey]);
     /** Query state */
-    const queryState = (_c = cache.storeHooks.useSelector((state) => {
+    const queryState = (_e = cache.storeHooks.useSelector((state) => {
         return selectQueryState(state, queryKey, cacheKey); // TODO proper type
-    }, (exports.useQuerySelectorStateComparer))) !== null && _c !== void 0 ? _c : utilsAndConstants_1.EMPTY_OBJECT;
+    }, comparer)) !== null && _e !== void 0 ? _e : utilsAndConstants_1.EMPTY_OBJECT;
     (0, react_1.useEffect)(() => {
         if (skipFetch) {
             logsEnabled && (0, utilsAndConstants_1.log)('useQuery.useEffect skip fetch', { skipFetch, queryKey, cacheKey });
@@ -68,17 +74,4 @@ const useQuery = (cache, actions, selectors, options) => {
     return [queryState, performFetch];
 };
 exports.useQuery = useQuery;
-/** Omit `expiresAt` from comparison */
-const useQuerySelectorStateComparer = (state1, state2) => {
-    if (state1 === state2) {
-        return true;
-    }
-    if (state1 === undefined || state2 === undefined) {
-        return false;
-    }
-    return (state1.params === state2.params &&
-        state1.loading === state2.loading &&
-        state1.result === state2.result &&
-        state1.error === state2.error);
-};
-exports.useQuerySelectorStateComparer = useQuerySelectorStateComparer;
+const defaultStateComparer = (0, utilsAndConstants_1.createStateComparer)(['result', 'loading', 'params', 'error']);

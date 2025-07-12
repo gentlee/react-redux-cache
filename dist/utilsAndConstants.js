@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isEmptyObject = exports.applyEntityChanges = exports.FetchPolicy = exports.log = exports.defaultGetCacheKey = exports.NOOP = exports.EMPTY_ARRAY = exports.EMPTY_OBJECT = exports.IS_DEV = exports.optionalUtils = exports.PACKAGE_SHORT_NAME = void 0;
+exports.createStateComparer = exports.isEmptyObject = exports.applyEntityChanges = exports.FetchPolicy = exports.log = exports.defaultGetCacheKey = exports.NOOP = exports.EMPTY_ARRAY = exports.EMPTY_OBJECT = exports.IS_DEV = exports.optionalUtils = exports.PACKAGE_SHORT_NAME = void 0;
 exports.PACKAGE_SHORT_NAME = 'rrc';
 exports.optionalUtils = {
     deepEqual: undefined,
@@ -141,3 +141,21 @@ const isEmptyObject = (o) => {
     return true;
 };
 exports.isEmptyObject = isEmptyObject;
+const createStateComparer = (fields) => {
+    return (x, y) => {
+        if (x === y) {
+            return true;
+        }
+        if (x === undefined || y === undefined) {
+            return false;
+        }
+        for (let i = 0; i < fields.length; i += 1) {
+            const key = fields[i];
+            if (x[key] !== y[key]) {
+                return false;
+            }
+        }
+        return true;
+    };
+};
+exports.createStateComparer = createStateComparer;
