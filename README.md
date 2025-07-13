@@ -19,7 +19,7 @@ Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with
 |--|--|
 |Full access to the store|You choose the store (redux / zustand) and have full access to state, reducer, actions, hooks, selectors and utils, used by this library, and can create your own.|
 |Supports all kinds of queries / mutations|REST, GraphQL, databases - any async operations can be cached.|
-|Fully typed|Written on TypeScript, everything is checked by compiler|
+|Fully typed|Written on TypeScript, everything is checked by compiler.|
 |Not overengineered|Simplicity is the main goal.|
 |Performance|Every function is heavily optimized, Immer is not used ([RTK [Query] issue](https://github.com/reduxjs/redux-toolkit/issues/4793)).|
 |Reliability|High test coverage, zero issue policy.|
