@@ -15,14 +15,18 @@
 
 Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with **full control** over its store - redux or zustand.
 
-|Feature|Description|
+|Principle|Description|
 |--|--|
 |Full access to the store|You choose the store (redux / zustand) and have full access to state, reducer, actions, hooks, selectors and utils, used by this library, and can create your own.|
 |Supports all kinds of queries / mutations|REST, GraphQL, databases - any async operations can be cached.|
 |Fully typed|Written on TypeScript, everything is checked by compiler|
 |Not overengineered|Simplicity is the main goal.|
 |Performance|Every function is heavily optimized, Immer is not used ([RTK [Query] issue](https://github.com/reduxjs/redux-toolkit/issues/4793)).|
-|Reliability|High test coverage.|
+|Reliability|High test coverage, zero issue policy.|
+|Lightweight|`npx minified-size dist/*.js`<br/>minified: 22.9 kB<br/>gzipped: 9.06 kB<br/>brotlied: 8.07 kB|
+
+|Feature|Description|
+|--|--|
 |De-duplication of queries / mutations|Similar parallel queries are combined into one, mutations - aborted.|
 |Time to live & Invalidation|Choose how long query result can be used before expired, or clear / invalidate it manually.|
 |Deep comparison|Rendering is much heavier than deep comparison of incoming data, so it is enabled by default to prevent excess renders.|
