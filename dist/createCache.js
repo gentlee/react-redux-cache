@@ -36,15 +36,22 @@ const withTypenames = () => {
             (_f = (_r = partialCache.globals).queries) !== null && _f !== void 0 ? _f : (_r.queries = {});
             (_g = (_s = partialCache.globals.queries).fetchPolicy) !== null && _g !== void 0 ? _g : (_s.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired);
             (_h = (_t = partialCache.globals.queries).skipFetch) !== null && _h !== void 0 ? _h : (_t.skipFetch = false);
-            (_j = partialCache.storeHooks) !== null && _j !== void 0 ? _j : (partialCache.storeHooks = {
-                useStore: require('react-redux').useStore,
-                useSelector: require('react-redux').useSelector,
-            });
-            (_k = partialCache.cacheStateSelector) !== null && _k !== void 0 ? _k : (partialCache.cacheStateSelector = (state) => state[cache.name]);
-            (_l = partialCache.mutations) !== null && _l !== void 0 ? _l : (partialCache.mutations = {});
-            (_m = partialCache.queries) !== null && _m !== void 0 ? _m : (partialCache.queries = {});
+            (_j = partialCache.cacheStateSelector) !== null && _j !== void 0 ? _j : (partialCache.cacheStateSelector = (state) => state[cache.name]);
+            (_k = partialCache.mutations) !== null && _k !== void 0 ? _k : (partialCache.mutations = {});
+            (_l = partialCache.queries) !== null && _l !== void 0 ? _l : (partialCache.queries = {});
             // @ts-expect-error private field for testing
             partialCache.abortControllers = abortControllers;
+            // Try/catch just for bunders like metro to consider this as optional dependency
+            // eslint-disable-next-line no-useless-catch
+            try {
+                (_m = partialCache.storeHooks) !== null && _m !== void 0 ? _m : (partialCache.storeHooks = {
+                    useStore: require('react-redux').useStore,
+                    useSelector: require('react-redux').useSelector,
+                });
+            }
+            catch (e) {
+                throw e;
+            }
             const cache = partialCache;
             // Validate options
             if (cache.options.deepComparisonEnabled && !utilsAndConstants_1.optionalUtils.deepEqual) {

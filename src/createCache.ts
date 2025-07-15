@@ -65,15 +65,22 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       partialCache.globals.queries ??= {} as Globals<N, T, QP, QR, MP, MR>['queries']
       partialCache.globals.queries.fetchPolicy ??= FetchPolicy.NoCacheOrExpired
       partialCache.globals.queries.skipFetch ??= false
-      partialCache.storeHooks ??= {
-        useStore: require('react-redux').useStore,
-        useSelector: require('react-redux').useSelector,
-      } as TypedCache['storeHooks']
       partialCache.cacheStateSelector ??= (state: Record<string, unknown>) => state[cache.name]
       partialCache.mutations ??= {} as TypedCache['mutations']
       partialCache.queries ??= {} as TypedCache['queries']
       // @ts-expect-error private field for testing
       partialCache.abortControllers = abortControllers
+
+      // Try/catch just for bunders like metro to consider this as optional dependency
+      // eslint-disable-next-line no-useless-catch
+      try {
+        partialCache.storeHooks ??= {
+          useStore: require('react-redux').useStore,
+          useSelector: require('react-redux').useSelector,
+        } as TypedCache['storeHooks']
+      } catch (e) {
+        throw e
+      }
 
       const cache = partialCache as TypedCache
 
