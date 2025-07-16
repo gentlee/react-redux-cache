@@ -2,7 +2,7 @@
   "name": "react-redux-cache",
   "author": "Alexander Danilov",
   "license": "MIT",
-  "version": "0.19.4-rc.0",
+  "version": "0.19.4",
   "description": "Powerful data fetching and caching library for Redux and Zustand that supports normalization.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -29,6 +29,7 @@
     "preminor-rc": "yarn build && npm version preminor --preid rc",
     "prepatch-rc": "yarn build && npm version prepatch --preid rc",
     "publish-rc": "npm publish --tag rc",
+    "remove-rc": "npm version <same-version-without-rc>",
     "prepublishOnly": "yarn build && yarn test"
   },
   "peerDependencies": {
