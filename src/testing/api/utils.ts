@@ -1,4 +1,4 @@
-import type {EntitiesMap} from '../..'
+import type {EntitiesMap} from '../../types'
 import {cache, TestTypenames} from '../redux/cache'
 import type {Bank, User} from './types'
 

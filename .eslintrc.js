@@ -16,9 +16,10 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  plugins: ['react', 'react-hooks', '@typescript-eslint', 'simple-import-sort'],
+  plugins: ['react', 'react-hooks', '@typescript-eslint', 'import', 'simple-import-sort'],
   rules: {
     curly: ['error', 'all'],
+    'import/newline-after-import': ['error', {count: 1}],
     'object-shorthand': 'error',
     'brace-style': [
       'error',

@@ -23,7 +23,7 @@ Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with
 |Not overengineered|Simplicity is the main goal.|
 |Performance|Every function is heavily optimized, Immer is not used ([RTK [Query] issue](https://github.com/reduxjs/redux-toolkit/issues/4793)).|
 |Reliability|High test coverage, zero issue policy.|
-|Lightweight|`npx minified-size dist/*.js`<br/>minified: 22.9 kB<br/>gzipped: 9.06 kB<br/>brotlied: 8.07 kB|
+|Lightweight|`npx minified-size dist/esm/*.js`<br/>minified: 18.3 kB<br/>gzipped: 7.91 kB<br/>brotlied: 7.02 kB|
 
 |Feature|Description|
 |--|--|
