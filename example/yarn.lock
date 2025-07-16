@@ -1344,10 +1344,10 @@ react-dom@18.3.1:
     loose-envify "^1.1.0"
     scheduler "^0.23.2"
 
-react-redux-cache@0.19.2:
-  version "0.19.2"
-  resolved "https://registry.yarnpkg.com/react-redux-cache/-/react-redux-cache-0.19.2.tgz#7af0d57f3fd4e396031310d16a375584ca5c7561"
-  integrity sha512-xkDNr2U80F1iMyry5rRw7qvc72MPYI0TSlyL51Ix4neIz7MfwUFo96WMy92txggcuv1LbpWr4EJCWI4D+hu5Uw==
+react-redux-cache@0.19.4:
+  version "0.19.4"
+  resolved "https://registry.yarnpkg.com/react-redux-cache/-/react-redux-cache-0.19.4.tgz#e4f9b63a9fd7455aa4b79136e2b20771d880aa89"
+  integrity sha512-+a98F7KczrcUu+mh2+dVRoaYy5t93K4Ulpn8m3flUCNsZofF544CtJbvfZMHXVdvFVOEvegAwJ81LVMkPIYOqA==
 
 react-refresh@^0.14.2:
   version "0.14.2"
