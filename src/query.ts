@@ -23,6 +23,7 @@ export const query = async <
   secondsToLive: number | undefined = cache.queries[queryKey].secondsToLive ??
     cache.globals.queries.secondsToLive,
   onlyIfExpired: boolean | undefined,
+  skipFetch: boolean | undefined,
   mergeResults = cache.queries[queryKey].mergeResults,
   onCompleted = cache.queries[queryKey].onCompleted,
   onSuccess = cache.queries[queryKey].onSuccess,
@@ -33,6 +34,12 @@ export const query = async <
   const logsEnabled = cache.options.logsEnabled
 
   const queryStateOnStart = selectQueryState(store.getState(), queryKey, cacheKey)
+
+  if (skipFetch) {
+    return {
+      result: queryStateOnStart.result,
+    }
+  }
 
   if (queryStateOnStart?.loading) {
     logsEnabled &&

@@ -45,6 +45,7 @@ const query = (
   params,
   secondsToLive,
   onlyIfExpired,
+  skipFetch,
   mergeResults,
   onCompleted,
   onSuccess,
@@ -73,6 +74,11 @@ const query = (
     const {selectQueryResult, selectQueryState} = selectors
     const logsEnabled = cache.options.logsEnabled
     const queryStateOnStart = selectQueryState(store.getState(), queryKey, cacheKey)
+    if (skipFetch) {
+      return {
+        result: queryStateOnStart.result,
+      }
+    }
     if (queryStateOnStart === null || queryStateOnStart === void 0 ? void 0 : queryStateOnStart.loading) {
       logsEnabled &&
         (0, utilsAndConstants_1.log)(`${logTag} fetch cancelled: already loading`, {

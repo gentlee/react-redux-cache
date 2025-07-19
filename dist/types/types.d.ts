@@ -236,7 +236,17 @@ export type QueryOptions<
   QK extends keyof (QP & QR),
   MP,
   MR
-> = Omit<UseQueryOptions<N, T, QK, QP, QR, MP, MR>, 'skipFetch'> & {
+> = Pick<
+  UseQueryOptions<N, T, QK, QP, QR, MP, MR>,
+  | 'query'
+  | 'params'
+  | 'skipFetch'
+  | 'secondsToLive'
+  | 'mergeResults'
+  | 'onCompleted'
+  | 'onSuccess'
+  | 'onError'
+> & {
   /** If set to true, query will run only if it is expired or result not yet cached. */
   onlyIfExpired?: boolean
 }

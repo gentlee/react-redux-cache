@@ -178,6 +178,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
               params,
               options.secondsToLive,
               options.onlyIfExpired,
+              options.skipFetch,
               // @ts-expect-error fix later
               options.mergeResults,
               options.onCompleted,

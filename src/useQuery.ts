@@ -64,6 +64,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
         paramsPassed ? options.params! : params, // params type can also have null | undefined, thats why we don't check for it here
         secondsToLive,
         options?.onlyIfExpired,
+        false,
         // @ts-expect-error fix later
         mergeResults,
         onCompleted,

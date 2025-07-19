@@ -3,7 +3,7 @@ import React from 'react'
 import {Provider} from 'react-redux'
 
 import {assertEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
-import {useClient} from '../testing/redux/cache'
+import {updateQueryStateAndEntities, useClient} from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
 import {advanceHalfApiTimeout} from '../testing/utils'
 
@@ -77,6 +77,33 @@ test('should cancel fetch when already loading or not expited, and return the pr
     '@rrc/cache/updateQueryStateAndEntities', // load finished 0
     '@rrc/cache/updateQueryStateAndEntities', // load finished 1
   ])
+})
+
+test('should return current result without fetch with skipFetch: true', async () => {
+  await act(() => render())
+  assertEventLog(['render'])
+
+  let result
+  await act(() => {
+    query({query: 'getUser', params: 0, skipFetch: true}).then((x) => (result = x))
+  })
+  assertEventLog([])
+  await act(() => advanceHalfApiTimeout())
+  assertEventLog([])
+
+  store.dispatch(updateQueryStateAndEntities('getUser', 0, {result: 0}))
+  assertEventLog(['@rrc/cache/updateQueryStateAndEntities'])
+
+  let result2
+  await act(() => {
+    query({query: 'getUser', params: 0, skipFetch: true}).then((x) => (result2 = x))
+  })
+  assertEventLog([])
+  await act(() => advanceHalfApiTimeout())
+  assertEventLog([])
+
+  expect(result).toStrictEqual({result: undefined})
+  expect(result2).toStrictEqual({result: 0})
 })
 
 const QueryComponent = () => {

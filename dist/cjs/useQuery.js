@@ -75,7 +75,7 @@ const useQuery = (cache, actions, selectors, options) => {
       __awaiter(void 0, void 0, void 0, function* () {
         const paramsPassed = options && 'params' in options
         return yield (0,
-        query_1.query)('useQuery.fetch', store, cache, actions, selectors, queryKey, paramsPassed ? getCacheKey(options.params) : cacheKey, paramsPassed ? options.params : params, secondsToLive, options === null || options === void 0 ? void 0 : options.onlyIfExpired, mergeResults, onCompleted, onSuccess, onError)
+        query_1.query)('useQuery.fetch', store, cache, actions, selectors, queryKey, paramsPassed ? getCacheKey(options.params) : cacheKey, paramsPassed ? options.params : params, secondsToLive, options === null || options === void 0 ? void 0 : options.onlyIfExpired, false, mergeResults, onCompleted, onSuccess, onError)
       }),
     [store, queryKey, cacheKey]
   )

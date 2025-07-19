@@ -126,6 +126,7 @@ const withTypenames = () => {
               params,
               options.secondsToLive,
               options.onlyIfExpired,
+              options.skipFetch,
               options.mergeResults,
               options.onCompleted,
               options.onSuccess,

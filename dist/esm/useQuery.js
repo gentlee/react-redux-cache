@@ -82,6 +82,7 @@ export const useQuery = (cache, actions, selectors, options) => {
           paramsPassed ? options.params : params,
           secondsToLive,
           options === null || options === void 0 ? void 0 : options.onlyIfExpired,
+          false,
           mergeResults,
           onCompleted,
           onSuccess,

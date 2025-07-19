@@ -21,6 +21,7 @@ export declare const query: <
   params: QK extends keyof (QP | QR) ? QP[QK] : never,
   secondsToLive: number | undefined,
   onlyIfExpired: boolean | undefined,
+  skipFetch: boolean | undefined,
   mergeResults?:
     | ((
         oldResult: QR[keyof QP & keyof QR & string] | undefined,
