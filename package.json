@@ -2,26 +2,40 @@
   "name": "react-redux-cache",
   "author": "Alexander Danilov",
   "license": "MIT",
-  "version": "0.17.0",
+  "version": "0.19.5",
   "description": "Powerful data fetching and caching library for Redux and Zustand that supports normalization.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
   "scripts": {
-    "example": "(cd example && yarn && yarn dev)",
+    "example": "(cd example && yarn --production && yarn dev)",
     "clean": "rm -rf dist",
-    "lint": "yarn eslint src",
-    "lint-fix": "yarn eslint --fix src",
-    "build": "yarn clean && yarn lint && tsc && rm -rf dist/testing && rm -rf dist/__tests__",
+    "lint": "yarn eslint",
+    "lint-fix": "yarn eslint --fix",
+    "lint-fix-dist": "yarn eslint --quiet --fix dist/ > /dev/null 2>&1 || true",
+    "build-cjs": "tsc -p tsconfig.cjs.json && rm -rf dist/cjs/testing && rm -rf dist/cjs/__tests__",
+    "build-esm": "tsc -p tsconfig.esm.json > /dev/null ; rm -rf dist/esm/testing && rm -rf dist/esm/__tests__",
+    "build-types": "tsc -p tsconfig.types.json > /dev/null ; rm -rf dist/types/testing && rm -rf dist/types/__tests__",
+    "build": "yarn clean && yarn lint && yarn build-cjs && yarn build-esm && yarn build-types && yarn size && yarn lint-fix-dist",
+    "size": "npx minified-size dist/esm/*.js | grep 'total:' | sed -E 's/.*total: [^,]*, ([^,]*), ([^,]*), ([^,]*).*/<br\\/>minified: \\1<br\\/>gzipped: \\2<br\\/>brotlied: \\3/'",
     "test": "node node_modules/jest/bin/jest.js",
     "preminor-rc": "yarn build && npm version preminor --preid rc",
     "prepatch-rc": "yarn build && npm version prepatch --preid rc",
     "publish-rc": "npm publish --tag rc",
+    "remove-rc": "npm version <same-version-without-rc>",
     "prepublishOnly": "yarn build && yarn test"
   },
   "peerDependencies": {
     "fast-deep-equal": "*",
-    "react": "^16",
-    "react-redux": "^4"
+    "react": ">=16",
+    "react-redux": ">=4"
   },
   "peerDependenciesMeta": {
     "fast-deep-equal": {
@@ -41,12 +55,14 @@
     "@typescript-eslint/parser": "5.59.5",
     "eslint": "8.40.0",
     "eslint-config-prettier": "8.8.0",
+    "eslint-plugin-import": "2.32.0",
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-react": "7.33.2",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-simple-import-sort": "10.0.0",
     "jest": "29.5.0",
     "jest-environment-jsdom": "29.7.0",
+    "minified-size": "4.0.0",
     "prettier": "2.8.8",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -60,9 +76,6 @@
   "files": [
     "dist/*"
   ],
-  "exports": {
-    ".": "./dist/index.js"
-  },
   "keywords": [
     "react",
     "redux",

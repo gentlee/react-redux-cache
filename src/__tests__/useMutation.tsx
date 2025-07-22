@@ -84,11 +84,11 @@ test('should be able to abort started mutation, mutation selectors work', async 
     '@rrc/cache/mergeEntityChanges',
     'render: loading: undefined, result: undefined',
     '@rrc/cache/updateMutationStateAndEntities', // loading true
-    'render: loading: true, result: undefined',
+    'render: loading: [object Promise], result: undefined',
     '@rrc/cache/updateMutationStateAndEntities', // loading false, result 0
     'render: loading: undefined, result: 0',
     '@rrc/cache/updateMutationStateAndEntities', // loading true, result undefined
-    'render: loading: true, result: undefined',
+    'render: loading: [object Promise], result: undefined',
     '@rrc/cache/updateMutationStateAndEntities', // abort, loading false
     'render: loading: undefined, result: undefined',
   ])

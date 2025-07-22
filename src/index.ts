@@ -1,13 +1,13 @@
 export {createCache, withTypenames} from './createCache'
 export * from './types'
-export {useQuerySelectorStateComparer} from './useQuery'
-export {defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstants'
+export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstants'
 
 // Backlog
 
 // ! high (1.0.0-rc.0)
-// optimistic response
 // generate full api docs
+// optimistic response
+// features list (table)
 
 // ! medium
 // onCancel & onAbort
@@ -28,3 +28,8 @@ export {defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstant
 // readonly types?
 // proper types, remove as, any, todo
 // add number of retries param?
+// mutation state wrong type - can be undefined?
+
+// ! on hold
+// better support queries without params: useQuery & selectors optional cache key (making useQuery params optional doesn't seem like a good idea)
+// cancel all queries / mutations (already possible by recreating the store - this lib is pure)

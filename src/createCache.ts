@@ -22,6 +22,7 @@ import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
 import {
   applyEntityChanges,
+  createStateComparer,
   defaultGetCacheKey,
   EMPTY_OBJECT,
   FetchPolicy,
@@ -52,7 +53,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
 
       const abortControllers = new WeakMap<Store, Record<Key, AbortController>>()
 
-      // provide all optional fields
+      // Provide all optional fields
 
       partialCache.options ??= {} as CacheOptions
       partialCache.options.logsEnabled ??= false
@@ -62,21 +63,26 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       partialCache.globals.queries ??= {} as Globals<N, T, QP, QR, MP, MR>['queries']
       partialCache.globals.queries.fetchPolicy ??= FetchPolicy.NoCacheOrExpired
       partialCache.globals.queries.skipFetch ??= false
-      partialCache.storeHooks ??= {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        useStore: require('react-redux').useStore,
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        useSelector: require('react-redux').useSelector,
-      } as TypedCache['storeHooks']
       partialCache.cacheStateSelector ??= (state: Record<string, unknown>) => state[cache.name]
       partialCache.mutations ??= {} as TypedCache['mutations']
       partialCache.queries ??= {} as TypedCache['queries']
       // @ts-expect-error private field for testing
       partialCache.abortControllers = abortControllers
 
+      // Try/catch just for bunders like metro to consider this as optional dependency
+      // eslint-disable-next-line no-useless-catch
+      try {
+        partialCache.storeHooks ??= {
+          useStore: require('react-redux').useStore,
+          useSelector: require('react-redux').useSelector,
+        } as TypedCache['storeHooks']
+      } catch (e) {
+        throw e
+      }
+
       const cache = partialCache as TypedCache
 
-      // validate options
+      // Validate options
 
       if (cache.options.deepComparisonEnabled && !optionalUtils.deepEqual) {
         console.warn(
@@ -84,7 +90,24 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         )
       }
 
-      // selectors
+      // State comparers
+
+      /** Transforms array of keys to comparer function. */
+      const setDefaultComparer = (
+        target: Pick<TypedCache['globals']['queries'], 'selectorComparer'> | undefined
+      ) => {
+        if (target?.selectorComparer != null && typeof target.selectorComparer === 'object') {
+          target.selectorComparer = createStateComparer(target.selectorComparer)
+        }
+      }
+
+      setDefaultComparer(cache.globals.queries)
+      for (const queryKey in partialCache.queries) {
+        // @ts-expect-error TODO fix types
+        setDefaultComparer(partialCache.queries[queryKey as keyof TypedCache['queries']])
+      }
+
+      // Selectors
 
       const selectors = {
         selectCacheState: cache.cacheStateSelector,
@@ -108,7 +131,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         selectEntitiesByTypename,
       } = selectors
 
-      // actions
+      // Actions
 
       const actions = createActions<N, T, QP, QR, MP, MR>(cache.name)
       const {
@@ -121,13 +144,67 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         clearCache,
       } = actions
 
-      // reducer
+      // Reducer
 
       const reducer = createReducer<N, T, QP, QR, MP, MR>(
         actions,
         Object.keys(cache.queries) as (keyof (QP | QR))[],
         cache.options
       )
+
+      // Client creator
+
+      const createClient = (store: Store) => {
+        const client = {
+          query: <QK extends keyof (QP & QR)>(options: QueryOptions<N, T, QP, QR, QK, MP, MR>) => {
+            type P = QK extends keyof (QP | QR) ? QP[QK] : never
+            type R = QK extends keyof (QP | QR) ? QR[QK] : never
+
+            const {query: queryKey, params} = options
+            const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
+            // @ts-expect-error fix later
+            const cacheKey = getCacheKey(params)
+
+            return queryImpl(
+              'query',
+              store,
+              cache,
+              actions,
+              selectors,
+              queryKey,
+              cacheKey,
+              params,
+              options.secondsToLive,
+              options.onlyIfExpired,
+              options.skipFetch,
+              // @ts-expect-error fix later
+              options.mergeResults,
+              options.onCompleted,
+              options.onSuccess,
+              options.onError
+            ) as Promise<QueryResult<R>>
+          },
+          mutate: <MK extends keyof (MP & MR)>(options: MutateOptions<N, T, QP, QR, MP, MR, MK>) => {
+            type R = MK extends keyof (MP | MR) ? MR[MK] : never
+
+            return mutateImpl(
+              'mutate',
+              store,
+              cache,
+              actions,
+              selectors,
+              options.mutation,
+              options.params,
+              abortControllers,
+              // @ts-expect-error fix later
+              options.onCompleted,
+              options.onSuccess,
+              options.onError
+            ) as Promise<MutationResult<R>>
+          },
+        }
+        return client
+      }
 
       return {
         /** Keeps all options, passed while creating the cache. */
@@ -187,56 +264,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           /** Returns client object with query and mutate functions. */
           useClient: () => {
             const store = cache.storeHooks.useStore()
-            return useMemo(() => {
-              const client = {
-                query: <QK extends keyof (QP & QR)>(options: QueryOptions<N, T, QP, QR, QK, MP, MR>) => {
-                  type P = QK extends keyof (QP | QR) ? QP[QK] : never
-                  type R = QK extends keyof (QP | QR) ? QR[QK] : never
-
-                  const {query: queryKey, params} = options
-                  const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
-                  // @ts-expect-error fix later
-                  const cacheKey = getCacheKey(params)
-
-                  return queryImpl(
-                    'query',
-                    store,
-                    cache,
-                    actions,
-                    selectors,
-                    queryKey,
-                    cacheKey,
-                    params,
-                    options.secondsToLive,
-                    options.onlyIfExpired,
-                    // @ts-expect-error fix later
-                    options.mergeResults,
-                    options.onCompleted,
-                    options.onSuccess,
-                    options.onError
-                  ) as Promise<QueryResult<R>>
-                },
-                mutate: <MK extends keyof (MP & MR)>(options: MutateOptions<N, T, QP, QR, MP, MR, MK>) => {
-                  type R = MK extends keyof (MP | MR) ? MR[MK] : never
-
-                  return mutateImpl(
-                    'mutate',
-                    store,
-                    cache,
-                    actions,
-                    selectors,
-                    options.mutation,
-                    options.params,
-                    abortControllers,
-                    // @ts-expect-error fix later
-                    options.onCompleted,
-                    options.onSuccess,
-                    options.onError
-                  ) as Promise<MutationResult<R>>
-                },
-              }
-              return client
-            }, [store])
+            return useMemo(() => createClient(store), [store])
           },
           /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
           useQuery: <QK extends keyof (QP & QR)>(
@@ -255,6 +283,8 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           },
         },
         utils: {
+          /** Creates client by providing the store. Can be used when the store is a singleton - to not use a hook for getting the client, but import it directly. */
+          createClient,
           /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
           getInitialState: () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

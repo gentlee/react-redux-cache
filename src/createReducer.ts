@@ -2,9 +2,20 @@ import type {Actions} from './createActions'
 import type {CacheOptions, CacheState, MutationState, QueryState, Typenames} from './types'
 import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, log, optionalUtils} from './utilsAndConstants'
 
-const optionalQueryKeys: (keyof QueryState<unknown, unknown>)[] = ['error', 'expiresAt', 'result', 'params']
+const optionalQueryKeys: (keyof QueryState<Typenames, unknown, unknown>)[] = [
+  'error',
+  'expiresAt',
+  'result',
+  'params',
+  'loading',
+]
 
-const optionalMutationKeys: (keyof MutationState<unknown, unknown>)[] = ['error', 'result', 'params']
+const optionalMutationKeys: (keyof MutationState<Typenames, unknown, unknown>)[] = [
+  'error',
+  'result',
+  'params',
+  'loading',
+]
 
 export const createReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
   actions: Actions<N, T, QP, QR, MP, MR>,
@@ -52,14 +63,29 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
         }
 
         if (newQueryState) {
+          if (oldQueryState && deepEqual) {
+            // set back params if deeply same value
+            if (
+              newQueryState.params !== oldQueryState.params &&
+              deepEqual(newQueryState.params, oldQueryState.params)
+            ) {
+              newQueryState.params = oldQueryState.params
+            }
+
+            // set back if deeply same value
+            if (
+              newQueryState.result !== oldQueryState.result &&
+              deepEqual(newQueryState.result, oldQueryState.result)
+            ) {
+              newQueryState.result = oldQueryState.result
+            }
+          }
+
           // remove undefined optional fields
           for (const key of optionalQueryKeys) {
             if (key in newQueryState && newQueryState[key] === undefined) {
               delete newQueryState[key]
             }
-          }
-          if ('loading' in newQueryState && !newQueryState.loading) {
-            delete newQueryState.loading
           }
 
           // skip if new state deep equals to the old state
@@ -109,14 +135,29 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
         }
 
         if (newMutationState) {
+          if (oldMutationState && deepEqual) {
+            // set back params if deeply same value
+            if (
+              newMutationState.params !== oldMutationState.params &&
+              deepEqual(newMutationState.params, oldMutationState.params)
+            ) {
+              newMutationState.params = oldMutationState.params
+            }
+
+            // set back if deeply same value
+            if (
+              newMutationState.result !== oldMutationState.result &&
+              deepEqual(newMutationState.result, oldMutationState.result)
+            ) {
+              newMutationState.result = oldMutationState.result
+            }
+          }
+
           // remove optional fields with default values
           for (const key of optionalMutationKeys) {
             if (key in newMutationState && newMutationState[key] === undefined) {
               delete newMutationState[key]
             }
-          }
-          if ('loading' in newMutationState && !newMutationState.loading) {
-            delete newMutationState.loading
           }
 
           // skip if new state deep equals to the old state

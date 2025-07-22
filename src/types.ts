@@ -61,6 +61,11 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
   }
 }
 
+export type QueryStateComparer<T extends Typenames, P, R> = (
+  x: QueryState<T, P, R> | undefined,
+  y: QueryState<T, P, R> | undefined
+) => boolean
+
 export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
   /** Handles errors, not handled by onError from queries and mutations. @Default undefined. */
   onError?: (
@@ -79,7 +84,7 @@ export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
     fetchPolicy: (
       expired: boolean,
       params: unknown,
-      state: QueryState<unknown, unknown>,
+      state: QueryState<T, unknown, unknown>,
       store: Store,
       selectors: Selectors<N, T, QP, QR, MP, MR>
     ) => boolean
@@ -87,6 +92,8 @@ export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
     skipFetch: boolean
     /** If set, this value updates expiresAt value of query state when query result is received. @Default undefined */
     secondsToLive?: number
+    /** Either comparer function, or array of keys to subscribe by useQuery's useSelector. @Default compares result, loading, params, error. */
+    selectorComparer?: QueryStateComparer<T, unknown, unknown> | (keyof QueryState<T, unknown, unknown>)[]
   }
 }
 
@@ -113,10 +120,10 @@ export type EntityIds<T extends Typenames> = {[K in keyof T]?: Key[]}
 export type CacheState<T extends Typenames, QP, QR, MP, MR> = {
   entities: EntitiesMap<T>
   queries: {
-    [QK in keyof (QP | QR)]: Dict<QueryState<QP[QK], QR[QK]> | undefined>
+    [QK in keyof (QP | QR)]: Dict<QueryState<T, QP[QK], QR[QK]> | undefined>
   }
   mutations: {
-    [MK in keyof (MP | MR)]: MutationState<MP[MK], MR[MK]>
+    [MK in keyof (MP | MR)]: MutationState<T, MP[MK], MR[MK]>
   }
 }
 
@@ -139,7 +146,7 @@ export type QueryInfo<
   fetchPolicy?: (
     expired: boolean,
     params: P,
-    queryState: QueryState<P, R>,
+    queryState: QueryState<T, P, R>,
     store: Store,
     selectors: Selectors<N, T, QP, QR, MP, MR>
   ) => boolean
@@ -183,6 +190,8 @@ export type QueryInfo<
     actions: Actions<N, T, QP, QR, MP, MR>,
     selectors: Selectors<N, T, QP, QR, MP, MR>
   ) => boolean | void | null | undefined
+  /** Either comparer function, or array of keys to subscribe by useQuery's useSelector. Default compares params, result, loading, error. */
+  selectorComparer?: QueryStateComparer<T, P, R> | (keyof QueryState<T, P, R>)[]
 }
 
 export type Query<P = unknown, R = unknown> = (
@@ -196,7 +205,7 @@ export type NormalizedQuery<T extends Typenames = Typenames, P = unknown, R = un
   ...args: Parameters<Query<P, R>>
 ) => Promise<NormalizedQueryResponse<T, R>>
 
-export type QueryState<P, R> = MutationState<P, R> & {
+export type QueryState<T extends Typenames, P, R> = MutationState<T, P, R> & {
   /**
    * Timestamp in milliseconds, after which state is considered expired.
    * Hooks may refetch the query again when component mounts, cache key or skip option change, depending on the fetch policy.
@@ -227,7 +236,14 @@ export type UseQueryOptions<
     MP,
     MR
   >,
-  'fetchPolicy' | 'skipFetch' | 'secondsToLive' | 'mergeResults' | 'onCompleted' | 'onSuccess' | 'onError'
+  | 'fetchPolicy'
+  | 'skipFetch'
+  | 'secondsToLive'
+  | 'selectorComparer'
+  | 'mergeResults'
+  | 'onCompleted'
+  | 'onSuccess'
+  | 'onError'
 >
 
 export type QueryOptions<
@@ -238,7 +254,17 @@ export type QueryOptions<
   QK extends keyof (QP & QR),
   MP,
   MR
-> = Omit<UseQueryOptions<N, T, QK, QP, QR, MP, MR>, 'skipFetch'> & {
+> = Pick<
+  UseQueryOptions<N, T, QK, QP, QR, MP, MR>,
+  | 'query'
+  | 'params'
+  | 'skipFetch'
+  | 'secondsToLive'
+  | 'mergeResults'
+  | 'onCompleted'
+  | 'onSuccess'
+  | 'onError'
+> & {
   /** If set to true, query will run only if it is expired or result not yet cached. */
   onlyIfExpired?: boolean
 }
@@ -254,7 +280,8 @@ export type NormalizedQueryResponse<T extends Typenames = Typenames, R = unknown
 
 export type QueryResult<R = unknown> = {
   error?: unknown
-  cancelled?: true
+  /** Fetch cancelled reason. */
+  cancelled?: 'loading' | 'not-expired'
   result?: R
 }
 
@@ -326,9 +353,9 @@ export type MutationResult<R = unknown> = {
 
 // Query & Mutation
 
-export type MutationState<P, R> = {
-  /** `true` when fetch is currently in progress. */
-  loading?: boolean
+export type MutationState<T extends Typenames, P, R> = {
+  /** Set when fetch is currently in progress. */
+  loading?: Promise<NormalizedQueryResponse<T, R>>
   /** Result of the latest successfull response. */
   result?: R
   /** Error of the latest response. */

@@ -44,30 +44,32 @@ export const mutate = async <
 
     if (abortController !== undefined) {
       abortController.abort()
-    } else {
-      store.dispatch(
-        updateMutationStateAndEntities(mutationKey as keyof (MP | MR), {
-          loading: true,
-          params,
-          result: undefined,
-        })
-      )
     }
   }
 
   const abortController = new AbortController()
   abortControllersOfStore[mutationKey] = abortController
 
+  const mutatePromise = cache.mutations[mutationKey].mutation(
+    // @ts-expect-error fix later
+    params,
+    store,
+    abortController.signal
+  )
+
+  store.dispatch(
+    updateMutationStateAndEntities(mutationKey as keyof (MP | MR), {
+      // @ts-expect-error TODO fix types
+      loading: mutatePromise,
+      params,
+      result: undefined,
+    })
+  )
+
   let response
   let error
-  const fetchFn = cache.mutations[mutationKey].mutation
   try {
-    response = await fetchFn(
-      // @ts-expect-error fix later
-      params,
-      store,
-      abortController.signal
-    )
+    response = await mutatePromise
   } catch (e) {
     error = e
   }
@@ -89,7 +91,7 @@ export const mutate = async <
     store.dispatch(
       updateMutationStateAndEntities(mutationKey as keyof (MP | MR), {
         error: error as Error,
-        loading: false,
+        loading: undefined,
       })
     )
 
@@ -121,7 +123,7 @@ export const mutate = async <
   if (response) {
     const newState = {
       error: undefined,
-      loading: false,
+      loading: undefined,
       result: response.result,
     }
 

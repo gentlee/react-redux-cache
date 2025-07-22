@@ -1,6 +1,7 @@
 import {act, render as renderImpl} from '@testing-library/react'
 import React, {Key, useRef} from 'react'
 import {Provider} from 'react-redux'
+import {createStore} from 'redux'
 
 import {getUser, getUsers} from '../testing/api/mocks'
 import {assertEventLog, clearEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
@@ -22,28 +23,39 @@ import {
   selectQueryResult,
   selectQueryState,
   updateQueryStateAndEntities,
-  useClient,
-  useQuery,
+  useClient as useClientImport,
+  useQuery as useQueryImport,
 } from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
 import {advanceApiTimeout, advanceHalfApiTimeout, TTL_TIMEOUT} from '../testing/utils'
-import {defaultGetCacheKey, FetchPolicy} from '../utilsAndConstants'
+import {createStateComparer, defaultGetCacheKey, FetchPolicy} from '../utilsAndConstants'
+import {createTestingCache} from './createCache'
 
+const defaultStore = createReduxStore(false)
+
+let rerender: ReturnType<typeof renderImpl>['rerender']
+let useQuery: typeof useQueryImport
+let useClient: typeof useClientImport
+let store: typeof defaultStore
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let client: {query: any}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let refetch: any
 
-const store = createReduxStore(false)
-let rerender: ReturnType<typeof renderImpl>['rerender']
 beforeEach(() => {
   // always use rerender instead of render
   ;({rerender} = renderImpl(<div />))
+
+  store = defaultStore
+  useQuery = useQueryImport
+  useClient = useClientImport
 })
 
 afterEach(() => {
-  store.dispatch(clearCache())
-  expect(selectCacheState(store.getState())).toStrictEqual(EMPTY_STATE)
+  if (store === defaultStore) {
+    store.dispatch(clearCache())
+    expect(selectCacheState(store.getState())).toStrictEqual(EMPTY_STATE)
+  }
 
   getUsers.mockClear()
   getUser.mockClear()
@@ -91,7 +103,7 @@ const setCacheAndMountAndCheckNoRefetch = async () => {
         result: {items: [0, 1, 2], page: 1},
         error: undefined,
         params: {page: 1},
-        loading: false,
+        loading: undefined,
       },
       {merge: generateTestEntitiesMap(3)}
     )
@@ -271,7 +283,7 @@ test('no fetch when skip, without cancelling current request when setting to tru
   expect(getUser).toBeCalledTimes(2)
 })
 
-test('cancel manual refetch when currently loading same params', async () => {
+test('cancel manual refetch when currently loading same params, but return result', async () => {
   render({query: 'getUser', params: 0})
 
   let shouldBeCancelledResult
@@ -302,7 +314,7 @@ test('cancel manual refetch when currently loading same params', async () => {
       },
     },
   })
-  expect(shouldBeCancelledResult).toStrictEqual({cancelled: true})
+  expect(shouldBeCancelledResult).toStrictEqual({cancelled: 'loading', result: 0})
   expect(refetchResult).toStrictEqual({result: 0})
   assertEventLog(['first render: undefined', 'render: loading', 'render: 0', 'render: loading', 'render: 0'])
 })
@@ -327,7 +339,7 @@ test('cancel manual refetch when currently loading same params', async () => {
         {
           result: 0,
           params: 0,
-          loading: false,
+          loading: undefined,
         },
         {
           merge: generateTestEntitiesMap(1),
@@ -437,6 +449,54 @@ test('handles errors', async () => {
     actions,
     selectors
   )
+})
+
+test('selector comparer as useQuery array param', async () => {
+  render({query: 'queryWithError', params: undefined, selectorComparer: []})
+  await act(advanceApiTimeout)
+  assertEventLog(['first render: undefined'])
+
+  render({query: 'queryWithError', params: undefined, selectorComparer: ['error']})
+  await act(advanceApiTimeout)
+  assertEventLog(['error: Test error'])
+})
+
+test('selector comparer as query info option', async () => {
+  render({query: 'getUserWithResultComparer', params: 0})
+  await act(advanceApiTimeout)
+  assertEventLog(['first render: undefined', 'render: 0'])
+
+  render({query: 'getUserWithResultComparer', params: 1})
+  await act(advanceApiTimeout)
+  assertEventLog(['render: undefined', 'render: 1'])
+
+  render({query: 'getUserWithResultComparer', params: 3, selectorComparer: createStateComparer([])})
+  await act(advanceApiTimeout)
+  assertEventLog(['render: 1'])
+})
+
+test('selector comparer from globals', async () => {
+  const cache = createTestingCache(
+    'cache',
+    false,
+    (state) => state,
+    undefined,
+    createStateComparer(['result'])
+  )
+
+  store = createStore(cache.reducer)
+  // @ts-expect-error TODO fix types
+  useClient = cache.hooks.useClient
+  // @ts-expect-error TODO fix types
+  useQuery = cache.hooks.useQuery
+
+  render({query: 'getUser', params: 0}, undefined)
+  await act(advanceApiTimeout)
+  assertEventLog(['first render: undefined', 'render: 0'])
+
+  render({query: 'getUser', params: 1}, undefined)
+  await act(advanceApiTimeout)
+  assertEventLog(['render: undefined', 'render: 1'])
 })
 
 // components

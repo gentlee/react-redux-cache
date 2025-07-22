@@ -9,7 +9,6 @@ export const createReduxStore = (
 ) => {
   const middlewares: Middleware[] = []
   if (consoleLoggerEnabled) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     middlewares.push(require('redux-logger').default)
   }
   if (eventLogEnabled) {

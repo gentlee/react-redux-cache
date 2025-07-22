@@ -1,5 +1,5 @@
 import {withTypenames} from '../../createCache'
-import {getUser, getUsers, removeUser, updateUser} from '../api/mocks'
+import {getUser, getUsers, removeUser, updateUser, updateUserNotNormalized} from '../api/mocks'
 import type {Bank, User} from '../api/types'
 import {logEvent} from '../api/utils'
 import {throwErrorAfterTimeout, TTL_TIMEOUT} from '../utils'
@@ -98,6 +98,10 @@ export const {
     queryWithError: {
       query: throwErrorAfterTimeout,
     },
+    getUserWithResultComparer: {
+      query: getUser,
+      selectorComparer: ['result'],
+    },
   },
   mutations: {
     updateUser: {
@@ -108,6 +112,9 @@ export const {
     },
     mutationWithError: {
       mutation: throwErrorAfterTimeout,
+    },
+    updateUserNotNormalized: {
+      mutation: updateUserNotNormalized,
     },
   },
 })

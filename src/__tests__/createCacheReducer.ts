@@ -1,5 +1,8 @@
 import {reducer, updateMutationStateAndEntities, updateQueryStateAndEntities} from '../testing/redux/cache'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const loadingPromise = new Promise((x) => x({result: 0})) as any
+
 test('removes all default query fields, clears default query states', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const states = [reducer(undefined, {} as any)]
@@ -10,7 +13,7 @@ test('removes all default query fields, clears default query states', () => {
       updateQueryStateAndEntities('getUser', 'a', {
         result: 0,
         params: 0,
-        loading: false,
+        loading: undefined,
         error: undefined,
         expiresAt: 100,
       })
@@ -23,7 +26,7 @@ test('removes all default query fields, clears default query states', () => {
       updateQueryStateAndEntities('getUser', 'a', {
         result: 2,
         params: 1,
-        loading: true,
+        loading: loadingPromise,
         error: new Error('test'),
         expiresAt: undefined,
       })
@@ -36,7 +39,7 @@ test('removes all default query fields, clears default query states', () => {
       updateQueryStateAndEntities('getUser', 'a', {
         result: 0,
         params: 0,
-        loading: false,
+        loading: undefined,
         error: undefined,
       })
     )
@@ -62,7 +65,7 @@ test('removes all default query fields, clears default query states', () => {
     {
       result: 2,
       params: 1,
-      loading: true,
+      loading: expect.any(Promise),
       error: new Error('test'),
     },
     {
@@ -86,7 +89,7 @@ test('removes all default mutation fields, clears default mutation states', () =
           id: 0,
           name: 'test',
         },
-        loading: true,
+        loading: loadingPromise,
         error: undefined,
       })
     )
@@ -101,7 +104,7 @@ test('removes all default mutation fields, clears default mutation states', () =
           id: 1,
           name: 'test2',
         },
-        loading: false,
+        loading: undefined,
         error: new Error('test'),
       })
     )
@@ -136,7 +139,7 @@ test('removes all default mutation fields, clears default mutation states', () =
         id: 0,
         name: 'test',
       },
-      loading: true,
+      loading: loadingPromise,
     },
     {
       result: 2,

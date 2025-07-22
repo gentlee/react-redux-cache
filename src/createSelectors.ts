@@ -21,7 +21,11 @@ export const createSelectors = <N extends string, T extends Typenames, QP, QR, M
     state: unknown,
     query: QK,
     cacheKey: Key
-  ): QueryState<QK extends keyof (QP | QR) ? QP[QK] : never, QK extends keyof (QP | QR) ? QR[QK] : never> => {
+  ): QueryState<
+    T,
+    QK extends keyof (QP | QR) ? QP[QK] : never,
+    QK extends keyof (QP | QR) ? QR[QK] : never
+  > => {
     // @ts-expect-error fix later
     return cache.cacheStateSelector(state).queries[query][cacheKey] ?? EMPTY_OBJECT
   }
@@ -30,6 +34,7 @@ export const createSelectors = <N extends string, T extends Typenames, QP, QR, M
     state: unknown,
     mutation: MK
   ): MutationState<
+    T,
     MK extends keyof (MP | MR) ? MP[MK] : never,
     MK extends keyof (MP | MR) ? MR[MK] : never
   > => {

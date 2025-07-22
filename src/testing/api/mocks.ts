@@ -1,4 +1,4 @@
-import {NormalizedMutation, NormalizedQuery} from '../../types'
+import {Mutation, NormalizedMutation, NormalizedQuery} from '../../types'
 import {TestTypenames} from '../redux/cache'
 import {apiTimeout} from '../utils'
 import {User} from './types'
@@ -63,3 +63,10 @@ export const updateUser = jest.fn(async (user) => {
     },
   }
 }) satisfies NormalizedMutation<TestTypenames, Partial<Omit<User, 'bank'>> & Pick<User, 'id'>>
+
+export const updateUserNotNormalized = jest.fn(async (user) => {
+  await apiTimeout()
+  return {
+    result: user,
+  }
+}) satisfies Mutation<Partial<Omit<User, 'bank'>> & Pick<User, 'id'>>

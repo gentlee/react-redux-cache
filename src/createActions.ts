@@ -18,7 +18,7 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
   const updateQueryStateAndEntities = <K extends keyof (QP | QR)>(
     queryKey: K,
     queryCacheKey: Key,
-    state?: Partial<QueryState<QP[K], QR[K]>>,
+    state?: Partial<QueryState<T, QP[K], QR[K]>>,
     entityChanges?: EntityChanges<T>
   ) => ({
     type: updateQueryStateAndEntitiesType,
@@ -32,7 +32,7 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
   const updateMutationStateAndEntitiesType = `${actionPrefix}updateMutationStateAndEntities` as const
   const updateMutationStateAndEntities = <K extends keyof (MP | MR)>(
     mutationKey: K,
-    state?: Partial<MutationState<MP[K], MR[K]>>,
+    state?: Partial<MutationState<T, MP[K], MR[K]>>,
     entityChanges?: EntityChanges<T>
   ) => ({
     type: updateMutationStateAndEntitiesType,
