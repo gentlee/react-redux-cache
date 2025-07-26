@@ -40,13 +40,6 @@ export const log = (tag, data) => {
   console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
 }
 
-export const FetchPolicy = {
-  NoCacheOrExpired: (expired, _params, state) => {
-    return expired || state.result === undefined
-  },
-  Always: () => true,
-}
-
 export const applyEntityChanges = (entities, changes, options) => {
   var _a, _b, _c, _d
   if (changes.merge && changes.entities) {
@@ -177,4 +170,11 @@ export const createStateComparer = (fields) => {
     }
     return true
   }
+}
+
+export const FetchPolicy = {
+  NoCacheOrExpired: (expired, _params, state) => {
+    return expired || state.result === undefined
+  },
+  Always: () => true,
 }

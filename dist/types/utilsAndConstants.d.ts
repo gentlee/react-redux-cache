@@ -22,12 +22,27 @@ export declare const EMPTY_ARRAY: readonly never[]
 
 export declare const NOOP: () => void
 
+/** Default getCacheKey implementation. */
 export declare const defaultGetCacheKey: <P = unknown>(params: P) => Key
 
 export declare const log: (tag: string, data?: unknown) => void
 
+export declare const applyEntityChanges: <T extends Typenames>(
+  entities: EntitiesMap<T>,
+  changes: EntityChanges<T>,
+  options: CacheOptions
+) => EntitiesMap<T> | undefined
+
+/** Returns true if object has no keys. */
+export declare const isEmptyObject: (o: object) => boolean
+
+/** Returns query state comparer that compares only provided fields. Used in implementation of `selectorComparer` option. */
+export declare const createStateComparer: <T extends Typenames = Typenames, Q = unknown, P = unknown>(
+  fields: (keyof QueryState<T, Q, P>)[]
+) => QueryStateComparer<T, Q, P>
+
 export declare const FetchPolicy: {
-  /** Only if cache does not exist (result is undefined) or expired. */
+  /** Only if cache does not exist (result is undefined) or expired. @Default */
   NoCacheOrExpired: <T extends Typenames = Typenames, P = unknown, R = unknown>(
     expired: boolean,
     _params: P,
@@ -36,15 +51,3 @@ export declare const FetchPolicy: {
   /** Every fetch trigger. */
   Always: () => boolean
 }
-
-export declare const applyEntityChanges: <T extends Typenames>(
-  entities: EntitiesMap<T>,
-  changes: EntityChanges<T>,
-  options: CacheOptions
-) => EntitiesMap<T> | undefined
-
-export declare const isEmptyObject: (o: object) => boolean
-
-export declare const createStateComparer: <T extends Typenames = Typenames, Q = unknown, P = unknown>(
-  fields: (keyof QueryState<T, Q, P>)[]
-) => QueryStateComparer<T, Q, P>

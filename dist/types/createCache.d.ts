@@ -29,9 +29,7 @@ import {applyEntityChanges} from './utilsAndConstants'
  * Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.
  * Returns object with createCache function with provided typenames.
  * @example
- * const cache = withTypenames<MyTypenames>().createCache({
- *   ...
- * })
+ * `const cache = withTypenames<MyTypenames>().createCache({...})`
  */
 export declare const withTypenames: <T extends Typenames = Typenames>() => {
   /** Creates reducer, actions and hooks for managing queries and mutations through redux cache. */
@@ -271,7 +269,7 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
           options: MutateOptions<N, T, QP, QR, MP, MR, MK>
         ) => Promise<MutationResult<MK extends keyof MP & keyof MR ? MR[MK] : never>>
       }
-      /** Fetches query when params change and subscribes to query state changes (set with ). */
+      /** Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). */
       useQuery: <QK extends keyof (QP & QR)>(
         options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[3]
       ) => readonly [
@@ -614,7 +612,7 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(
         options: MutateOptions<N, Typenames, QP, QR, MP, MR, MK_1>
       ) => Promise<MutationResult<MK_1 extends keyof MP & keyof MR ? MR[MK_1] : never>>
     }
-    /** Fetches query when params change and subscribes to query state changes (set with ). */
+    /** Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). */
     useQuery: <QK_1 extends keyof QP | keyof QR>(
       options: UseQueryOptions<N, Typenames, QK_1, QP, QR, MP, MR>
     ) => readonly [

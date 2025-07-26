@@ -56,9 +56,7 @@ import {
  * Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.
  * Returns object with createCache function with provided typenames.
  * @example
- * const cache = withTypenames<MyTypenames>().createCache({
- *   ...
- * })
+ * `const cache = withTypenames<MyTypenames>().createCache({...})`
  */
 export const withTypenames = <T extends Typenames = Typenames>() => {
   return {
