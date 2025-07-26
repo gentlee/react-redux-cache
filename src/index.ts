@@ -1,3 +1,4 @@
+/* eslint-disable padding-line-between-statements */
 export {createCache, withTypenames} from './createCache'
 export * from './types'
 export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstants'
@@ -5,9 +6,7 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject} fro
 // Backlog
 
 // ! high (1.0.0-rc.0)
-// generate full api docs
 // optimistic response
-// features list (table)
 
 // ! medium
 // onCancel & onAbort
