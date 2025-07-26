@@ -127,6 +127,8 @@ Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with
   }
   ```
 </details>
+
+[API Reference](DOCUMENTATION.md)
     
 ### Table of contents
 
