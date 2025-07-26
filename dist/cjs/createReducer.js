@@ -18,12 +18,12 @@ var __rest =
     return t
   }
 Object.defineProperty(exports, '__esModule', {value: true})
-exports.createCacheReducer = void 0
+exports.createReducer = void 0
 const utilsAndConstants_1 = require('./utilsAndConstants')
 
 const optionalQueryKeys = ['error', 'expiresAt', 'result', 'params', 'loading']
 const optionalMutationKeys = ['error', 'result', 'params', 'loading']
-const createCacheReducer = (actions, queryKeys, cacheOptions) => {
+const createReducer = (actions, queryKeys, cacheOptions) => {
   const initialState = Object.freeze({
     entities: Object.freeze({}),
     queries: Object.freeze(
@@ -282,4 +282,4 @@ const createCacheReducer = (actions, queryKeys, cacheOptions) => {
     return state
   }
 }
-exports.createCacheReducer = createCacheReducer
+exports.createReducer = createReducer

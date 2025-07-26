@@ -2,11 +2,14 @@ import type {Actions} from './createActions'
 import type {Selectors} from './createSelectors'
 
 export type Key = string | number | symbol
+
 export type Dict<T> = Record<Key, T>
+
 export type OptionalPartial<T, K extends keyof T> = Partial<{
   [A in K]: Partial<T[A]>
 }> &
   Omit<T, K>
+
 /** Entity changes to be merged to the state. */
 export type EntityChanges<T extends Typenames> = {
   /** Entities that will be merged with existing. */
@@ -18,12 +21,15 @@ export type EntityChanges<T extends Typenames> = {
   /** Alias for `merge` to support normalizr. */
   entities?: EntityChanges<T>['merge']
 }
+
 export type Store<S = unknown> = {
   dispatch: (action: ReturnType<Actions[keyof Actions]>) => unknown
   getState: () => S
 }
+
 /** Record of typename and its corresponding entity type */
 export type Typenames = Record<string, object>
+
 export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
   /** Used as prefix for actions and in default cacheStateSelector for selecting cache state from store root state. */
   name: N
@@ -51,10 +57,12 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
       : never
   }
 }
+
 export type QueryStateComparer<T extends Typenames, P, R> = (
   x: QueryState<T, P, R> | undefined,
   y: QueryState<T, P, R> | undefined
 ) => boolean
+
 export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
   /** Handles errors, not handled by onError from queries and mutations. @Default undefined. */
   onError?: (
@@ -85,6 +93,7 @@ export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
     selectorComparer?: QueryStateComparer<T, unknown, unknown> | (keyof QueryState<T, unknown, unknown>)[]
   }
 }
+
 export type CacheOptions = {
   /** Enables additional validation with logging to console.warn. Recommened to enable in dev/testing mode. @Default true in dev mode. */
   additionalValidation: boolean
@@ -98,15 +107,19 @@ export type CacheOptions = {
    */
   deepComparisonEnabled: boolean
 }
+
 export type PartialEntitiesMap<T extends Typenames> = {
   [K in keyof T]?: Dict<Partial<T[K]>>
 }
+
 export type EntitiesMap<T extends Typenames> = {
   [K in keyof T]?: Dict<T[K]>
 }
+
 export type EntityIds<T extends Typenames> = {
   [K in keyof T]?: Key[]
 }
+
 export type CacheState<T extends Typenames, QP, QR, MP, MR> = {
   entities: EntitiesMap<T>
   queries: {
@@ -116,6 +129,7 @@ export type CacheState<T extends Typenames, QP, QR, MP, MR> = {
     [MK in keyof (MP | MR)]: MutationState<T, MP[MK], MR[MK]>
   }
 }
+
 export type QueryInfo<
   N extends string,
   T extends Typenames = Typenames,
@@ -180,15 +194,18 @@ export type QueryInfo<
   /** Either comparer function, or array of keys to subscribe by useQuery's useSelector. Default compares params, result, loading, error. */
   selectorComparer?: QueryStateComparer<T, P, R> | (keyof QueryState<T, P, R>)[]
 }
+
 export type Query<P = unknown, R = unknown> = (
   /** Query parameters */
   params: P,
   /** Store */
   store: Store
 ) => Promise<QueryResponse<R>>
+
 export type NormalizedQuery<T extends Typenames = Typenames, P = unknown, R = unknown> = (
   ...args: Parameters<Query<P, R>>
 ) => Promise<NormalizedQueryResponse<T, R>>
+
 export type QueryState<T extends Typenames, P, R> = MutationState<T, P, R> & {
   /**
    * Timestamp in milliseconds, after which state is considered expired.
@@ -197,6 +214,7 @@ export type QueryState<T extends Typenames, P, R> = MutationState<T, P, R> & {
    * */
   expiresAt?: number
 }
+
 export type UseQueryOptions<
   N extends string,
   T extends Typenames,
@@ -228,6 +246,7 @@ export type UseQueryOptions<
   | 'onSuccess'
   | 'onError'
 >
+
 export type QueryOptions<
   N extends string,
   T extends Typenames,
@@ -250,19 +269,23 @@ export type QueryOptions<
   /** If set to true, query will run only if it is expired or result not yet cached. */
   onlyIfExpired?: boolean
 }
+
 export type QueryResponse<R = unknown> = {
   result: R
   /** If defined, overrides this value for query state, ignoring `secondsToLive`. */
   expiresAt?: number
 }
+
 export type NormalizedQueryResponse<T extends Typenames = Typenames, R = unknown> = EntityChanges<T> &
   QueryResponse<R>
+
 export type QueryResult<R = unknown> = {
   error?: unknown
   /** Fetch cancelled reason. */
   cancelled?: 'loading' | 'not-expired'
   result?: R
 }
+
 export type MutationInfo<
   N extends string,
   T extends Typenames = Typenames,
@@ -275,6 +298,7 @@ export type MutationInfo<
 > = Pick<QueryInfo<N, T, P, R, QP, QR, MP, MR>, 'onCompleted' | 'onSuccess' | 'onError'> & {
   mutation: NormalizedMutation<T, P, R>
 }
+
 export type Mutation<P = unknown, R = unknown> = (
   /** Mutation parameters */
   params: P,
@@ -283,9 +307,11 @@ export type Mutation<P = unknown, R = unknown> = (
   /** Signal is aborted for current mutation when the same mutation was called once again. */
   abortSignal: AbortSignal
 ) => Promise<MutationResponse<R>>
+
 export type NormalizedMutation<T extends Typenames = Typenames, P = unknown, R = unknown> = (
   ...args: Parameters<Mutation<P, R>>
 ) => Promise<NormalizedMutationResponse<T, R>>
+
 export type MutateOptions<
   N extends string,
   T extends Typenames,
@@ -310,16 +336,20 @@ export type MutateOptions<
   mutation: MK
   params: MK extends keyof (MP | MR) ? MP[MK] : never
 }
+
 export type MutationResponse<R = unknown> = {
   result?: R
 }
+
 export type NormalizedMutationResponse<T extends Typenames = Typenames, R = unknown> = EntityChanges<T> &
   MutationResponse<R>
+
 export type MutationResult<R = unknown> = {
   error?: unknown
   aborted?: true
   result?: R
 }
+
 export type MutationState<T extends Typenames, P, R> = {
   /** Set when fetch is currently in progress. */
   loading?: Promise<NormalizedQueryResponse<T, R>>

@@ -8,6 +8,7 @@ export type Selectors<
   MP = unknown,
   MR = unknown
 > = ReturnType<typeof createSelectors<N, T, QP, QR, MP, MR>>
+
 export declare const createSelectors: <N extends string, T extends Typenames, QP, QR, MP, MR>(
   cache: Cache<N, T, QP, QR, MP, MR>
 ) => {

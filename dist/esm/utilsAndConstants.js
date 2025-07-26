@@ -1,12 +1,15 @@
 export const PACKAGE_SHORT_NAME = 'rrc'
+
 export const optionalUtils = {
   deepEqual: undefined,
 }
+
 try {
   optionalUtils.deepEqual = require('fast-deep-equal/es6')
 } catch (_a) {
   console.debug(PACKAGE_SHORT_NAME + ': fast-deep-equal optional dependency was not installed')
 }
+
 export const IS_DEV = (() => {
   try {
     return __DEV__
@@ -14,9 +17,13 @@ export const IS_DEV = (() => {
     return process.env.NODE_ENV === 'development'
   }
 })()
+
 export const EMPTY_OBJECT = Object.freeze({})
+
 export const EMPTY_ARRAY = Object.freeze([])
+
 export const NOOP = () => {}
+
 export const defaultGetCacheKey = (params) => {
   switch (typeof params) {
     case 'string':
@@ -28,15 +35,18 @@ export const defaultGetCacheKey = (params) => {
       return String(params)
   }
 }
+
 export const log = (tag, data) => {
   console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
 }
+
 export const FetchPolicy = {
   NoCacheOrExpired: (expired, _params, state) => {
     return expired || state.result === undefined
   },
   Always: () => true,
 }
+
 export const applyEntityChanges = (entities, changes, options) => {
   var _a, _b, _c, _d
   if (changes.merge && changes.entities) {
@@ -143,12 +153,14 @@ export const applyEntityChanges = (entities, changes, options) => {
     })
   return result
 }
+
 export const isEmptyObject = (o) => {
   for (const _ in o) {
     return false
   }
   return true
 }
+
 export const createStateComparer = (fields) => {
   return (x, y) => {
     if (x === y) {

@@ -9,6 +9,7 @@ export type Actions<
   MP = unknown,
   MR = unknown
 > = ReturnType<typeof createActions<N, T, QP, QR, MP, MR>>
+
 export declare const createActions: <N extends string, T extends Typenames, QP, QR, MP, MR>(
   name: N
 ) => {

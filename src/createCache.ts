@@ -1,3 +1,5 @@
+// Disabling this to import unused types to remove import() from generated types.
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {useMemo} from 'react'
 
 import {createActions} from './createActions'
@@ -8,15 +10,35 @@ import {query as queryImpl} from './query'
 import type {
   Cache,
   CacheOptions,
+  CacheState,
+  Dict,
+  EntitiesMap,
+  EntityChanges,
+  EntityIds,
   Globals,
   Key,
   MutateOptions,
+  Mutation,
+  MutationInfo,
+  MutationResponse,
   MutationResult,
+  MutationState,
+  NormalizedMutation,
+  NormalizedMutationResponse,
+  NormalizedQuery,
+  NormalizedQueryResponse,
   OptionalPartial,
+  PartialEntitiesMap,
+  Query,
+  QueryInfo,
   QueryOptions,
+  QueryResponse,
   QueryResult,
+  QueryState,
+  QueryStateComparer,
   Store,
   Typenames,
+  UseQueryOptions,
 } from './types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
@@ -92,7 +114,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
 
       // State comparers
 
-      /** Transforms array of keys to comparer function. */
+      // Transforms array of keys to comparer function.
       const setDefaultComparer = (
         target: Pick<TypedCache['globals']['queries'], 'selectorComparer'> | undefined
       ) => {
@@ -211,6 +233,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         cache,
         /** Reducer of the cache, should be added to redux store. */
         reducer,
+        // doc-header
         actions: {
           /** Updates query state, and optionally merges entity changes in a single action. */
           updateQueryStateAndEntities,
@@ -228,6 +251,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and shoult be used with caution. */
           clearCache,
         },
+        // doc-header
         selectors: {
           /** This is a cacheStateSelector from createCache options, or default one if was not provided. */
           selectCacheState,
@@ -260,13 +284,14 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           /** Selects all entities of provided typename. */
           selectEntitiesByTypename,
         },
+        // doc-header
         hooks: {
-          /** Returns client object with query and mutate functions. */
+          /** Returns memoized object with query and mutate functions. Memoization dependency is the store. */
           useClient: () => {
             const store = cache.storeHooks.useStore()
             return useMemo(() => createClient(store), [store])
           },
-          /** Fetches query when params change and subscribes to query state changes (except `expiresAt` field). */
+          /** Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). */
           useQuery: <QK extends keyof (QP & QR)>(
             options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[3]
           ) => useQuery(cache, actions, selectors, options),
@@ -282,6 +307,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
             return cache.storeHooks.useSelector((state) => selectEntityById(state, id, typename))
           },
         },
+        // doc-header
         utils: {
           /** Creates client by providing the store. Can be used when the store is a singleton - to not use a hook for getting the client, but import it directly. */
           createClient,

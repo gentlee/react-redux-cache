@@ -172,4 +172,5 @@ export const query = (
       result: newState === null || newState === void 0 ? void 0 : newState.result,
     }
   })
+
 const catchAndReturn = (x) => x

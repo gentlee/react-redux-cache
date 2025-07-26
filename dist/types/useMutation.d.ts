@@ -11,7 +11,7 @@ export declare const useMutation: <
   MR,
   MK extends keyof (MP & MR)
 >(
-  cache: Cache<N, T, QP, QR, MP, MR>,
+  cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'mutations' | 'storeHooks'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
   selectors: Selectors<N, T, QP, QR, MP, MR>,
   options: Omit<MutateOptions<N, T, QP, QR, MP, MR, MK>, 'params'>,

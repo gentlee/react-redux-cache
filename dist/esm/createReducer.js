@@ -20,7 +20,8 @@ import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, log, optionalUtils} fro
 
 const optionalQueryKeys = ['error', 'expiresAt', 'result', 'params', 'loading']
 const optionalMutationKeys = ['error', 'result', 'params', 'loading']
-export const createCacheReducer = (actions, queryKeys, cacheOptions) => {
+
+export const createReducer = (actions, queryKeys, cacheOptions) => {
   const initialState = Object.freeze({
     entities: Object.freeze({}),
     queries: Object.freeze(
