@@ -38,18 +38,13 @@ const utilsAndConstants_1 = require('./utilsAndConstants')
 
 const useMutation = (cache, actions, selectors, options, abortControllers) => {
   var _a
+  const {selectMutationState} = selectors
+  const {updateMutationStateAndEntities} = actions
   const {mutation: mutationKey, onCompleted, onSuccess, onError} = options
   const store = cache.storeHooks.useStore()
   const [mutationStateSelector, mutate, abort] = (0, react_1.useMemo)(() => {
     return [
-      (state) => {
-        cache.options.logsEnabled &&
-          (0, utilsAndConstants_1.log)('mutationStateSelector', {
-            state,
-            cacheState: cache.cacheStateSelector(state),
-          })
-        return cache.cacheStateSelector(state).mutations[mutationKey]
-      },
+      (state) => selectMutationState(state, mutationKey),
       (params) =>
         __awaiter(void 0, void 0, void 0, function* () {
           return yield (0,
@@ -63,7 +58,7 @@ const useMutation = (cache, actions, selectors, options, abortControllers) => {
           return false
         }
         abortController.abort()
-        store.dispatch(actions.updateMutationStateAndEntities(mutationKey, {loading: undefined}))
+        store.dispatch(updateMutationStateAndEntities(mutationKey, {loading: undefined}))
         return true
       },
     ]

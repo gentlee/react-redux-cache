@@ -154,4 +154,5 @@ export const mutate = (
       throw new Error(`${logTag}: both error and response are not defined`)
     }
   )
+
 const ABORTED_RESULT = Object.freeze({aborted: true})

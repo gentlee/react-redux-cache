@@ -11,7 +11,7 @@ export declare const useQuery: <
   MR,
   QK extends keyof (QP & QR)
 >(
-  cache: Cache<N, T, QP, QR, MP, MR>,
+  cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'queries' | 'storeHooks'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
   selectors: Selectors<N, T, QP, QR, MP, MR>,
   options: UseQueryOptions<N, T, QK, QP, QR, MP, MR>

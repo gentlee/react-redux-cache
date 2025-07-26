@@ -16,6 +16,7 @@ export const optionalUtils: {
 } = {
   deepEqual: undefined,
 }
+
 try {
   optionalUtils.deepEqual = require('fast-deep-equal/es6')
 } catch {
@@ -38,6 +39,7 @@ export const EMPTY_ARRAY = Object.freeze([])
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const NOOP = () => {}
 
+/** Default getCacheKey implementation. */
 export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
   switch (typeof params) {
     case 'string':
@@ -52,19 +54,6 @@ export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
 
 export const log = (tag: string, data?: unknown) => {
   console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
-}
-
-export const FetchPolicy = {
-  /** Only if cache does not exist (result is undefined) or expired. */
-  NoCacheOrExpired: <T extends Typenames = Typenames, P = unknown, R = unknown>(
-    expired: boolean,
-    _params: P,
-    state: QueryState<T, P, R>
-  ) => {
-    return expired || state.result === undefined
-  },
-  /** Every fetch trigger. */
-  Always: () => true,
 }
 
 export const applyEntityChanges = <T extends Typenames>(
@@ -176,6 +165,7 @@ export const applyEntityChanges = <T extends Typenames>(
   return result
 }
 
+/** Returns true if object has no keys. */
 export const isEmptyObject = (o: object) => {
   for (const _ in o) {
     return false
@@ -183,6 +173,7 @@ export const isEmptyObject = (o: object) => {
   return true
 }
 
+/** Returns query state comparer that compares only provided fields. Used in implementation of `selectorComparer` option. */
 export const createStateComparer = <T extends Typenames = Typenames, Q = unknown, P = unknown>(
   fields: (keyof QueryState<T, Q, P>)[]
 ): QueryStateComparer<T, Q, P> => {
@@ -201,4 +192,18 @@ export const createStateComparer = <T extends Typenames = Typenames, Q = unknown
     }
     return true
   }
+}
+
+// doc-header
+export const FetchPolicy = {
+  /** Only if cache does not exist (result is undefined) or expired. @Default */
+  NoCacheOrExpired: <T extends Typenames = Typenames, P = unknown, R = unknown>(
+    expired: boolean,
+    _params: P,
+    state: QueryState<T, P, R>
+  ) => {
+    return expired || state.result === undefined
+  },
+  /** Every fetch trigger. */
+  Always: () => true,
 }

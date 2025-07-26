@@ -3,7 +3,7 @@ Object.defineProperty(exports, '__esModule', {value: true})
 exports.createCache = exports.withTypenames = void 0
 const react_1 = require('react')
 const createActions_1 = require('./createActions')
-const createCacheReducer_1 = require('./createCacheReducer')
+const createReducer_1 = require('./createReducer')
 const createSelectors_1 = require('./createSelectors')
 const mutate_1 = require('./mutate')
 const query_1 = require('./query')
@@ -100,11 +100,7 @@ const withTypenames = () => {
         clearMutationState,
         clearCache,
       } = actions
-      const reducer = (0, createCacheReducer_1.createCacheReducer)(
-        actions,
-        Object.keys(cache.queries),
-        cache.options
-      )
+      const reducer = (0, createReducer_1.createReducer)(actions, Object.keys(cache.queries), cache.options)
       const createClient = (store) => {
         const client = {
           query: (options) => {

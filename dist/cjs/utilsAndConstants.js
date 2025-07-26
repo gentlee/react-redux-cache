@@ -1,9 +1,9 @@
 'use strict'
 Object.defineProperty(exports, '__esModule', {value: true})
-exports.createStateComparer =
+exports.FetchPolicy =
+  exports.createStateComparer =
   exports.isEmptyObject =
   exports.applyEntityChanges =
-  exports.FetchPolicy =
   exports.log =
   exports.defaultGetCacheKey =
   exports.NOOP =
@@ -49,12 +49,6 @@ const log = (tag, data) => {
   console.debug(`@${exports.PACKAGE_SHORT_NAME} [${tag}]`, data)
 }
 exports.log = log
-exports.FetchPolicy = {
-  NoCacheOrExpired: (expired, _params, state) => {
-    return expired || state.result === undefined
-  },
-  Always: () => true,
-}
 const applyEntityChanges = (entities, changes, options) => {
   var _a, _b, _c, _d
   if (changes.merge && changes.entities) {
@@ -187,3 +181,9 @@ const createStateComparer = (fields) => {
   }
 }
 exports.createStateComparer = createStateComparer
+exports.FetchPolicy = {
+  NoCacheOrExpired: (expired, _params, state) => {
+    return expired || state.result === undefined
+  },
+  Always: () => true,
+}

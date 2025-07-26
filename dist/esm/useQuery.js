@@ -123,4 +123,5 @@ export const useQuery = (cache, actions, selectors, options) => {
     })
   return [queryState, performFetch]
 }
+
 const defaultStateComparer = createStateComparer(['result', 'loading', 'params', 'error'])

@@ -17,7 +17,7 @@ const optionalMutationKeys: (keyof MutationState<Typenames, unknown, unknown>)[]
   'loading',
 ]
 
-export const createCacheReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
+export const createReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
   actions: Actions<N, T, QP, QR, MP, MR>,
   queryKeys: (keyof (QP | QR))[],
   cacheOptions: CacheOptions

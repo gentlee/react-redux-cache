@@ -1,7 +1,7 @@
 import {useMemo} from 'react'
 
 import {createActions} from './createActions'
-import {createCacheReducer} from './createCacheReducer'
+import {createReducer} from './createReducer'
 import {createSelectors} from './createSelectors'
 import {mutate as mutateImpl} from './mutate'
 import {query as queryImpl} from './query'
@@ -103,7 +103,7 @@ export const withTypenames = () => {
         clearMutationState,
         clearCache,
       } = actions
-      const reducer = createCacheReducer(actions, Object.keys(cache.queries), cache.options)
+      const reducer = createReducer(actions, Object.keys(cache.queries), cache.options)
       const createClient = (store) => {
         const client = {
           query: (options) => {
@@ -201,4 +201,5 @@ export const withTypenames = () => {
     },
   }
 }
+
 export const createCache = withTypenames().createCache
