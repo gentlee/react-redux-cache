@@ -75,14 +75,8 @@ export const applyEntityChanges = <T extends Typenames>(
 
   let result: EntitiesMap<T> | undefined
 
-  // TODO refactor to remove this Set
-  const typenames = new Set([
-    ...(changes.entities ? Object.keys(changes.entities) : EMPTY_ARRAY),
-    ...(changes.merge ? Object.keys(changes.merge) : EMPTY_ARRAY),
-    ...(changes.remove ? Object.keys(changes.remove) : EMPTY_ARRAY),
-    ...(changes.replace ? Object.keys(changes.replace) : EMPTY_ARRAY),
-  ])
-  for (const typename of typenames) {
+  const objectWithAllTypenames = {...changes.merge, ...changes.remove, ...changes.replace}
+  for (const typename in objectWithAllTypenames) {
     const entitiesToMerge = merge?.[typename]
     const entitiesToReplace = replace?.[typename]
     const entitiesToRemove = remove?.[typename]
