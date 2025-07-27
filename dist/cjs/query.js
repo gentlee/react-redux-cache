@@ -81,7 +81,7 @@ const query = (
     }
     if (queryStateOnStart === null || queryStateOnStart === void 0 ? void 0 : queryStateOnStart.loading) {
       logsEnabled &&
-        (0, utilsAndConstants_1.log)(`${logTag} fetch cancelled: already loading`, {
+        (0, utilsAndConstants_1.logDebug)(`${logTag} fetch cancelled: already loading`, {
           queryStateOnStart,
           params,
           cacheKey,
@@ -104,7 +104,7 @@ const query = (
       queryStateOnStart.expiresAt > Date.now()
     ) {
       logsEnabled &&
-        (0, utilsAndConstants_1.log)(`${logTag} fetch cancelled: not expired yet`, {
+        (0, utilsAndConstants_1.logDebug)(`${logTag} fetch cancelled: not expired yet`, {
           queryStateOnStart,
           params,
           cacheKey,
@@ -124,7 +124,7 @@ const query = (
       })
     )
     logsEnabled &&
-      (0, utilsAndConstants_1.log)(`${logTag} started`, {
+      (0, utilsAndConstants_1.logDebug)(`${logTag} started`, {
         queryKey,
         params,
         cacheKey,

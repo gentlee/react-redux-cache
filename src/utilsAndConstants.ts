@@ -17,10 +17,18 @@ export const optionalUtils: {
   deepEqual: undefined,
 }
 
+export const logDebug = (tag: string, data?: unknown) => {
+  console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
+}
+
+export const logWarn = (tag: string, data?: unknown) => {
+  console.warn(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
+}
+
 try {
   optionalUtils.deepEqual = require('fast-deep-equal/es6')
 } catch {
-  console.debug(PACKAGE_SHORT_NAME + ': fast-deep-equal optional dependency was not installed')
+  logDebug('deepEqual', 'fast-deep-equal optional dependency was not installed')
 }
 
 export const IS_DEV: boolean = (() => {
@@ -52,17 +60,13 @@ export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
   }
 }
 
-export const log = (tag: string, data?: unknown) => {
-  console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
-}
-
 export const applyEntityChanges = <T extends Typenames>(
   entities: EntitiesMap<T>,
   changes: EntityChanges<T>,
   options: CacheOptions
 ): EntitiesMap<T> | undefined => {
   if (changes.merge && changes.entities) {
-    console.warn('react-redux-cache.applyEntityChanges: merge and entities should not be both set')
+    logWarn('applyEntityChanges', 'merge and entities should not be both set')
   }
 
   const {merge = changes.entities, replace, remove} = changes
@@ -97,10 +101,7 @@ export const applyEntityChanges = <T extends Typenames>(
       const totalKeysInResponse =
         (mergeIds?.length ?? 0) + (replaceIds?.length ?? 0) + (entitiesToRemove?.length ?? 0)
       if (totalKeysInResponse !== 0 && idsSet.size !== totalKeysInResponse) {
-        console.warn(
-          'react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: ' +
-            typename
-        )
+        logWarn('applyEntityChanges', 'merge, replace and remove changes have intersections for: ' + typename)
       }
     }
 
@@ -149,7 +150,7 @@ export const applyEntityChanges = <T extends Typenames>(
   }
 
   options.logsEnabled &&
-    log('applyEntityChanges', {
+    logDebug('applyEntityChanges', {
       entities,
       changes,
       options,

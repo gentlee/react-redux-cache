@@ -32,7 +32,7 @@ var __awaiter =
 import {useMemo} from 'react'
 
 import {mutate as mutateImpl} from './mutate'
-import {EMPTY_OBJECT, log} from './utilsAndConstants'
+import {EMPTY_OBJECT, logDebug} from './utilsAndConstants'
 
 export const useMutation = (cache, actions, selectors, options, abortControllers) => {
   var _a
@@ -75,7 +75,7 @@ export const useMutation = (cache, actions, selectors, options, abortControllers
   const mutationState =
     (_a = cache.storeHooks.useSelector(mutationStateSelector)) !== null && _a !== void 0 ? _a : EMPTY_OBJECT
   cache.options.logsEnabled &&
-    log('useMutation', {
+    logDebug('useMutation', {
       options,
       mutationState,
     })

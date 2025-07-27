@@ -29,7 +29,7 @@ var __awaiter =
       step((generator = generator.apply(thisArg, _arguments || [])).next())
     })
   }
-import {log, NOOP} from './utilsAndConstants'
+import {logDebug, NOOP} from './utilsAndConstants'
 
 export const query = (
   logTag,
@@ -78,7 +78,7 @@ export const query = (
     }
     if (queryStateOnStart === null || queryStateOnStart === void 0 ? void 0 : queryStateOnStart.loading) {
       logsEnabled &&
-        log(`${logTag} fetch cancelled: already loading`, {
+        logDebug(`${logTag} fetch cancelled: already loading`, {
           queryStateOnStart,
           params,
           cacheKey,
@@ -101,7 +101,7 @@ export const query = (
       queryStateOnStart.expiresAt > Date.now()
     ) {
       logsEnabled &&
-        log(`${logTag} fetch cancelled: not expired yet`, {
+        logDebug(`${logTag} fetch cancelled: not expired yet`, {
           queryStateOnStart,
           params,
           cacheKey,
@@ -120,7 +120,8 @@ export const query = (
         params,
       })
     )
-    logsEnabled && log(`${logTag} started`, {queryKey, params, cacheKey, queryStateOnStart, onlyIfExpired})
+    logsEnabled &&
+      logDebug(`${logTag} started`, {queryKey, params, cacheKey, queryStateOnStart, onlyIfExpired})
     let response
     try {
       response = yield fetchPromise

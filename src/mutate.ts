@@ -1,7 +1,7 @@
 import type {Actions} from './createActions'
 import {Selectors} from './createSelectors'
 import type {Cache, Key, MutationResult, Store, Typenames} from './types'
-import {log} from './utilsAndConstants'
+import {logDebug} from './utilsAndConstants'
 
 export const mutate = async <
   N extends string,
@@ -36,7 +36,7 @@ export const mutate = async <
     const abortController = abortControllersOfStore[mutationKey]
 
     cache.options.logsEnabled &&
-      log(logTag, {
+      logDebug(logTag, {
         mutationKey,
         params,
         previousAborted: abortController !== undefined,
@@ -75,7 +75,7 @@ export const mutate = async <
   }
 
   cache.options.logsEnabled &&
-    log(`${logTag} finished`, {
+    logDebug(`${logTag} finished`, {
       response,
       error,
       aborted: abortController.signal.aborted,

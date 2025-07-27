@@ -14,6 +14,10 @@ export declare const optionalUtils: {
   deepEqual?: (a: any, b: any) => boolean
 }
 
+export declare const logDebug: (tag: string, data?: unknown) => void
+
+export declare const logWarn: (tag: string, data?: unknown) => void
+
 export declare const IS_DEV: boolean
 
 export declare const EMPTY_OBJECT: Readonly<{}>
@@ -24,8 +28,6 @@ export declare const NOOP: () => void
 
 /** Default getCacheKey implementation. */
 export declare const defaultGetCacheKey: <P = unknown>(params: P) => Key
-
-export declare const log: (tag: string, data?: unknown) => void
 
 export declare const applyEntityChanges: <T extends Typenames>(
   entities: EntitiesMap<T>,

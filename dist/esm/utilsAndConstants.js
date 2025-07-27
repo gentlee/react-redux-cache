@@ -4,10 +4,18 @@ export const optionalUtils = {
   deepEqual: undefined,
 }
 
+export const logDebug = (tag, data) => {
+  console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
+}
+
+export const logWarn = (tag, data) => {
+  console.warn(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
+}
+
 try {
   optionalUtils.deepEqual = require('fast-deep-equal/es6')
 } catch (_a) {
-  console.debug(PACKAGE_SHORT_NAME + ': fast-deep-equal optional dependency was not installed')
+  logDebug('deepEqual', 'fast-deep-equal optional dependency was not installed')
 }
 
 export const IS_DEV = (() => {
@@ -36,14 +44,10 @@ export const defaultGetCacheKey = (params) => {
   }
 }
 
-export const log = (tag, data) => {
-  console.debug(`@${PACKAGE_SHORT_NAME} [${tag}]`, data)
-}
-
 export const applyEntityChanges = (entities, changes, options) => {
   var _a, _b, _c, _d
   if (changes.merge && changes.entities) {
-    console.warn('react-redux-cache.applyEntityChanges: merge and entities should not be both set')
+    logWarn('applyEntityChanges', 'merge and entities should not be both set')
   }
   const {merge = changes.entities, replace, remove} = changes
   if (!merge && !replace && !remove) {
@@ -51,13 +55,11 @@ export const applyEntityChanges = (entities, changes, options) => {
   }
   const deepEqual = options.deepComparisonEnabled ? optionalUtils.deepEqual : undefined
   let result
-  const typenames = new Set([
-    ...(changes.entities ? Object.keys(changes.entities) : EMPTY_ARRAY),
-    ...(changes.merge ? Object.keys(changes.merge) : EMPTY_ARRAY),
-    ...(changes.remove ? Object.keys(changes.remove) : EMPTY_ARRAY),
-    ...(changes.replace ? Object.keys(changes.replace) : EMPTY_ARRAY),
-  ])
-  for (const typename of typenames) {
+  const objectWithAllTypenames = Object.assign(
+    Object.assign(Object.assign({}, changes.merge), changes.remove),
+    changes.replace
+  )
+  for (const typename in objectWithAllTypenames) {
     const entitiesToMerge = merge === null || merge === void 0 ? void 0 : merge[typename]
     const entitiesToReplace = replace === null || replace === void 0 ? void 0 : replace[typename]
     const entitiesToRemove = remove === null || remove === void 0 ? void 0 : remove[typename]
@@ -90,10 +92,7 @@ export const applyEntityChanges = (entities, changes, options) => {
           ? _c
           : 0)
       if (totalKeysInResponse !== 0 && idsSet.size !== totalKeysInResponse) {
-        console.warn(
-          'react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: ' +
-            typename
-        )
+        logWarn('applyEntityChanges', 'merge, replace and remove changes have intersections for: ' + typename)
       }
     }
     const oldEntities = (_d = entities[typename]) !== null && _d !== void 0 ? _d : EMPTY_OBJECT
@@ -138,7 +137,7 @@ export const applyEntityChanges = (entities, changes, options) => {
     result[typename] = newEntities
   }
   options.logsEnabled &&
-    log('applyEntityChanges', {
+    logDebug('applyEntityChanges', {
       entities,
       changes,
       options,

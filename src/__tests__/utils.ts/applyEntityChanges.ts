@@ -177,7 +177,7 @@ test('warn if merge and entities both set', () => {
   applyEntityChanges(entitiesMap, changes)
 
   expect(warnSpy.mock.calls).toStrictEqual([
-    ['react-redux-cache.applyEntityChanges: merge and entities should not be both set'],
+    ['@rrc [applyEntityChanges]', 'merge and entities should not be both set'],
   ])
   warnSpy.mockClear()
 })
@@ -212,10 +212,10 @@ test('warn if merge, replace or remove have intersections', () => {
     applyEntityChanges(entitiesMap, changes)
   })
   expect(warnSpy.mock.calls).toStrictEqual([
-    ['react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: users'],
-    ['react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: users'],
-    ['react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: users'],
-    ['react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: banks'],
+    ['@rrc [applyEntityChanges]', 'merge, replace and remove changes have intersections for: users'],
+    ['@rrc [applyEntityChanges]', 'merge, replace and remove changes have intersections for: users'],
+    ['@rrc [applyEntityChanges]', 'merge, replace and remove changes have intersections for: users'],
+    ['@rrc [applyEntityChanges]', 'merge, replace and remove changes have intersections for: banks'],
   ])
   warnSpy.mockClear()
 })

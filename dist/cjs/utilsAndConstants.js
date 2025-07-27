@@ -4,12 +4,13 @@ exports.FetchPolicy =
   exports.createStateComparer =
   exports.isEmptyObject =
   exports.applyEntityChanges =
-  exports.log =
   exports.defaultGetCacheKey =
   exports.NOOP =
   exports.EMPTY_ARRAY =
   exports.EMPTY_OBJECT =
   exports.IS_DEV =
+  exports.logWarn =
+  exports.logDebug =
   exports.optionalUtils =
   exports.PACKAGE_SHORT_NAME =
     void 0
@@ -17,10 +18,18 @@ exports.PACKAGE_SHORT_NAME = 'rrc'
 exports.optionalUtils = {
   deepEqual: undefined,
 }
+const logDebug = (tag, data) => {
+  console.debug(`@${exports.PACKAGE_SHORT_NAME} [${tag}]`, data)
+}
+exports.logDebug = logDebug
+const logWarn = (tag, data) => {
+  console.warn(`@${exports.PACKAGE_SHORT_NAME} [${tag}]`, data)
+}
+exports.logWarn = logWarn
 try {
   exports.optionalUtils.deepEqual = require('fast-deep-equal/es6')
 } catch (_a) {
-  console.debug(exports.PACKAGE_SHORT_NAME + ': fast-deep-equal optional dependency was not installed')
+  ;(0, exports.logDebug)('deepEqual', 'fast-deep-equal optional dependency was not installed')
 }
 exports.IS_DEV = (() => {
   try {
@@ -45,14 +54,10 @@ const defaultGetCacheKey = (params) => {
   }
 }
 exports.defaultGetCacheKey = defaultGetCacheKey
-const log = (tag, data) => {
-  console.debug(`@${exports.PACKAGE_SHORT_NAME} [${tag}]`, data)
-}
-exports.log = log
 const applyEntityChanges = (entities, changes, options) => {
   var _a, _b, _c, _d
   if (changes.merge && changes.entities) {
-    console.warn('react-redux-cache.applyEntityChanges: merge and entities should not be both set')
+    ;(0, exports.logWarn)('applyEntityChanges', 'merge and entities should not be both set')
   }
   const {merge = changes.entities, replace, remove} = changes
   if (!merge && !replace && !remove) {
@@ -60,13 +65,11 @@ const applyEntityChanges = (entities, changes, options) => {
   }
   const deepEqual = options.deepComparisonEnabled ? exports.optionalUtils.deepEqual : undefined
   let result
-  const typenames = new Set([
-    ...(changes.entities ? Object.keys(changes.entities) : exports.EMPTY_ARRAY),
-    ...(changes.merge ? Object.keys(changes.merge) : exports.EMPTY_ARRAY),
-    ...(changes.remove ? Object.keys(changes.remove) : exports.EMPTY_ARRAY),
-    ...(changes.replace ? Object.keys(changes.replace) : exports.EMPTY_ARRAY),
-  ])
-  for (const typename of typenames) {
+  const objectWithAllTypenames = Object.assign(
+    Object.assign(Object.assign({}, changes.merge), changes.remove),
+    changes.replace
+  )
+  for (const typename in objectWithAllTypenames) {
     const entitiesToMerge = merge === null || merge === void 0 ? void 0 : merge[typename]
     const entitiesToReplace = replace === null || replace === void 0 ? void 0 : replace[typename]
     const entitiesToRemove = remove === null || remove === void 0 ? void 0 : remove[typename]
@@ -99,9 +102,9 @@ const applyEntityChanges = (entities, changes, options) => {
           ? _c
           : 0)
       if (totalKeysInResponse !== 0 && idsSet.size !== totalKeysInResponse) {
-        console.warn(
-          'react-redux-cache.applyEntityChanges: merge, replace and remove changes have intersections for: ' +
-            typename
+        ;(0, exports.logWarn)(
+          'applyEntityChanges',
+          'merge, replace and remove changes have intersections for: ' + typename
         )
       }
     }
@@ -147,7 +150,7 @@ const applyEntityChanges = (entities, changes, options) => {
     result[typename] = newEntities
   }
   options.logsEnabled &&
-    (0, exports.log)('applyEntityChanges', {
+    (0, exports.logDebug)('applyEntityChanges', {
       entities,
       changes,
       options,

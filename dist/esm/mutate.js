@@ -29,7 +29,7 @@ var __awaiter =
       step((generator = generator.apply(thisArg, _arguments || [])).next())
     })
   }
-import {log} from './utilsAndConstants'
+import {logDebug} from './utilsAndConstants'
 
 export const mutate = (
   logTag_1,
@@ -79,7 +79,7 @@ export const mutate = (
       {
         const abortController = abortControllersOfStore[mutationKey]
         cache.options.logsEnabled &&
-          log(logTag, {
+          logDebug(logTag, {
             mutationKey,
             params,
             previousAborted: abortController !== undefined,
@@ -106,7 +106,7 @@ export const mutate = (
         error = e
       }
       cache.options.logsEnabled &&
-        log(`${logTag} finished`, {
+        logDebug(`${logTag} finished`, {
           response,
           error,
           aborted: abortController.signal.aborted,

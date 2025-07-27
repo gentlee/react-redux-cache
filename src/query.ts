@@ -1,7 +1,7 @@
 import type {Actions} from './createActions'
 import {Selectors} from './createSelectors'
 import type {Cache, Key, QueryResult, Store, Typenames} from './types'
-import {log, NOOP} from './utilsAndConstants'
+import {logDebug, NOOP} from './utilsAndConstants'
 
 export const query = async <
   N extends string,
@@ -43,7 +43,7 @@ export const query = async <
 
   if (queryStateOnStart?.loading) {
     logsEnabled &&
-      log(`${logTag} fetch cancelled: already loading`, {
+      logDebug(`${logTag} fetch cancelled: already loading`, {
         queryStateOnStart,
         params,
         cacheKey,
@@ -63,7 +63,7 @@ export const query = async <
 
   if (onlyIfExpired && queryStateOnStart?.expiresAt != null && queryStateOnStart.expiresAt > Date.now()) {
     logsEnabled &&
-      log(`${logTag} fetch cancelled: not expired yet`, {
+      logDebug(`${logTag} fetch cancelled: not expired yet`, {
         queryStateOnStart,
         params,
         cacheKey,
@@ -91,7 +91,7 @@ export const query = async <
     })
   )
 
-  logsEnabled && log(`${logTag} started`, {queryKey, params, cacheKey, queryStateOnStart, onlyIfExpired})
+  logsEnabled && logDebug(`${logTag} started`, {queryKey, params, cacheKey, queryStateOnStart, onlyIfExpired})
 
   let response
   try {

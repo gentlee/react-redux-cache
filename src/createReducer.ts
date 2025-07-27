@@ -1,6 +1,6 @@
 import type {Actions} from './createActions'
 import type {CacheOptions, CacheState, MutationState, QueryState, Typenames} from './types'
-import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, log, optionalUtils} from './utilsAndConstants'
+import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, logDebug, optionalUtils} from './utilsAndConstants'
 
 const optionalQueryKeys: (keyof QueryState<Typenames, unknown, unknown>)[] = [
   'error',
@@ -36,7 +36,7 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
   })
 
   cacheOptions.logsEnabled &&
-    log('createCacheReducer', {
+    logDebug('createCacheReducer', {
       queryKeys,
       initialState,
     })

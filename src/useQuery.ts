@@ -4,7 +4,7 @@ import {Actions} from './createActions'
 import {Selectors} from './createSelectors'
 import {query as queryImpl} from './query'
 import {Cache, QueryOptions, QueryState, QueryStateComparer, Typenames, UseQueryOptions} from './types'
-import {createStateComparer, defaultGetCacheKey, EMPTY_OBJECT, log} from './utilsAndConstants'
+import {createStateComparer, defaultGetCacheKey, EMPTY_OBJECT, logDebug} from './utilsAndConstants'
 
 export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
   cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'queries' | 'storeHooks'>,
@@ -84,7 +84,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
 
   useEffect(() => {
     if (skipFetch) {
-      logsEnabled && log('useQuery.useEffect skip fetch', {skipFetch, queryKey, cacheKey})
+      logsEnabled && logDebug('useQuery.useEffect skip fetch', {skipFetch, queryKey, cacheKey})
       return
     }
 
@@ -100,7 +100,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
       )
     ) {
       logsEnabled &&
-        log('useQuery.useEffect skip fetch due to fetch policy', {
+        logDebug('useQuery.useEffect skip fetch due to fetch policy', {
           queryState,
           expired,
           queryKey,
@@ -114,7 +114,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
   }, [cacheKey, skipFetch])
 
   logsEnabled &&
-    log('useQuery', {
+    logDebug('useQuery', {
       cacheKey,
       options,
       queryState,

@@ -16,7 +16,7 @@ var __rest =
     }
     return t
   }
-import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, log, optionalUtils} from './utilsAndConstants'
+import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, logDebug, optionalUtils} from './utilsAndConstants'
 
 const optionalQueryKeys = ['error', 'expiresAt', 'result', 'params', 'loading']
 const optionalMutationKeys = ['error', 'result', 'params', 'loading']
@@ -33,7 +33,7 @@ export const createReducer = (actions, queryKeys, cacheOptions) => {
     mutations: Object.freeze({}),
   })
   cacheOptions.logsEnabled &&
-    log('createCacheReducer', {
+    logDebug('createCacheReducer', {
       queryKeys,
       initialState,
     })

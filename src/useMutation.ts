@@ -4,7 +4,7 @@ import {Actions} from './createActions'
 import {Selectors} from './createSelectors'
 import {mutate as mutateImpl} from './mutate'
 import {Cache, Key, MutateOptions, MutationState, Store, Typenames} from './types'
-import {EMPTY_OBJECT, log} from './utilsAndConstants'
+import {EMPTY_OBJECT, logDebug} from './utilsAndConstants'
 
 export const useMutation = <
   N extends string,
@@ -71,7 +71,7 @@ export const useMutation = <
     cache.storeHooks.useSelector(mutationStateSelector) ?? EMPTY_OBJECT
 
   cache.options.logsEnabled &&
-    log('useMutation', {
+    logDebug('useMutation', {
       options,
       mutationState,
     })

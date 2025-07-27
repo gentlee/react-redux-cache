@@ -82,7 +82,7 @@ const mutate = (
       {
         const abortController = abortControllersOfStore[mutationKey]
         cache.options.logsEnabled &&
-          (0, utilsAndConstants_1.log)(logTag, {
+          (0, utilsAndConstants_1.logDebug)(logTag, {
             mutationKey,
             params,
             previousAborted: abortController !== undefined,
@@ -109,7 +109,7 @@ const mutate = (
         error = e
       }
       cache.options.logsEnabled &&
-        (0, utilsAndConstants_1.log)(`${logTag} finished`, {
+        (0, utilsAndConstants_1.logDebug)(`${logTag} finished`, {
           response,
           error,
           aborted: abortController.signal.aborted,

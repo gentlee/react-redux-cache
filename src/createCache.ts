@@ -49,6 +49,7 @@ import {
   EMPTY_OBJECT,
   FetchPolicy,
   IS_DEV,
+  logWarn,
   optionalUtils,
 } from './utilsAndConstants'
 
@@ -105,8 +106,9 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       // Validate options
 
       if (cache.options.deepComparisonEnabled && !optionalUtils.deepEqual) {
-        console.warn(
-          'react-redux-cache: optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true'
+        logWarn(
+          'createCache',
+          'optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true'
         )
       }
 

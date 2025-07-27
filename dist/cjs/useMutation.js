@@ -68,7 +68,7 @@ const useMutation = (cache, actions, selectors, options, abortControllers) => {
       ? _a
       : utilsAndConstants_1.EMPTY_OBJECT
   cache.options.logsEnabled &&
-    (0, utilsAndConstants_1.log)('useMutation', {
+    (0, utilsAndConstants_1.logDebug)('useMutation', {
       options,
       mutationState,
     })

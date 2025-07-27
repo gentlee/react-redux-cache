@@ -53,8 +53,9 @@ const withTypenames = () => {
       }
       const cache = partialCache
       if (cache.options.deepComparisonEnabled && !utilsAndConstants_1.optionalUtils.deepEqual) {
-        console.warn(
-          'react-redux-cache: optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true'
+        ;(0, utilsAndConstants_1.logWarn)(
+          'createCache',
+          'optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true'
         )
       }
       const setDefaultComparer = (target) => {

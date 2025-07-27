@@ -88,13 +88,13 @@ const useQuery = (cache, actions, selectors, options) => {
   ;(0, react_1.useEffect)(() => {
     if (skipFetch) {
       logsEnabled &&
-        (0, utilsAndConstants_1.log)('useQuery.useEffect skip fetch', {skipFetch, queryKey, cacheKey})
+        (0, utilsAndConstants_1.logDebug)('useQuery.useEffect skip fetch', {skipFetch, queryKey, cacheKey})
       return
     }
     const expired = queryState.expiresAt != null && queryState.expiresAt <= Date.now()
     if (!fetchPolicy(expired, params, queryState, store, selectors)) {
       logsEnabled &&
-        (0, utilsAndConstants_1.log)('useQuery.useEffect skip fetch due to fetch policy', {
+        (0, utilsAndConstants_1.logDebug)('useQuery.useEffect skip fetch due to fetch policy', {
           queryState,
           expired,
           queryKey,
@@ -105,7 +105,7 @@ const useQuery = (cache, actions, selectors, options) => {
     performFetch()
   }, [cacheKey, skipFetch])
   logsEnabled &&
-    (0, utilsAndConstants_1.log)('useQuery', {
+    (0, utilsAndConstants_1.logDebug)('useQuery', {
       cacheKey,
       options,
       queryState,

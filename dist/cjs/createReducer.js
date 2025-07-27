@@ -35,7 +35,7 @@ const createReducer = (actions, queryKeys, cacheOptions) => {
     mutations: Object.freeze({}),
   })
   cacheOptions.logsEnabled &&
-    (0, utilsAndConstants_1.log)('createCacheReducer', {
+    (0, utilsAndConstants_1.logDebug)('createCacheReducer', {
       queryKeys,
       initialState,
     })

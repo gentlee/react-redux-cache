@@ -32,7 +32,7 @@ var __awaiter =
 import {useCallback, useEffect} from 'react'
 
 import {query as queryImpl} from './query'
-import {createStateComparer, defaultGetCacheKey, EMPTY_OBJECT, log} from './utilsAndConstants'
+import {createStateComparer, defaultGetCacheKey, EMPTY_OBJECT, logDebug} from './utilsAndConstants'
 
 export const useQuery = (cache, actions, selectors, options) => {
   var _a, _b, _c, _d, _e
@@ -99,13 +99,13 @@ export const useQuery = (cache, actions, selectors, options) => {
       : EMPTY_OBJECT
   useEffect(() => {
     if (skipFetch) {
-      logsEnabled && log('useQuery.useEffect skip fetch', {skipFetch, queryKey, cacheKey})
+      logsEnabled && logDebug('useQuery.useEffect skip fetch', {skipFetch, queryKey, cacheKey})
       return
     }
     const expired = queryState.expiresAt != null && queryState.expiresAt <= Date.now()
     if (!fetchPolicy(expired, params, queryState, store, selectors)) {
       logsEnabled &&
-        log('useQuery.useEffect skip fetch due to fetch policy', {
+        logDebug('useQuery.useEffect skip fetch due to fetch policy', {
           queryState,
           expired,
           queryKey,
@@ -116,7 +116,7 @@ export const useQuery = (cache, actions, selectors, options) => {
     performFetch()
   }, [cacheKey, skipFetch])
   logsEnabled &&
-    log('useQuery', {
+    logDebug('useQuery', {
       cacheKey,
       options,
       queryState,
