@@ -13,7 +13,7 @@
   "dependencies": {
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-redux-cache": "0.19.6",
+    "react-redux-cache": "0.20.0",
     "react-router-dom": "6.11.2",
     "redux": "4.2.1",
     "redux-persist": "6.0.0",
