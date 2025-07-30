@@ -70,11 +70,7 @@ export const useMutation = <
   const mutationState: MutationState<T, P, R> =
     cache.storeHooks.useSelector(mutationStateSelector) ?? EMPTY_OBJECT
 
-  cache.options.logsEnabled &&
-    logDebug('useMutation', {
-      options,
-      mutationState,
-    })
+  cache.options.logsEnabled && logDebug('useMutation', {options, mutationState})
 
   return [mutate, mutationState, abort] as const
 }

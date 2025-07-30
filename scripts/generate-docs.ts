@@ -9,6 +9,8 @@ type DocEntry = {
   }[]
 }
 
+const HEADER = '// doc-header'
+
 export function extractDocumentation(filePath: string): string {
   const content = fs.readFileSync(filePath, 'utf-8')
   const lines = content.split('\n')
@@ -18,18 +20,27 @@ export function extractDocumentation(filePath: string): string {
   let currentSymbol: string | null = null
   let currentDocs: string[] = []
   let inCommentBlock = false
-  let isHeader = false
+  let nextLineIsHeader = false
 
   for (let line of lines) {
     line = line.trim()
 
     // doc-header
 
-    if (line.startsWith('// doc-header')) {
+    if (line.startsWith(HEADER)) {
       if (currentEntry.comments.length > 0) {
         entries.push(currentEntry)
       }
-      isHeader = true
+
+      const header = line.slice(HEADER.length).trim()
+      if (header) {
+        currentEntry = {
+          header,
+          comments: [],
+        }
+      } else {
+        nextLineIsHeader = true
+      }
       continue
     }
 
@@ -60,16 +71,16 @@ export function extractDocumentation(filePath: string): string {
 
     // Next line after JSDoc or doc-header
 
-    if (!inCommentBlock && (isHeader || currentDocs.length > 0)) {
+    if (!inCommentBlock && (nextLineIsHeader || currentDocs.length > 0)) {
       const symbolMatch = line.match(/^(export\s+)?(function|const|let|var|class|interface|type)?\s?(\w+)/)
       if (symbolMatch) {
         currentSymbol = symbolMatch[3]
-        if (isHeader) {
+        if (nextLineIsHeader) {
           currentEntry = {
             header: currentSymbol,
             comments: [],
           }
-          isHeader = false
+          nextLineIsHeader = false
         } else {
           currentEntry.comments.push({
             symbol: currentSymbol,
@@ -135,7 +146,7 @@ const markdown = [
 
     const fileMarkdown = extractDocumentation(filePath)
 
-    return `### ${title}\n${fileMarkdown}`
+    return `### ${title}\n\n${fileMarkdown}`
   })
   .join('\n')
 

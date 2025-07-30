@@ -1,6 +1,6 @@
 import {updateMutationStateAndEntities} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
-import {NOOP} from '../../utilsAndConstants'
+import {noop} from '../../utilsAndConstants'
 
 test('should not change deeply equal params and result', () => {
   const store = createReduxStore(false)
@@ -12,7 +12,7 @@ test('should not change deeply equal params and result', () => {
     updateMutationStateAndEntities('updateUserNotNormalized', {
       params: initialParams,
       result: initialResult,
-      loading: new Promise(NOOP),
+      loading: new Promise(noop),
     })
   )
 

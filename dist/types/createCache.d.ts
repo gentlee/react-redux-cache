@@ -262,9 +262,17 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
     hooks: {
       /** Returns memoized object with query and mutate functions. Memoization dependency is the store. */
       useClient: () => {
+        /**
+         * Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.
+         * @param onlyIfExpired When true, cancels fetch if result is not yet expired.
+         * @param skipFetch Fetch is cancelled and current cached result is returned.
+         */
         query: <QK extends keyof (QP & QR)>(
           options: QueryOptions<N, T, QP, QR, QK, MP, MR>
         ) => Promise<QueryResult<QK extends keyof QP & keyof QR ? QR[QK] : never>>
+        /**
+         * Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully.
+         */
         mutate: <MK extends keyof (MP & MR)>(
           options: MutateOptions<N, T, QP, QR, MP, MR, MK>
         ) => Promise<MutationResult<MK extends keyof MP & keyof MR ? MR[MK] : never>>
@@ -325,11 +333,19 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
       useSelectEntityById: <TN extends keyof T>(id: Key | null | undefined, typename: TN) => T[TN] | undefined
     }
     utils: {
-      /** Creates client by providing the store. Can be used when the store is a singleton - to not use a hook for getting the client, but import it directly. */
+      /** Creates client by providing the store. Can be used when the store is a singleton - to not use a useClient hook for getting the client, but import it directly. */
       createClient: (store: Store) => {
+        /**
+         * Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.
+         * @param onlyIfExpired When true, cancels fetch if result is not yet expired.
+         * @param skipFetch Fetch is cancelled and current cached result is returned.
+         */
         query: <QK extends keyof (QP & QR)>(
           options: QueryOptions<N, T, QP, QR, QK, MP, MR>
         ) => Promise<QueryResult<QK extends keyof QP & keyof QR ? QR[QK] : never>>
+        /**
+         * Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully.
+         */
         mutate: <MK extends keyof (MP & MR)>(
           options: MutateOptions<N, T, QP, QR, MP, MR, MK>
         ) => Promise<MutationResult<MK extends keyof MP & keyof MR ? MR[MK] : never>>
@@ -605,9 +621,17 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(
   hooks: {
     /** Returns memoized object with query and mutate functions. Memoization dependency is the store. */
     useClient: () => {
+      /**
+       * Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.
+       * @param onlyIfExpired When true, cancels fetch if result is not yet expired.
+       * @param skipFetch Fetch is cancelled and current cached result is returned.
+       */
       query: <QK_1 extends keyof QP | keyof QR>(
         options: QueryOptions<N, Typenames, QP, QR, QK_1, MP, MR>
       ) => Promise<QueryResult<QK_1 extends keyof QP & keyof QR ? QR[QK_1] : never>>
+      /**
+       * Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully.
+       */
       mutate: <MK_1 extends keyof MP | keyof MR>(
         options: MutateOptions<N, Typenames, QP, QR, MP, MR, MK_1>
       ) => Promise<MutationResult<MK_1 extends keyof MP & keyof MR ? MR[MK_1] : never>>
@@ -668,11 +692,19 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(
     useSelectEntityById: <TN extends string>(id: Key | null | undefined, typename: TN) => object | undefined
   }
   utils: {
-    /** Creates client by providing the store. Can be used when the store is a singleton - to not use a hook for getting the client, but import it directly. */
+    /** Creates client by providing the store. Can be used when the store is a singleton - to not use a useClient hook for getting the client, but import it directly. */
     createClient: (store: Store) => {
+      /**
+       * Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.
+       * @param onlyIfExpired When true, cancels fetch if result is not yet expired.
+       * @param skipFetch Fetch is cancelled and current cached result is returned.
+       */
       query: <QK_1 extends keyof QP | keyof QR>(
         options: QueryOptions<N, Typenames, QP, QR, QK_1, MP, MR>
       ) => Promise<QueryResult<QK_1 extends keyof QP & keyof QR ? QR[QK_1] : never>>
+      /**
+       * Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully.
+       */
       mutate: <MK_1 extends keyof MP | keyof MR>(
         options: MutateOptions<N, Typenames, QP, QR, MP, MR, MK_1>
       ) => Promise<MutationResult<MK_1 extends keyof MP & keyof MR ? MR[MK_1] : never>>

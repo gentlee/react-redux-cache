@@ -29,7 +29,7 @@ var __awaiter =
       step((generator = generator.apply(thisArg, _arguments || [])).next())
     })
   }
-import {logDebug, NOOP} from './utilsAndConstants'
+import {logDebug, noop} from './utilsAndConstants'
 
 export const query = (
   logTag,
@@ -72,27 +72,15 @@ export const query = (
     const logsEnabled = cache.options.logsEnabled
     const queryStateOnStart = selectQueryState(store.getState(), queryKey, cacheKey)
     if (skipFetch) {
-      return {
-        result: queryStateOnStart.result,
-      }
+      return {result: queryStateOnStart.result}
     }
     if (queryStateOnStart === null || queryStateOnStart === void 0 ? void 0 : queryStateOnStart.loading) {
       logsEnabled &&
-        logDebug(`${logTag} fetch cancelled: already loading`, {
-          queryStateOnStart,
-          params,
-          cacheKey,
-        })
-      const error = yield queryStateOnStart.loading.then(NOOP).catch(catchAndReturn)
-      return error
-        ? {
-            cancelled: 'loading',
-            error,
-          }
-        : {
-            cancelled: 'loading',
-            result: selectQueryResult(store.getState(), queryKey, cacheKey),
-          }
+        logDebug(`${logTag} fetch cancelled: already loading`, {queryStateOnStart, params, cacheKey})
+      const error = yield queryStateOnStart.loading.then(noop).catch(catchAndReturn)
+      const result = selectQueryResult(store.getState(), queryKey, cacheKey)
+      const cancelled = 'loading'
+      return error ? {cancelled, result, error} : {cancelled, result}
     }
     if (
       onlyIfExpired &&
@@ -107,10 +95,7 @@ export const query = (
           cacheKey,
           onlyIfExpired,
         })
-      return {
-        cancelled: 'not-expired',
-        result: queryStateOnStart.result,
-      }
+      return {cancelled: 'not-expired', result: queryStateOnStart.result}
     }
     const {updateQueryStateAndEntities} = actions
     const fetchPromise = cache.queries[queryKey].query(params, store)
@@ -140,7 +125,7 @@ export const query = (
       onCompleted === null || onCompleted === void 0
         ? void 0
         : onCompleted(undefined, error, params, store, actions, selectors)
-      return {error}
+      return {error, result: selectQueryResult(store.getState(), queryKey, cacheKey)}
     }
     const newState = {
       error: undefined,
@@ -169,9 +154,7 @@ export const query = (
     onCompleted === null || onCompleted === void 0
       ? void 0
       : onCompleted(response, undefined, params, store, actions, selectors)
-    return {
-      result: newState === null || newState === void 0 ? void 0 : newState.result,
-    }
+    return {result: newState === null || newState === void 0 ? void 0 : newState.result}
   })
 
 const catchAndReturn = (x) => x

@@ -5,7 +5,7 @@ exports.FetchPolicy =
   exports.isEmptyObject =
   exports.applyEntityChanges =
   exports.defaultGetCacheKey =
-  exports.NOOP =
+  exports.noop =
   exports.EMPTY_ARRAY =
   exports.EMPTY_OBJECT =
   exports.IS_DEV =
@@ -40,8 +40,8 @@ exports.IS_DEV = (() => {
 })()
 exports.EMPTY_OBJECT = Object.freeze({})
 exports.EMPTY_ARRAY = Object.freeze([])
-const NOOP = () => {}
-exports.NOOP = NOOP
+const noop = () => {}
+exports.noop = noop
 const defaultGetCacheKey = (params) => {
   switch (typeof params) {
     case 'string':

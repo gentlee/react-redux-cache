@@ -115,12 +115,7 @@ export const useQuery = (cache, actions, selectors, options) => {
     }
     performFetch()
   }, [cacheKey, skipFetch])
-  logsEnabled &&
-    logDebug('useQuery', {
-      cacheKey,
-      options,
-      queryState,
-    })
+  logsEnabled && logDebug('useQuery', {cacheKey, options, queryState})
   return [queryState, performFetch]
 }
 

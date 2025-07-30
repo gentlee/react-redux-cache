@@ -28,15 +28,15 @@ module.exports = {
         allowSingleLine: false,
       },
     ],
-    "padding-line-between-statements": [
-      "error",
-      { "blankLine": "always", "prev": "*", "next": "export" },
-      { "blankLine": "always", "prev": "export", "next": "*" }
+    'padding-line-between-statements': [
+      'error',
+      {blankLine: 'always', prev: '*', next: 'export'},
+      {blankLine: 'always', prev: 'export', next: '*'},
     ],
 
-    '@typescript-eslint/no-non-null-assertion': 'off',
-
     'no-unused-vars': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-unused-vars': [
       'error',

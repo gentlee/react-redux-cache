@@ -278,6 +278,7 @@ export type QueryResponse<R = unknown> = {
 export type NormalizedQueryResponse<T extends Typenames = Typenames, R = unknown> = EntityChanges<T> &
   QueryResponse<R>
 
+/** Current result is always returned, even if cancelled or finished with error. */
 export type QueryResult<R = unknown> = {
   error?: unknown
   /** Fetch cancelled reason. */

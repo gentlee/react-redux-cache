@@ -1,8 +1,21 @@
 ### Create cache
+
 | Symbol | Description |
 |--------|---------------|
 | withTypenames | Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.  Returns object with createCache function with provided typenames.  @example  `const cache = withTypenames<MyTypenames>().createCache({...})` |
 | createCache | Creates reducer, actions and hooks for managing queries and mutations through redux cache. |
+
+##### client
+
+| Symbol | Description |
+|--------|---------------|
+| query | Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.  @param onlyIfExpired When true, cancels fetch if result is not yet expired.  @param skipFetch Fetch is cancelled and current cached result is returned. |
+| mutate | Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully. |
+
+##### createCache result
+
+| Symbol | Description |
+|--------|---------------|
 | cache | Keeps all options, passed while creating the cache. |
 | reducer | Reducer of the cache, should be added to redux store. |
 
@@ -51,15 +64,17 @@
 
 | Symbol | Description |
 |--------|---------------|
-| createClient | Creates client by providing the store. Can be used when the store is a singleton - to not use a hook for getting the client, but import it directly. |
+| createClient | Creates client by providing the store. Can be used when the store is a singleton - to not use a useClient hook for getting the client, but import it directly. |
 | getInitialState | Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. |
 | applyEntityChanges | Apply changes to the entities map.  @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. |
 | createCache | Creates reducer, actions and hooks for managing queries and mutations through redux cache. |
 
 
 ### Utils and constants
+
 | Symbol | Description |
 |--------|---------------|
+| noop | Empty function. |
 | defaultGetCacheKey | Default getCacheKey implementation. |
 | isEmptyObject | Returns true if object has no keys. |
 | createStateComparer | Returns query state comparer that compares only provided fields. Used in implementation of `selectorComparer` option. |

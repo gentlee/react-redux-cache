@@ -36,11 +36,7 @@ export const mutate = async <
     const abortController = abortControllersOfStore[mutationKey]
 
     cache.options.logsEnabled &&
-      logDebug(logTag, {
-        mutationKey,
-        params,
-        previousAborted: abortController !== undefined,
-      })
+      logDebug(logTag, {mutationKey, params, previousAborted: abortController !== undefined})
 
     if (abortController !== undefined) {
       abortController.abort()
@@ -75,11 +71,7 @@ export const mutate = async <
   }
 
   cache.options.logsEnabled &&
-    logDebug(`${logTag} finished`, {
-      response,
-      error,
-      aborted: abortController.signal.aborted,
-    })
+    logDebug(`${logTag} finished`, {response, error, aborted: abortController.signal.aborted})
 
   if (abortController.signal.aborted) {
     return ABORTED_RESULT

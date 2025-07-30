@@ -24,7 +24,8 @@ export declare const EMPTY_OBJECT: Readonly<{}>
 
 export declare const EMPTY_ARRAY: readonly never[]
 
-export declare const NOOP: () => void
+/** Empty function. */
+export declare const noop: () => void
 
 /** Default getCacheKey implementation. */
 export declare const defaultGetCacheKey: <P = unknown>(params: P) => Key

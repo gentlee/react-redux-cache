@@ -113,12 +113,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheKey, skipFetch])
 
-  logsEnabled &&
-    logDebug('useQuery', {
-      cacheKey,
-      options,
-      queryState,
-    })
+  logsEnabled && logDebug('useQuery', {cacheKey, options, queryState})
 
   return [queryState as Omit<QueryState<T, P, R>, 'expiresAt'>, performFetch] as const
 }

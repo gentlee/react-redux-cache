@@ -44,8 +44,8 @@ export const EMPTY_OBJECT = Object.freeze({})
 
 export const EMPTY_ARRAY = Object.freeze([])
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-export const NOOP = () => {}
+/** Empty function. */
+export const noop = () => {}
 
 /** Default getCacheKey implementation. */
 export const defaultGetCacheKey = <P = unknown>(params: P): Key => {

@@ -177,7 +177,13 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       // Client creator
 
       const createClient = (store: Store) => {
+        // doc-header
         const client = {
+          /**
+           * Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.
+           * @param onlyIfExpired When true, cancels fetch if result is not yet expired.
+           * @param skipFetch Fetch is cancelled and current cached result is returned.
+           */
           query: <QK extends keyof (QP & QR)>(options: QueryOptions<N, T, QP, QR, QK, MP, MR>) => {
             type P = QK extends keyof (QP | QR) ? QP[QK] : never
             type R = QK extends keyof (QP | QR) ? QR[QK] : never
@@ -206,6 +212,9 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
               options.onError
             ) as Promise<QueryResult<R>>
           },
+          /**
+           * Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully.
+           */
           mutate: <MK extends keyof (MP & MR)>(options: MutateOptions<N, T, QP, QR, MP, MR, MK>) => {
             type R = MK extends keyof (MP | MR) ? MR[MK] : never
 
@@ -228,6 +237,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         return client
       }
 
+      // doc-header createCache result
       return {
         /** Keeps all options, passed while creating the cache. */
         cache,
@@ -309,7 +319,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         },
         // doc-header
         utils: {
-          /** Creates client by providing the store. Can be used when the store is a singleton - to not use a hook for getting the client, but import it directly. */
+          /** Creates client by providing the store. Can be used when the store is a singleton - to not use a useClient hook for getting the client, but import it directly. */
           createClient,
           /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
           getInitialState: () => {

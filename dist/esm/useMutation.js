@@ -74,10 +74,6 @@ export const useMutation = (cache, actions, selectors, options, abortControllers
   }, [mutationKey, store])
   const mutationState =
     (_a = cache.storeHooks.useSelector(mutationStateSelector)) !== null && _a !== void 0 ? _a : EMPTY_OBJECT
-  cache.options.logsEnabled &&
-    logDebug('useMutation', {
-      options,
-      mutationState,
-    })
+  cache.options.logsEnabled && logDebug('useMutation', {options, mutationState})
   return [mutate, mutationState, abort]
 }

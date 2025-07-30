@@ -1,7 +1,7 @@
 /* eslint-disable padding-line-between-statements */
 export {createCache, withTypenames} from './createCache'
 export * from './types'
-export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject} from './utilsAndConstants'
+export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noop} from './utilsAndConstants'
 
 // Backlog
 

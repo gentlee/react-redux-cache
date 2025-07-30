@@ -1,7 +1,7 @@
 import type {Actions} from './createActions'
 import {Selectors} from './createSelectors'
 import type {Cache, Key, QueryResult, Store, Typenames} from './types'
-import {logDebug, NOOP} from './utilsAndConstants'
+import {logDebug, noop} from './utilsAndConstants'
 
 export const query = async <
   N extends string,
@@ -36,29 +36,17 @@ export const query = async <
   const queryStateOnStart = selectQueryState(store.getState(), queryKey, cacheKey)
 
   if (skipFetch) {
-    return {
-      result: queryStateOnStart.result,
-    }
+    return {result: queryStateOnStart.result}
   }
 
   if (queryStateOnStart?.loading) {
     logsEnabled &&
-      logDebug(`${logTag} fetch cancelled: already loading`, {
-        queryStateOnStart,
-        params,
-        cacheKey,
-      })
+      logDebug(`${logTag} fetch cancelled: already loading`, {queryStateOnStart, params, cacheKey})
 
-    const error = await queryStateOnStart.loading.then(NOOP).catch(catchAndReturn)
-    return error
-      ? {
-          cancelled: 'loading',
-          error,
-        }
-      : {
-          cancelled: 'loading',
-          result: selectQueryResult(store.getState(), queryKey, cacheKey),
-        }
+    const error = await queryStateOnStart.loading.then(noop).catch(catchAndReturn)
+    const result = selectQueryResult(store.getState(), queryKey, cacheKey)
+    const cancelled = 'loading'
+    return error ? {cancelled, result, error} : {cancelled, result}
   }
 
   if (onlyIfExpired && queryStateOnStart?.expiresAt != null && queryStateOnStart.expiresAt > Date.now()) {
@@ -70,10 +58,7 @@ export const query = async <
         onlyIfExpired,
       })
 
-    return {
-      cancelled: 'not-expired',
-      result: queryStateOnStart.result,
-    }
+    return {cancelled: 'not-expired', result: queryStateOnStart.result}
   }
 
   const {updateQueryStateAndEntities} = actions
@@ -124,7 +109,7 @@ export const query = async <
       actions,
       selectors
     )
-    return {error}
+    return {error, result: selectQueryResult(store.getState(), queryKey, cacheKey)}
   }
 
   const newState = {
@@ -163,10 +148,8 @@ export const query = async <
     selectors
   )
 
-  return {
-    // @ts-expect-error fix types
-    result: newState?.result,
-  }
+  // @ts-expect-error fix types
+  return {result: newState?.result}
 }
 
 const catchAndReturn = (x: unknown) => x

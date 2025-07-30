@@ -33,7 +33,8 @@ var __exportStar =
     }
   }
 Object.defineProperty(exports, '__esModule', {value: true})
-exports.isEmptyObject =
+exports.noop =
+  exports.isEmptyObject =
   exports.FetchPolicy =
   exports.defaultGetCacheKey =
   exports.createStateComparer =
@@ -79,5 +80,11 @@ Object.defineProperty(exports, 'isEmptyObject', {
   enumerable: true,
   get() {
     return utilsAndConstants_1.isEmptyObject
+  },
+})
+Object.defineProperty(exports, 'noop', {
+  enumerable: true,
+  get() {
+    return utilsAndConstants_1.noop
   },
 })
