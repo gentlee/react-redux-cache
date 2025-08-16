@@ -352,8 +352,12 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
       }
       /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
       getInitialState: () => CacheState<T, QP, QR, MP, MR>
-      /** Apply changes to the entities map.
-       * @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. */
+      /**
+       * Apply changes to the entities map.
+       * Returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes.
+       * Uses deep comparison if `deepComparisonEnabled` option is `true`.
+       * Performs additional checks for intersections if `additionalValidation` option is `true`, and prints warnings if finds any issues.
+       */
       applyEntityChanges: (
         entities: Parameters<typeof applyEntityChanges<T>>[0],
         changes: Parameters<typeof applyEntityChanges<T>>[1]
@@ -711,8 +715,12 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(
     }
     /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
     getInitialState: () => CacheState<Typenames, QP, QR, MP, MR>
-    /** Apply changes to the entities map.
-     * @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. */
+    /**
+     * Apply changes to the entities map.
+     * Returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes.
+     * Uses deep comparison if `deepComparisonEnabled` option is `true`.
+     * Performs additional checks for intersections if `additionalValidation` option is `true`, and prints warnings if finds any issues.
+     */
     applyEntityChanges: (
       entities: EntitiesMap<Typenames>,
       changes: EntityChanges<Typenames>

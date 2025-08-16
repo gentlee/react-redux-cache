@@ -191,7 +191,10 @@ export const createStateComparer = <T extends Typenames = Typenames, Q = unknown
 
 // doc-header
 export const FetchPolicy = {
-  /** Only if cache does not exist (result is undefined) or expired. @Default */
+  /**
+   * Only if cache does not exist (result is undefined) or expired. Default.
+   * @param expired `true` when `expiresAt` is defined and lower than `Date.now()`
+   */
   NoCacheOrExpired: <T extends Typenames = Typenames, P = unknown, R = unknown>(
     expired: boolean,
     _params: P,

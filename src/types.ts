@@ -98,7 +98,7 @@ export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
 }
 
 export type CacheOptions = {
-  /** Enables additional validation with logging to console.warn. Recommened to enable in dev/testing mode. @Default true in dev mode. */
+  /** Enables additional validation with logging to console.warn. Recommended to enable in dev/testing mode. @Default true in dev mode. */
   additionalValidation: boolean
   /** Enables debug logs. @Default false */
   logsEnabled: boolean
@@ -271,17 +271,21 @@ export type QueryOptions<
 
 export type QueryResponse<R = unknown> = {
   result: R
-  /** If defined, overrides this value for query state, ignoring `secondsToLive`. */
+  /** If defined, overrides this value in the query state, ignoring `secondsToLive` option. */
   expiresAt?: number
 }
 
 export type NormalizedQueryResponse<T extends Typenames = Typenames, R = unknown> = EntityChanges<T> &
   QueryResponse<R>
 
-/** Current result is always returned, even if cancelled or finished with error. */
+/** Result is always returned, even if cancelled or finished with error. */
 export type QueryResult<R = unknown> = {
   error?: unknown
-  /** Fetch cancelled reason. */
+  /**
+   * Fetch cancelled reason.
+   * @value loading - already loading. Result of current fetch is returned.
+   * @value not-expired - not expired yet. Current state result is returned.
+   */
   cancelled?: 'loading' | 'not-expired'
   result?: R
 }

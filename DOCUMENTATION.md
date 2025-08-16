@@ -66,7 +66,7 @@
 |--------|---------------|
 | createClient | Creates client by providing the store. Can be used when the store is a singleton - to not use a useClient hook for getting the client, but import it directly. |
 | getInitialState | Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. |
-| applyEntityChanges | Apply changes to the entities map.  @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. |
+| applyEntityChanges | Apply changes to the entities map.  Returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes.  Uses deep comparison if `deepComparisonEnabled` option is `true`.  Performs additional checks for intersections if `additionalValidation` option is `true`, and prints warnings if finds any issues. |
 | createCache | Creates reducer, actions and hooks for managing queries and mutations through redux cache. |
 
 
@@ -83,6 +83,6 @@
 
 | Symbol | Description |
 |--------|---------------|
-| NoCacheOrExpired | Only if cache does not exist (result is undefined) or expired. @Default |
+| NoCacheOrExpired | Only if cache does not exist (result is undefined) or expired. Default.  @param expired `true` when `expiresAt` is defined and lower than `Date.now()` |
 | Always | Every fetch trigger. |
 

@@ -326,8 +326,12 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return reducer(undefined, EMPTY_OBJECT as any)
           },
-          /** Apply changes to the entities map.
-           * @returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes. */
+          /**
+           * Apply changes to the entities map.
+           * Returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes.
+           * Uses deep comparison if `deepComparisonEnabled` option is `true`.
+           * Performs additional checks for intersections if `additionalValidation` option is `true`, and prints warnings if finds any issues.
+           */
           applyEntityChanges: (
             entities: Parameters<typeof applyEntityChanges<T>>[0],
             changes: Parameters<typeof applyEntityChanges<T>>[1]
