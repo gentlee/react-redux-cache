@@ -552,7 +552,7 @@ export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
 }
 ```
 
-It is recommended to override it when default implementation is not optimal or when keys in params object can be sorted in random order.
+It is recommended to override it when default implementation is not optimal or when keys in params object can be sorted in random order. In second case you can also consider using array to pass params.
 
 As example, can be overridden when implementing pagination.
 
