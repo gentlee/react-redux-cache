@@ -3,7 +3,7 @@
 | Symbol | Description |
 |--------|---------------|
 | withTypenames | Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.  Returns object with createCache function with provided typenames.  @example  `const cache = withTypenames<MyTypenames>().createCache({...})` |
-| createCache | Creates reducer, actions and hooks for managing queries and mutations through redux cache. |
+| createCache | Creates reducer, actions and hooks for managing queries and mutations. |
 
 ##### client
 
@@ -17,7 +17,7 @@
 | Symbol | Description |
 |--------|---------------|
 | cache | Keeps all options, passed while creating the cache. |
-| reducer | Reducer of the cache, should be added to redux store. |
+| reducer | Reducer of the cache, should be added to redux/zustand store. |
 
 ##### actions
 
@@ -29,7 +29,7 @@
 | invalidateQuery | Invalidates query states. |
 | clearQueryState | Clears states for provided query keys and cache keys.  If cache key for query key is not provided, the whole state for query key is cleared. |
 | clearMutationState | Clears states for provided mutation keys. |
-| clearCache | Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and shoult be used with caution. |
+| clearCache | Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. |
 
 ##### selectors
 
@@ -67,7 +67,6 @@
 | createClient | Creates client by providing the store. Can be used when the store is a singleton - to not use a useClient hook for getting the client, but import it directly. |
 | getInitialState | Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. |
 | applyEntityChanges | Apply changes to the entities map.  Returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes.  Uses deep comparison if `deepComparisonEnabled` option is `true`.  Performs additional checks for intersections if `additionalValidation` option is `true`, and prints warnings if finds any issues. |
-| createCache | Creates reducer, actions and hooks for managing queries and mutations through redux cache. |
 
 
 ### Utils and constants

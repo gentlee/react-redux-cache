@@ -61,7 +61,7 @@ import {
  */
 export const withTypenames = <T extends Typenames = Typenames>() => {
   return {
-    /** Creates reducer, actions and hooks for managing queries and mutations through redux cache. */
+    /** Creates reducer, actions and hooks for managing queries and mutations. */
     createCache: <N extends string, QP, QR, MP, MR>(
       partialCache: OptionalPartial<
         Omit<Cache<N, T, QP, QR, MP, MR>, 'globals'>,
@@ -241,7 +241,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       return {
         /** Keeps all options, passed while creating the cache. */
         cache,
-        /** Reducer of the cache, should be added to redux store. */
+        /** Reducer of the cache, should be added to redux/zustand store. */
         reducer,
         // doc-header
         actions: {
@@ -258,7 +258,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           clearQueryState,
           /** Clears states for provided mutation keys. */
           clearMutationState,
-          /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and shoult be used with caution. */
+          /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. */
           clearCache,
         },
         // doc-header
@@ -344,7 +344,6 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
   }
 }
 
-/**
- * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
- */
+// doc-ignore
+/** Creates reducer, actions and hooks for managing queries and mutations. */
 export const createCache = withTypenames().createCache

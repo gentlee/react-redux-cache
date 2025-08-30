@@ -10,6 +10,7 @@ type DocEntry = {
 }
 
 const HEADER = '// doc-header'
+const IGNORE = '// doc-ignore'
 
 export function extractDocumentation(filePath: string): string {
   const content = fs.readFileSync(filePath, 'utf-8')
@@ -21,9 +22,15 @@ export function extractDocumentation(filePath: string): string {
   let currentDocs: string[] = []
   let inCommentBlock = false
   let nextLineIsHeader = false
+  let ignoreNextLine = false
 
   for (let line of lines) {
     line = line.trim()
+
+    if (ignoreNextLine) {
+      ignoreNextLine = false
+      continue
+    }
 
     // doc-header
 
@@ -41,6 +48,11 @@ export function extractDocumentation(filePath: string): string {
       } else {
         nextLineIsHeader = true
       }
+      continue
+    }
+
+    if (line.startsWith(IGNORE)) {
+      ignoreNextLine = true
       continue
     }
 
