@@ -164,7 +164,7 @@ export type QueryInfo<
    * Default implementation uses `String()` or `JSON.stringify` depending on type.
    * It is recommended to override it when default implementation is not optimal or when keys in params object can be sorted in random order etc.
    */
-  getCacheKey?: (params?: P) => Key
+  getCacheKey?: (params: P) => Key
   /** Called after fetch completed either successfully or not. */
   onCompleted?: (
     response: NormalizedQueryResponse<T, R> | undefined,

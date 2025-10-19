@@ -32,7 +32,7 @@ import {applyEntityChanges} from './utilsAndConstants'
  * `const cache = withTypenames<MyTypenames>().createCache({...})`
  */
 export declare const withTypenames: <T extends Typenames = Typenames>() => {
-  /** Creates reducer, actions and hooks for managing queries and mutations through redux cache. */
+  /** Creates reducer, actions and hooks for managing queries and mutations. */
   createCache: <N extends string, QP, QR, MP, MR>(
     partialCache: OptionalPartial<
       Omit<Cache<N, T, QP, QR, MP, MR>, 'globals'>,
@@ -43,7 +43,7 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
   ) => {
     /** Keeps all options, passed while creating the cache. */
     cache: Cache<N, T, QP, QR, MP, MR>
-    /** Reducer of the cache, should be added to redux store. */
+    /** Reducer of the cache, should be added to redux/zustand store. */
     reducer: (
       state: CacheState<T, QP, QR, MP, MR> | undefined,
       action:
@@ -170,7 +170,7 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
         }
         type: `@rrc/${N}/clearMutationState`
       }
-      /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and shoult be used with caution. */
+      /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. */
       clearCache: {
         (stateToKeep?: Partial<CacheState<T, QP, QR, MP, MR>> | undefined): {
           type: `@rrc/${N}/clearCache`
@@ -366,9 +366,7 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
   }
 }
 
-/**
- * Creates reducer, actions and hooks for managing queries and mutations through redux cache.
- */
+/** Creates reducer, actions and hooks for managing queries and mutations. */
 export declare const createCache: <N extends string, QP, QR, MP, MR>(
   partialCache: Partial<{
     queries: Partial<{
@@ -397,7 +395,7 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(
 ) => {
   /** Keeps all options, passed while creating the cache. */
   cache: Cache<N, Typenames, QP, QR, MP, MR>
-  /** Reducer of the cache, should be added to redux store. */
+  /** Reducer of the cache, should be added to redux/zustand store. */
   reducer: (
     state: CacheState<Typenames, QP, QR, MP, MR> | undefined,
     action:
@@ -526,7 +524,7 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(
       }
       type: `@rrc/${N}/clearMutationState`
     }
-    /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and shoult be used with caution. */
+    /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. */
     clearCache: {
       (stateToKeep?: Partial<CacheState<Typenames, QP, QR, MP, MR>> | undefined): {
         type: `@rrc/${N}/clearCache`
