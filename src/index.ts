@@ -6,6 +6,7 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noo
 // Backlog
 
 // ! high (1.0.0-rc.0)
+// tests with overridden getCacheKey
 // optimistic response
 
 // ! medium
