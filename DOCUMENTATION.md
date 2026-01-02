@@ -26,7 +26,7 @@
 | updateQueryStateAndEntities | Updates query state, and optionally merges entity changes in a single action. |
 | updateMutationStateAndEntities | Updates mutation state, and optionally merges entity changes in a single action. |
 | mergeEntityChanges | Merges EntityChanges to the state. |
-| invalidateQuery | Invalidates query states. |
+| invalidateQuery | Sets expiresAt to Date.now(). |
 | clearQueryState | Clears states for provided query keys and cache keys.  If cache key for query key is not provided, the whole state for query key is cleared. |
 | clearMutationState | Clears states for provided mutation keys. |
 | clearCache | Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. |
@@ -59,6 +59,7 @@
 | useQuery | Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). |
 | useMutation | Subscribes to provided mutation state and provides mutate function. |
 | useSelectEntityById | useSelector + selectEntityById. |
+| useEntitiesByTypename | useSelector + selectEntitiesByTypename. Also subscribes to collection's change key if `mutableCollections` enabled.  @warning Subscribing to collections should be avoided. |
 
 ##### utils
 

@@ -1,7 +1,9 @@
 'use strict'
 Object.defineProperty(exports, '__esModule', {value: true})
-exports.FetchPolicy =
+exports.incrementChangeKey =
+  exports.FetchPolicy =
   exports.createStateComparer =
+  exports.isEmptyMutable =
   exports.isEmptyObject =
   exports.applyEntityChanges =
   exports.defaultGetCacheKey =
@@ -55,7 +57,7 @@ const defaultGetCacheKey = (params) => {
 }
 exports.defaultGetCacheKey = defaultGetCacheKey
 const applyEntityChanges = (entities, changes, options) => {
-  var _a, _b, _c, _d
+  var _a, _b, _c
   if (changes.merge && changes.entities) {
     ;(0, exports.logWarn)('applyEntityChanges', 'merge and entities should not be both set')
   }
@@ -63,6 +65,7 @@ const applyEntityChanges = (entities, changes, options) => {
   if (!merge && !replace && !remove) {
     return undefined
   }
+  const mutable = options.mutableCollections
   const deepEqual = options.deepComparisonEnabled ? exports.optionalUtils.deepEqual : undefined
   let result
   const objectWithAllTypenames = Object.assign(
@@ -108,37 +111,48 @@ const applyEntityChanges = (entities, changes, options) => {
         )
       }
     }
-    const oldEntities = (_d = entities[typename]) !== null && _d !== void 0 ? _d : exports.EMPTY_OBJECT
+    const oldEntities = entities[typename]
     let newEntities
     entitiesToRemove === null || entitiesToRemove === void 0
       ? void 0
       : entitiesToRemove.forEach((id) => {
-          if (oldEntities[id]) {
+          if (oldEntities === null || oldEntities === void 0 ? void 0 : oldEntities[id]) {
             newEntities !== null && newEntities !== void 0
               ? newEntities
-              : (newEntities = Object.assign({}, oldEntities))
+              : (newEntities = mutable ? oldEntities : Object.assign({}, oldEntities))
             delete newEntities[id]
           }
         })
     if (entitiesToReplace) {
       for (const id in entitiesToReplace) {
         const newEntity = entitiesToReplace[id]
-        if (!(deepEqual === null || deepEqual === void 0 ? void 0 : deepEqual(oldEntities[id], newEntity))) {
+        if (
+          oldEntities === undefined ||
+          !(deepEqual === null || deepEqual === void 0 ? void 0 : deepEqual(oldEntities[id], newEntity))
+        ) {
           newEntities !== null && newEntities !== void 0
             ? newEntities
-            : (newEntities = Object.assign({}, oldEntities))
+            : (newEntities = mutable
+                ? oldEntities !== null && oldEntities !== void 0
+                  ? oldEntities
+                  : {}
+                : Object.assign({}, oldEntities))
           newEntities[id] = newEntity
         }
       }
     }
     if (entitiesToMerge) {
       for (const id in entitiesToMerge) {
-        const oldEntity = oldEntities[id]
+        const oldEntity = oldEntities === null || oldEntities === void 0 ? void 0 : oldEntities[id]
         const newEntity = Object.assign(Object.assign({}, oldEntity), entitiesToMerge[id])
         if (!(deepEqual === null || deepEqual === void 0 ? void 0 : deepEqual(oldEntity, newEntity))) {
           newEntities !== null && newEntities !== void 0
             ? newEntities
-            : (newEntities = Object.assign({}, oldEntities))
+            : (newEntities = mutable
+                ? oldEntities !== null && oldEntities !== void 0
+                  ? oldEntities
+                  : {}
+                : Object.assign({}, oldEntities))
           newEntities[id] = newEntity
         }
       }
@@ -146,7 +160,15 @@ const applyEntityChanges = (entities, changes, options) => {
     if (!newEntities) {
       continue
     }
-    result !== null && result !== void 0 ? result : (result = Object.assign({}, entities))
+    if (mutable) {
+      ;(0, exports.incrementChangeKey)(newEntities)
+      if (result === undefined) {
+        ;(0, exports.incrementChangeKey)(entities)
+        result = entities
+      }
+    } else {
+      result !== null && result !== void 0 ? result : (result = Object.assign({}, entities))
+    }
     result[typename] = newEntities
   }
   options.logsEnabled &&
@@ -159,13 +181,23 @@ const applyEntityChanges = (entities, changes, options) => {
   return result
 }
 exports.applyEntityChanges = applyEntityChanges
-const isEmptyObject = (o) => {
-  for (const _ in o) {
+const isEmptyObject = (obj) => {
+  for (const _ in obj) {
     return false
   }
   return true
 }
 exports.isEmptyObject = isEmptyObject
+const isEmptyMutable = (mutable) => {
+  for (const field in mutable) {
+    if (field === '_changeKey') {
+      continue
+    }
+    return false
+  }
+  return true
+}
+exports.isEmptyMutable = isEmptyMutable
 const createStateComparer = (fields) => {
   return (x, y) => {
     if (x === y) {
@@ -190,3 +222,11 @@ exports.FetchPolicy = {
   },
   Always: () => true,
 }
+const incrementChangeKey = (mutable) => {
+  if (mutable._changeKey === undefined) {
+    mutable._changeKey = 0
+  } else {
+    mutable._changeKey += 1
+  }
+}
+exports.incrementChangeKey = incrementChangeKey

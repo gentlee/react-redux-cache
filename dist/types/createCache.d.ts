@@ -2,7 +2,6 @@ import type {
   Cache,
   CacheOptions,
   CacheState,
-  Dict,
   EntitiesMap,
   EntityChanges,
   Globals,
@@ -127,7 +126,7 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
         }
         type: `@rrc/${N}/mergeEntityChanges`
       }
-      /** Invalidates query states. */
+      /** Sets expiresAt to Date.now(). */
       invalidateQuery: {
         <K extends keyof QP & keyof QR>(
           queries: {
@@ -255,9 +254,12 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
         typename: TN
       ) => T[TN] | undefined
       /** Selects all entities. */
-      selectEntities: (state: unknown) => EntitiesMap<T>
+      selectEntities: (state: unknown) => EntitiesMap<T> & import('./types').Mutable
       /** Selects all entities of provided typename. */
-      selectEntitiesByTypename: <TN extends keyof T>(state: unknown, typename: TN) => EntitiesMap<T>[TN]
+      selectEntitiesByTypename: <TN extends keyof T>(
+        state: unknown,
+        typename: TN
+      ) => (EntitiesMap<T> & import('./types').Mutable)[TN]
     }
     hooks: {
       /** Returns memoized object with query and mutate functions. Memoization dependency is the store. */
@@ -331,6 +333,13 @@ export declare const withTypenames: <T extends Typenames = Typenames>() => {
       ]
       /** useSelector + selectEntityById. */
       useSelectEntityById: <TN extends keyof T>(id: Key | null | undefined, typename: TN) => T[TN] | undefined
+      /**
+       * useSelector + selectEntitiesByTypename. Also subscribes to collection's change key if `mutableCollections` enabled.
+       * @warning Subscribing to collections should be avoided.
+       * */
+      useEntitiesByTypename: <TN extends keyof T>(
+        typename: TN
+      ) => (EntitiesMap<T> & import('./types').Mutable)[TN]
     }
     utils: {
       /** Creates client by providing the store. Can be used when the store is a singleton - to not use a useClient hook for getting the client, but import it directly. */
@@ -481,7 +490,7 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(
       }
       type: `@rrc/${N}/mergeEntityChanges`
     }
-    /** Invalidates query states. */
+    /** Sets expiresAt to Date.now(). */
     invalidateQuery: {
       <K extends keyof QP & keyof QR>(
         queries: {
@@ -616,9 +625,12 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(
       typename: TN
     ) => object | undefined
     /** Selects all entities. */
-    selectEntities: (state: unknown) => EntitiesMap<Typenames>
+    selectEntities: (state: unknown) => EntitiesMap<Typenames> & import('./types').Mutable
     /** Selects all entities of provided typename. */
-    selectEntitiesByTypename: <TN extends string>(state: unknown, typename: TN) => Dict<object> | undefined
+    selectEntitiesByTypename: <TN extends string>(
+      state: unknown,
+      typename: TN
+    ) => (EntitiesMap<Typenames> & import('./types').Mutable)[TN]
   }
   hooks: {
     /** Returns memoized object with query and mutate functions. Memoization dependency is the store. */
@@ -692,6 +704,13 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(
     ]
     /** useSelector + selectEntityById. */
     useSelectEntityById: <TN extends string>(id: Key | null | undefined, typename: TN) => object | undefined
+    /**
+     * useSelector + selectEntitiesByTypename. Also subscribes to collection's change key if `mutableCollections` enabled.
+     * @warning Subscribing to collections should be avoided.
+     * */
+    useEntitiesByTypename: <TN extends string>(
+      typename: TN
+    ) => (EntitiesMap<Typenames> & import('./types').Mutable)[TN]
   }
   utils: {
     /** Creates client by providing the store. Can be used when the store is a singleton - to not use a useClient hook for getting the client, but import it directly. */
@@ -720,7 +739,7 @@ export declare const createCache: <N extends string, QP, QR, MP, MR>(
      * Performs additional checks for intersections if `additionalValidation` option is `true`, and prints warnings if finds any issues.
      */
     applyEntityChanges: (
-      entities: EntitiesMap<Typenames>,
+      entities: EntitiesMap<Typenames> & import('./types').Mutable,
       changes: EntityChanges<Typenames>
     ) => EntitiesMap<Typenames> | undefined
   }

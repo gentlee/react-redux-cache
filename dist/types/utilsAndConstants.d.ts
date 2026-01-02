@@ -3,6 +3,7 @@ import type {
   EntitiesMap,
   EntityChanges,
   Key,
+  Mutable,
   QueryState,
   QueryStateComparer,
   Typenames,
@@ -31,13 +32,15 @@ export declare const noop: () => void
 export declare const defaultGetCacheKey: <P = unknown>(params: P) => Key
 
 export declare const applyEntityChanges: <T extends Typenames>(
-  entities: EntitiesMap<T>,
+  entities: EntitiesMap<T> & Mutable,
   changes: EntityChanges<T>,
   options: CacheOptions
 ) => EntitiesMap<T> | undefined
 
 /** Returns true if object has no keys. */
-export declare const isEmptyObject: (o: object) => boolean
+export declare const isEmptyObject: (obj: object) => boolean
+
+export declare const isEmptyMutable: (mutable: Mutable) => boolean
 
 /** Returns query state comparer that compares only provided fields. Used in implementation of `selectorComparer` option. */
 export declare const createStateComparer: <T extends Typenames = Typenames, Q = unknown, P = unknown>(
@@ -57,3 +60,5 @@ export declare const FetchPolicy: {
   /** Every fetch trigger. */
   Always: () => boolean
 }
+
+export declare const incrementChangeKey: (mutable: Mutable) => void

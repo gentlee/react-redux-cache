@@ -1,6 +1,13 @@
 import type {Actions} from './createActions'
 import type {CacheOptions, CacheState, MutationState, QueryState, Typenames} from './types'
-import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, logDebug, optionalUtils} from './utilsAndConstants'
+import {
+  applyEntityChanges,
+  EMPTY_OBJECT,
+  incrementChangeKey,
+  isEmptyObject,
+  logDebug,
+  optionalUtils,
+} from './utilsAndConstants'
 
 const optionalQueryKeys: (keyof QueryState<Typenames, unknown, unknown>)[] = [
   'error',
@@ -24,27 +31,44 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
 ) => {
   type TypedCacheState = CacheState<T, QP, QR, MP, MR>
 
-  const initialState: TypedCacheState = Object.freeze({
-    entities: Object.freeze({} as TypedCacheState['entities']),
-    queries: Object.freeze(
-      queryKeys.reduce((result, x) => {
-        result[x] = Object.freeze({})
-        return result
-      }, {} as TypedCacheState['queries'])
-    ),
-    mutations: Object.freeze({} as TypedCacheState['mutations']),
-  })
+  const mutable = cacheOptions.mutableCollections
+
+  const getMutableInitialState = mutable
+    ? (): TypedCacheState => {
+        return {
+          entities: {} as TypedCacheState['entities'],
+          queries: queryKeys.reduce((result, x) => {
+            result[x] = {} as TypedCacheState['queries'][keyof (QP | QR)]
+            return result
+          }, {} as TypedCacheState['queries']),
+          mutations: {} as TypedCacheState['mutations'],
+        }
+      }
+    : undefined
+
+  const immutableInitialState = mutable
+    ? undefined
+    : (Object.freeze({
+        entities: Object.freeze({}),
+        queries: Object.freeze(
+          queryKeys.reduce((result, x) => {
+            result[x] = Object.freeze({}) as TypedCacheState['queries'][keyof (QP | QR)]
+            return result
+          }, {} as TypedCacheState['queries'])
+        ),
+        mutations: Object.freeze({}),
+      }) as TypedCacheState)
 
   cacheOptions.logsEnabled &&
     logDebug('createCacheReducer', {
       queryKeys,
-      initialState,
+      mutable,
     })
 
   const deepEqual = cacheOptions.deepComparisonEnabled ? optionalUtils.deepEqual : undefined
 
   return (
-    state = initialState,
+    state = mutable ? getMutableInitialState!() : immutableInitialState!,
     action: ReturnType<(typeof actions)[keyof typeof actions]>
   ): TypedCacheState => {
     switch (action.type) {
@@ -101,21 +125,35 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
           newState ??= {...state}
           newState.entities = newEntities
         }
+
         if (newQueryState) {
           if (!isEmptyObject(newQueryState)) {
             newState ??= {...state}
-            newState.queries = {
-              ...state.queries,
-              [queryKey]: {
-                ...state.queries[queryKey],
-                [queryCacheKey]: newQueryState,
-              },
+            if (mutable) {
+              // @ts-expect-error fix later
+              newState.queries[queryKey][queryCacheKey] = newQueryState
+              incrementChangeKey(newState.queries)
+              incrementChangeKey(newState.queries[queryKey])
+            } else {
+              newState.queries = {
+                ...state.queries,
+                [queryKey]: {
+                  ...state.queries[queryKey],
+                  [queryCacheKey]: newQueryState,
+                },
+              }
             }
           } else if (oldQueryState !== undefined) {
             // empty states are removed
-            const {[queryCacheKey]: _, ...withoutCacheKey} = state.queries[queryKey]
             newState ??= {...state}
-            newState.queries = {...state.queries, [queryKey]: withoutCacheKey}
+            if (mutable) {
+              delete newState.queries[queryKey][queryCacheKey]
+              incrementChangeKey(newState.queries)
+              incrementChangeKey(newState.queries[queryKey])
+            } else {
+              const {[queryCacheKey]: _, ...withoutCacheKey} = state.queries[queryKey]
+              newState.queries = {...state.queries, [queryKey]: withoutCacheKey}
+            }
           }
         }
 
@@ -136,7 +174,7 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
 
         if (newMutationState) {
           if (oldMutationState && deepEqual) {
-            // set back params if deeply same value
+            // keep prev params if deeply same value
             if (
               newMutationState.params !== oldMutationState.params &&
               deepEqual(newMutationState.params, oldMutationState.params)
@@ -144,7 +182,7 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
               newMutationState.params = oldMutationState.params
             }
 
-            // set back if deeply same value
+            // keep prev result if deeply same value
             if (
               newMutationState.result !== oldMutationState.result &&
               deepEqual(newMutationState.result, oldMutationState.result)
@@ -170,21 +208,29 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
 
         let newState
         if (newEntities) {
-          newState ??= {...state}
-          newState.entities = newEntities
+          newState = {...state, entities: newEntities}
         }
         if (newMutationState) {
           if (!isEmptyObject(newMutationState)) {
             newState ??= {...state}
-            newState.mutations = {
-              ...state.mutations,
-              [mutationKey]: newMutationState,
+
+            if (mutable) {
+              state.mutations[mutationKey] = newMutationState
+              incrementChangeKey(state.mutations)
+            } else {
+              newState.mutations = {...state.mutations, [mutationKey]: newMutationState}
             }
           } else if (oldMutationState !== undefined) {
-            // empty states are removed
-            const {[mutationKey]: _, ...withoutMutationKey} = state.mutations
             newState ??= {...state}
-            newState.mutations = withoutMutationKey as typeof state.mutations
+
+            if (mutable) {
+              delete state.mutations[mutationKey]
+              incrementChangeKey(state.mutations)
+            } else {
+              // empty states are removed
+              const {[mutationKey]: _, ...withoutMutationKey} = state.mutations
+              newState.mutations = withoutMutationKey as typeof state.mutations
+            }
           }
         }
 
@@ -204,58 +250,56 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
         }
 
         const now = Date.now()
-        let newQueries = undefined
+        let newStatesByQueryKey: typeof state.queries | undefined
+        const copiedQueryKeys = mutable ? undefined : new Set<keyof typeof state.queries>() // Used in immutable mode to create new states by queryKey only once.
 
         for (const {query: queryKey, cacheKey, expiresAt = now} of queriesToInvalidate) {
-          const queryStates = (newQueries ?? state.queries)[queryKey]
-          if (cacheKey != null) {
-            if (queryStates[cacheKey]) {
-              const queryState = queryStates[cacheKey]
-              if (queryState && queryState.expiresAt !== expiresAt) {
-                newQueries ??= {...state.queries}
-                if (state.queries[queryKey] === newQueries[queryKey]) {
-                  newQueries[queryKey] = {
-                    ...newQueries[queryKey],
-                  }
-                }
-                // @ts-expect-error fix type later
-                newQueries[queryKey][cacheKey] = {
-                  ...queryState,
-                  expiresAt,
-                }
-                if (expiresAt === undefined) {
-                  delete newQueries[queryKey][cacheKey]!.expiresAt
-                }
+          const statesByCacheKey = (newStatesByQueryKey ?? state.queries)[queryKey]
+          const cacheKeysToInvalidate: (keyof typeof statesByCacheKey)[] =
+            cacheKey != null ? [cacheKey] : Object.keys(statesByCacheKey)
+
+          for (const cacheKey of cacheKeysToInvalidate) {
+            const queryState = statesByCacheKey[cacheKey]
+            if (!queryState || queryState.expiresAt === expiresAt) {
+              continue
+            }
+
+            if (mutable) {
+              newStatesByQueryKey ??= state.queries
+              incrementChangeKey(newStatesByQueryKey[queryKey])
+            } else {
+              newStatesByQueryKey ??= {...state.queries}
+              if (!copiedQueryKeys!.has(queryKey)) {
+                newStatesByQueryKey[queryKey] = {...newStatesByQueryKey[queryKey]}
+                copiedQueryKeys!.add(queryKey)
               }
             }
-          } else {
-            for (const cacheKey in queryStates) {
-              const queryState = queryStates[cacheKey]
-              if (queryState && queryState.expiresAt !== expiresAt) {
-                newQueries ??= {...state.queries}
-                if (state.queries[queryKey] === newQueries[queryKey]) {
-                  newQueries[queryKey] = {
-                    ...newQueries[queryKey],
-                  }
-                }
-                newQueries[queryKey][cacheKey] = {
-                  ...queryState,
-                  expiresAt,
-                }
-                if (expiresAt === undefined) {
-                  delete newQueries[queryKey][cacheKey]!.expiresAt
-                }
+
+            if (expiresAt !== undefined) {
+              newStatesByQueryKey[queryKey][cacheKey] = {...queryState, expiresAt}
+            } else {
+              const {expiresAt: _, ...newQueryState} = queryState
+              if (isEmptyObject(newQueryState)) {
+                delete newStatesByQueryKey[queryKey][cacheKey]
+              } else {
+                // @ts-expect-error fix later
+                newStatesByQueryKey[queryKey][cacheKey] = newQueryState
               }
             }
           }
         }
 
-        return newQueries === undefined
-          ? state
-          : {
-              ...state,
-              queries: newQueries,
-            }
+        if (!newStatesByQueryKey) {
+          return state
+        }
+
+        if (mutable) {
+          incrementChangeKey(newStatesByQueryKey)
+        }
+        return {
+          ...state,
+          queries: newStatesByQueryKey,
+        }
       }
       case actions.clearQueryState.type: {
         const {queries: queriesToClear} = action as ReturnType<typeof actions.clearQueryState>
@@ -263,32 +307,56 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
           return state
         }
 
-        let newQueries = undefined
+        let newStatesByQueryKey: typeof state.queries | undefined
+        const copiedQueryKeys = mutable ? undefined : new Set<keyof typeof state.queries>() // Used in immutable mode to create new states by queryKey only once.
 
         for (const {query: queryKey, cacheKey} of queriesToClear) {
-          const queryStates = (newQueries ?? state.queries)[queryKey]
+          const statesByCacheKey = (newStatesByQueryKey ?? state.queries)[queryKey]
+
+          // Clearing state for provided query key + cache key
+
           if (cacheKey != null) {
-            if (queryStates[cacheKey]) {
-              newQueries ??= {...state.queries}
-              if (state.queries[queryKey] === newQueries[queryKey]) {
-                newQueries[queryKey] = {
-                  ...newQueries[queryKey],
-                }
-              }
-              delete newQueries[queryKey][cacheKey]
+            if (!statesByCacheKey[cacheKey]) {
+              continue
             }
-          } else if (queryStates !== EMPTY_OBJECT) {
-            newQueries ??= {...state.queries}
-            newQueries[queryKey] = EMPTY_OBJECT
+
+            if (mutable) {
+              newStatesByQueryKey ??= state.queries
+              incrementChangeKey(newStatesByQueryKey[queryKey])
+            } else {
+              newStatesByQueryKey ??= {...state.queries}
+              if (!copiedQueryKeys!.has(queryKey)) {
+                newStatesByQueryKey[queryKey] = {...newStatesByQueryKey[queryKey]}
+                copiedQueryKeys!.add(queryKey)
+              }
+            }
+            delete newStatesByQueryKey[queryKey][cacheKey]
+
+            // Clearing all states for provided query key
+            //
+          } else if (mutable) {
+            newStatesByQueryKey ??= state.queries
+            // @ts-expect-error fix later
+            newStatesByQueryKey[queryKey] = {}
+          } else if (statesByCacheKey !== EMPTY_OBJECT) {
+            newStatesByQueryKey ??= {...state.queries}
+            // @ts-expect-error fix later
+            newStatesByQueryKey[queryKey] = EMPTY_OBJECT
+            copiedQueryKeys!.add(queryKey)
           }
         }
 
-        return newQueries === undefined
-          ? state
-          : {
-              ...state,
-              queries: newQueries,
-            }
+        if (newStatesByQueryKey === undefined) {
+          return state
+        }
+
+        if (mutable) {
+          incrementChangeKey(newStatesByQueryKey)
+        }
+        return {
+          ...state,
+          queries: newStatesByQueryKey,
+        }
       }
       case actions.clearMutationState.type: {
         const {mutationKeys} = action as ReturnType<typeof actions.clearMutationState>
@@ -301,20 +369,26 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
 
         for (const mutation of mutationKeys) {
           if (state.mutations[mutation]) {
-            newMutations ??= {...state.mutations}
+            newMutations ??= mutable ? state.mutations : {...state.mutations}
             delete newMutations[mutation]
           }
         }
 
-        return newMutations === undefined
-          ? state
-          : {
-              ...state,
-              mutations: newMutations,
-            }
+        if (newMutations === undefined) {
+          return state
+        }
+
+        if (mutable) {
+          incrementChangeKey(newMutations)
+        }
+        return {
+          ...state,
+          mutations: newMutations,
+        }
       }
       case actions.clearCache.type: {
         const {stateToKeep} = action as ReturnType<typeof actions.clearCache>
+        const initialState = mutable ? getMutableInitialState!() : immutableInitialState!
         return stateToKeep
           ? {
               ...initialState,

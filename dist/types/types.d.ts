@@ -3,7 +3,15 @@ import type {Selectors} from './createSelectors'
 
 export type Key = string | number | symbol
 
-export type Dict<T> = Record<Key, T>
+export type Mutable = {
+  /**
+   * Used only when mutable cache enabled. Always incremented when collection changed by reducer to allow subscribe on changes.
+   * Should not be used for comparing different collections as supposed to be compared only with previously saved changeKey of the same collection.
+   */
+  _changeKey?: number
+}
+
+export type Dict<T> = Record<Key, T> & Mutable
 
 export type OptionalPartial<T, K extends keyof T> = Partial<{
   [A in K]: Partial<T[A]>
@@ -95,6 +103,13 @@ export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
 }
 
 export type CacheOptions = {
+  /**
+   * BETA: Optimization that makes state collections mutable.
+   * Collections still can be replaced with the new ones instead of mutating e.g. when clearing state,
+   * so subscription will work only when subscribed to both collection and its change key.
+   * @Default false
+   * */
+  mutableCollections: boolean
   /** Enables additional validation with logging to console.warn. Recommended to enable in dev/testing mode. @Default true in dev mode. */
   additionalValidation: boolean
   /** Enables debug logs. @Default false */
@@ -121,13 +136,13 @@ export type EntityIds<T extends Typenames> = {
 }
 
 export type CacheState<T extends Typenames, QP, QR, MP, MR> = {
-  entities: EntitiesMap<T>
+  entities: EntitiesMap<T> & Mutable
   queries: {
     [QK in keyof (QP | QR)]: Dict<QueryState<T, QP[QK], QR[QK]> | undefined>
-  }
+  } & Mutable
   mutations: {
     [MK in keyof (MP | MR)]: MutationState<T, MP[MK], MR[MK]>
-  }
+  } & Mutable
 }
 
 export type QueryInfo<

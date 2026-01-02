@@ -25,6 +25,7 @@ const createSelectors = (cache) => {
       : utilsAndConstants_1.EMPTY_OBJECT
   }
   return {
+    selectEntityById,
     selectQueryState,
     selectQueryResult: (state, query, cacheKey) => {
       return selectQueryState(state, query, cacheKey).result
@@ -56,7 +57,6 @@ const createSelectors = (cache) => {
     selectMutationParams: (state, mutation) => {
       return selectMutationState(state, mutation).params
     },
-    selectEntityById,
     selectEntities: (state) => {
       return cache.cacheStateSelector(state).entities
     },

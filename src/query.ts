@@ -16,7 +16,7 @@ export const query = async <
   store: Store,
   cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'queries'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
-  selectors: Selectors<N, T, QP, QR, MP, MR>,
+  selectors: Pick<Selectors<N, T, QP, QR, MP, MR>, 'selectQueryResult' | 'selectQueryState'>,
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never,

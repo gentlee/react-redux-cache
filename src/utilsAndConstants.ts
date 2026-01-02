@@ -3,6 +3,7 @@ import type {
   EntitiesMap,
   EntityChanges,
   Key,
+  Mutable,
   QueryState,
   QueryStateComparer,
   Typenames,
@@ -61,7 +62,7 @@ export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
 }
 
 export const applyEntityChanges = <T extends Typenames>(
-  entities: EntitiesMap<T>,
+  entities: EntitiesMap<T> & Mutable,
   changes: EntityChanges<T>,
   options: CacheOptions
 ): EntitiesMap<T> | undefined => {
@@ -75,6 +76,7 @@ export const applyEntityChanges = <T extends Typenames>(
     return undefined
   }
 
+  const mutable = options.mutableCollections
   const deepEqual = options.deepComparisonEnabled ? optionalUtils.deepEqual : undefined
 
   let result: EntitiesMap<T> | undefined
@@ -105,14 +107,13 @@ export const applyEntityChanges = <T extends Typenames>(
       }
     }
 
-    const oldEntities =
-      entities[typename] ?? (EMPTY_OBJECT as NonNullable<(typeof entities)[typeof typename]>)
+    const oldEntities = entities[typename]
     let newEntities: EntitiesMap<T>[typeof typename] | undefined
 
     // remove
     entitiesToRemove?.forEach((id) => {
-      if (oldEntities[id]) {
-        newEntities ??= {...oldEntities}
+      if (oldEntities?.[id]) {
+        newEntities ??= mutable ? oldEntities : {...oldEntities}
         delete newEntities![id]
       }
     })
@@ -121,8 +122,8 @@ export const applyEntityChanges = <T extends Typenames>(
     if (entitiesToReplace) {
       for (const id in entitiesToReplace) {
         const newEntity = entitiesToReplace[id]
-        if (!deepEqual?.(oldEntities[id], newEntity)) {
-          newEntities ??= {...oldEntities}
+        if (oldEntities === undefined || !deepEqual?.(oldEntities[id], newEntity)) {
+          newEntities ??= mutable ? oldEntities ?? {} : {...oldEntities}
           newEntities[id] = newEntity
         }
       }
@@ -131,10 +132,11 @@ export const applyEntityChanges = <T extends Typenames>(
     // merge
     if (entitiesToMerge) {
       for (const id in entitiesToMerge) {
-        const oldEntity = oldEntities[id]
+        const oldEntity = oldEntities?.[id]
         const newEntity = {...oldEntity, ...entitiesToMerge[id]}
         if (!deepEqual?.(oldEntity, newEntity)) {
-          newEntities ??= {...oldEntities}
+          newEntities ??= mutable ? oldEntities ?? {} : {...oldEntities}
+          // @ts-expect-error Warning: partial entity possible in the new state after merge
           newEntities[id] = newEntity
         }
       }
@@ -144,7 +146,17 @@ export const applyEntityChanges = <T extends Typenames>(
       continue
     }
 
-    result ??= {...entities}
+    if (mutable) {
+      incrementChangeKey(newEntities)
+
+      if (result === undefined) {
+        incrementChangeKey(entities)
+        result = entities
+      }
+    } else {
+      result ??= {...entities}
+    }
+
     // @ts-expect-error fix later
     result[typename] = newEntities
   }
@@ -161,8 +173,18 @@ export const applyEntityChanges = <T extends Typenames>(
 }
 
 /** Returns true if object has no keys. */
-export const isEmptyObject = (o: object) => {
-  for (const _ in o) {
+export const isEmptyObject = (obj: object) => {
+  for (const _ in obj) {
+    return false
+  }
+  return true
+}
+
+export const isEmptyMutable = (mutable: Mutable) => {
+  for (const field in mutable) {
+    if (field === '_changeKey') {
+      continue
+    }
     return false
   }
   return true
@@ -204,4 +226,12 @@ export const FetchPolicy = {
   },
   /** Every fetch trigger. */
   Always: () => true,
+}
+
+export const incrementChangeKey = (mutable: Mutable) => {
+  if (mutable._changeKey === undefined) {
+    mutable._changeKey = 0
+  } else {
+    mutable._changeKey += 1
+  }
 }

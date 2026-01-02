@@ -22,6 +22,7 @@ export const createSelectors = (cache) => {
       : EMPTY_OBJECT
   }
   return {
+    selectEntityById,
     selectQueryState,
     selectQueryResult: (state, query, cacheKey) => {
       return selectQueryState(state, query, cacheKey).result
@@ -53,7 +54,6 @@ export const createSelectors = (cache) => {
     selectMutationParams: (state, mutation) => {
       return selectMutationState(state, mutation).params
     },
-    selectEntityById,
     selectEntities: (state) => {
       return cache.cacheStateSelector(state).entities
     },
