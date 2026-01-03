@@ -3,7 +3,6 @@ Object.defineProperty(exports, '__esModule', {value: true})
 exports.incrementChangeKey =
   exports.FetchPolicy =
   exports.createStateComparer =
-  exports.isEmptyMutable =
   exports.isEmptyObject =
   exports.applyEntityChanges =
   exports.defaultGetCacheKey =
@@ -188,16 +187,6 @@ const isEmptyObject = (obj) => {
   return true
 }
 exports.isEmptyObject = isEmptyObject
-const isEmptyMutable = (mutable) => {
-  for (const field in mutable) {
-    if (field === '_changeKey') {
-      continue
-    }
-    return false
-  }
-  return true
-}
-exports.isEmptyMutable = isEmptyMutable
 const createStateComparer = (fields) => {
   return (x, y) => {
     if (x === y) {

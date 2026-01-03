@@ -1,4 +1,5 @@
 import type {Actions} from './createActions'
+import {Selectors} from './createSelectors'
 import type {Cache, Key, MutationResult, Store, Typenames} from './types'
 
 export declare const mutate: <
@@ -8,14 +9,13 @@ export declare const mutate: <
   QR,
   MP,
   MR,
-  MK extends keyof (MP & MR),
-  S extends object
+  MK extends keyof (MP & MR)
 >(
   logTag: string,
   store: Store,
   cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'mutations'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
-  selectors: S,
+  selectors: Selectors<N, T, QP, QR, MP, MR>,
   mutationKey: MK,
   params: MK extends keyof (MP | MR) ? MP[MK] : never,
   abortControllers: WeakMap<Store, Record<Key, AbortController>>,
@@ -26,7 +26,7 @@ export declare const mutate: <
         params: MP[keyof MP & keyof MR & string] | undefined,
         store: Store,
         actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: import('./createSelectors').Selectors<N, T, QP, QR, MP, MR>
+        selectors: Selectors<N, T, QP, QR, MP, MR>
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, MR[keyof MP & keyof MR & number]> | undefined,
@@ -34,7 +34,7 @@ export declare const mutate: <
         params: MP[keyof MP & keyof MR & number] | undefined,
         store: Store,
         actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: import('./createSelectors').Selectors<N, T, QP, QR, MP, MR>
+        selectors: Selectors<N, T, QP, QR, MP, MR>
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, MR[keyof MP & keyof MR & symbol]> | undefined,
@@ -42,7 +42,7 @@ export declare const mutate: <
         params: MP[keyof MP & keyof MR & symbol] | undefined,
         store: Store,
         actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: import('./createSelectors').Selectors<N, T, QP, QR, MP, MR>
+        selectors: Selectors<N, T, QP, QR, MP, MR>
       ) => void)
     | undefined,
   onSuccess?:
@@ -51,21 +51,21 @@ export declare const mutate: <
         params: MP[keyof MP & keyof MR & string] | undefined,
         store: Store,
         actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: import('./createSelectors').Selectors<N, T, QP, QR, MP, MR>
+        selectors: Selectors<N, T, QP, QR, MP, MR>
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, MR[keyof MP & keyof MR & number]>,
         params: MP[keyof MP & keyof MR & number] | undefined,
         store: Store,
         actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: import('./createSelectors').Selectors<N, T, QP, QR, MP, MR>
+        selectors: Selectors<N, T, QP, QR, MP, MR>
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, MR[keyof MP & keyof MR & symbol]>,
         params: MP[keyof MP & keyof MR & symbol] | undefined,
         store: Store,
         actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: import('./createSelectors').Selectors<N, T, QP, QR, MP, MR>
+        selectors: Selectors<N, T, QP, QR, MP, MR>
       ) => void)
     | undefined,
   onError?:
@@ -74,21 +74,21 @@ export declare const mutate: <
         params: MP[keyof MP & keyof MR & string] | undefined,
         store: Store,
         actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: import('./createSelectors').Selectors<N, T, QP, QR, MP, MR>
+        selectors: Selectors<N, T, QP, QR, MP, MR>
       ) => boolean | void | null | undefined)
     | ((
         error: unknown,
         params: MP[keyof MP & keyof MR & number] | undefined,
         store: Store,
         actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: import('./createSelectors').Selectors<N, T, QP, QR, MP, MR>
+        selectors: Selectors<N, T, QP, QR, MP, MR>
       ) => boolean | void | null | undefined)
     | ((
         error: unknown,
         params: MP[keyof MP & keyof MR & symbol] | undefined,
         store: Store,
         actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: import('./createSelectors').Selectors<N, T, QP, QR, MP, MR>
+        selectors: Selectors<N, T, QP, QR, MP, MR>
       ) => boolean | void | null | undefined)
     | undefined
 ) => Promise<MutationResult<MK extends keyof (MP | MR) ? MR[MK] : never>>

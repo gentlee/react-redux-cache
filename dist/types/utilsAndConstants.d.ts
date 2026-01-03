@@ -40,8 +40,6 @@ export declare const applyEntityChanges: <T extends Typenames>(
 /** Returns true if object has no keys. */
 export declare const isEmptyObject: (obj: object) => boolean
 
-export declare const isEmptyMutable: (mutable: Mutable) => boolean
-
 /** Returns query state comparer that compares only provided fields. Used in implementation of `selectorComparer` option. */
 export declare const createStateComparer: <T extends Typenames = Typenames, Q = unknown, P = unknown>(
   fields: (keyof QueryState<T, Q, P>)[]

@@ -180,16 +180,6 @@ export const isEmptyObject = (obj: object) => {
   return true
 }
 
-export const isEmptyMutable = (mutable: Mutable) => {
-  for (const field in mutable) {
-    if (field === '_changeKey') {
-      continue
-    }
-    return false
-  }
-  return true
-}
-
 /** Returns query state comparer that compares only provided fields. Used in implementation of `selectorComparer` option. */
 export const createStateComparer = <T extends Typenames = Typenames, Q = unknown, P = unknown>(
   fields: (keyof QueryState<T, Q, P>)[]

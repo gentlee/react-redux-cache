@@ -33,6 +33,12 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
 
   const mutable = cacheOptions.mutableCollections
 
+  cacheOptions.logsEnabled &&
+    logDebug('createCacheReducer', {
+      queryKeys,
+      mutable,
+    })
+
   const getMutableInitialState = mutable
     ? (): TypedCacheState => {
         return {
@@ -59,11 +65,15 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
         mutations: Object.freeze({}),
       }) as TypedCacheState)
 
-  cacheOptions.logsEnabled &&
-    logDebug('createCacheReducer', {
-      queryKeys,
-      mutable,
-    })
+  const {
+    clearCache,
+    clearMutationState,
+    clearQueryState,
+    invalidateQuery,
+    mergeEntityChanges,
+    updateMutationStateAndEntities,
+    updateQueryStateAndEntities,
+  } = actions
 
   const deepEqual = cacheOptions.deepComparisonEnabled ? optionalUtils.deepEqual : undefined
 
@@ -72,13 +82,13 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
     action: ReturnType<(typeof actions)[keyof typeof actions]>
   ): TypedCacheState => {
     switch (action.type) {
-      case actions.updateQueryStateAndEntities.type: {
+      case updateQueryStateAndEntities.type: {
         const {
           queryKey,
           queryCacheKey,
           state: queryState,
           entityChanges,
-        } = action as ReturnType<typeof actions.updateQueryStateAndEntities>
+        } = action as ReturnType<typeof updateQueryStateAndEntities>
 
         const oldQueryState = state.queries[queryKey][queryCacheKey]
         let newQueryState = queryState && {
@@ -159,12 +169,12 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
 
         return newState ?? state
       }
-      case actions.updateMutationStateAndEntities.type: {
+      case updateMutationStateAndEntities.type: {
         const {
           mutationKey,
           state: mutationState,
           entityChanges,
-        } = action as ReturnType<typeof actions.updateMutationStateAndEntities>
+        } = action as ReturnType<typeof updateMutationStateAndEntities>
 
         const oldMutationState = state.mutations[mutationKey]
         let newMutationState = mutationState && {
@@ -236,15 +246,15 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
 
         return newState ?? state
       }
-      case actions.mergeEntityChanges.type: {
-        const {changes} = action as ReturnType<typeof actions.mergeEntityChanges>
+      case mergeEntityChanges.type: {
+        const {changes} = action as ReturnType<typeof mergeEntityChanges>
 
         const newEntities = applyEntityChanges(state.entities, changes, cacheOptions)
 
         return newEntities ? {...state, entities: newEntities} : state
       }
-      case actions.invalidateQuery.type: {
-        const {queries: queriesToInvalidate} = action as ReturnType<typeof actions.invalidateQuery>
+      case invalidateQuery.type: {
+        const {queries: queriesToInvalidate} = action as ReturnType<typeof invalidateQuery>
         if (queriesToInvalidate.length === 0) {
           return state
         }
@@ -301,8 +311,8 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
           queries: newStatesByQueryKey,
         }
       }
-      case actions.clearQueryState.type: {
-        const {queries: queriesToClear} = action as ReturnType<typeof actions.clearQueryState>
+      case clearQueryState.type: {
+        const {queries: queriesToClear} = action as ReturnType<typeof clearQueryState>
         if (queriesToClear.length === 0) {
           return state
         }
@@ -358,8 +368,8 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
           queries: newStatesByQueryKey,
         }
       }
-      case actions.clearMutationState.type: {
-        const {mutationKeys} = action as ReturnType<typeof actions.clearMutationState>
+      case clearMutationState.type: {
+        const {mutationKeys} = action as ReturnType<typeof clearMutationState>
 
         if (mutationKeys.length === 0) {
           return state
@@ -386,8 +396,8 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
           mutations: newMutations,
         }
       }
-      case actions.clearCache.type: {
-        const {stateToKeep} = action as ReturnType<typeof actions.clearCache>
+      case clearCache.type: {
+        const {stateToKeep} = action as ReturnType<typeof clearCache>
         const initialState = mutable ? getMutableInitialState!() : immutableInitialState!
         return stateToKeep
           ? {

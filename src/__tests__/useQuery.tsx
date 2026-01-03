@@ -5,11 +5,11 @@ import {createStore} from 'redux'
 
 import {getUser, getUsers} from '../testing/api/mocks'
 import {assertEventLog, clearEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
-import {EMPTY_STATE} from '../testing/constants'
 import {createTestCache, testCaches} from '../testing/redux/cache'
+import {EMPTY_STATE} from '../testing/redux/store'
 import {createReduxStore} from '../testing/redux/store'
 import {advanceApiTimeout, advanceHalfApiTimeout, TTL_TIMEOUT} from '../testing/utils'
-import {createStateComparer, defaultGetCacheKey, FetchPolicy} from '../utilsAndConstants'
+import {createStateComparer, FetchPolicy} from '../utilsAndConstants'
 
 describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
   const {
@@ -211,43 +211,46 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     expect(selectQueryParams(store.getState(), 'getUsers', 'feed')).toStrictEqual({page: 3})
   })
 
-  test('should not cancel current loading query on refetch with different params', async () => {
-    render({query: 'getUser', params: 0})
-    await act(advanceApiTimeout)
-    assertEventLog(['first render: undefined', 'render: loading', 'render: 0'])
+  test.each(['getUser', 'getUserCustomCacheKey'] as const)(
+    'should not cancel current loading query on refetch with different params',
+    async (query) => {
+      render({query, params: 0})
+      await act(advanceApiTimeout)
+      assertEventLog(['first render: undefined', 'render: loading', 'render: 0'])
 
-    render({query: 'getUser', params: 1})
-    assertEventLog(['render: undefined', 'render: loading'])
+      render({query, params: 1})
+      assertEventLog(['render: undefined', 'render: loading'])
 
-    render({query: 'getUser', params: 2})
-    await act(advanceApiTimeout)
-    assertEventLog(['render: undefined', 'render: loading', 'render: 2'])
+      render({query, params: 2})
+      await act(advanceApiTimeout)
+      assertEventLog(['render: undefined', 'render: loading', 'render: 2'])
 
-    expect(getUser).toBeCalledTimes(3)
-    expect(store.getState().cache).toStrictEqual({
-      ...EMPTY_STATE,
-      entities: withChangeKey(2, generateTestEntitiesMap(3, true, mutableCollections ? 2 : undefined)),
-      queries: withChangeKey(5, {
-        ...EMPTY_STATE.queries,
-        ...{
-          getUser: withChangeKey(5, {
-            0: {
-              result: 0,
-              params: 0,
-            },
-            1: {
-              result: 1,
-              params: 1,
-            },
-            2: {
-              result: 2,
-              params: 2,
-            },
-          }),
-        },
-      }),
-    })
-  })
+      expect(getUser).toBeCalledTimes(3)
+      expect(store.getState().cache).toStrictEqual({
+        ...EMPTY_STATE,
+        entities: withChangeKey(2, generateTestEntitiesMap(3, true, mutableCollections ? 2 : undefined)),
+        queries: withChangeKey(5, {
+          ...EMPTY_STATE.queries,
+          ...{
+            [query]: withChangeKey(5, {
+              [query === 'getUser' ? 0 : '[0]']: {
+                result: 0,
+                params: 0,
+              },
+              [query === 'getUser' ? 1 : '[1]']: {
+                result: 1,
+                params: 1,
+              },
+              [query === 'getUser' ? 2 : '[2]']: {
+                result: 2,
+                params: 2,
+              },
+            }),
+          },
+        }),
+      })
+    }
+  )
 
   test('no refetch on params change with custom cache key', async () => {
     await setCacheAndMountAndCheckNoRefetch()
@@ -272,22 +275,25 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     })
   })
 
-  test('fetch on mount having cache with FetchPolicy.Always', async () => {
-    store.dispatch(
-      updateQueryStateAndEntities(
-        'getUser',
-        defaultGetCacheKey(0),
-        {result: 0},
-        {merge: generateTestEntitiesMap(1)}
+  test.each(['getUser', 'getUserCustomCacheKey'] as const)(
+    'fetch on mount having cache with FetchPolicy.Always',
+    async (query) => {
+      store.dispatch(
+        updateQueryStateAndEntities(
+          query,
+          query === 'getUser' ? '0' : '[0]',
+          {result: 0},
+          {merge: generateTestEntitiesMap(1)}
+        )
       )
-    )
 
-    render({query: 'getUser', params: 0, fetchPolicy: FetchPolicy.Always})
-    await act(advanceApiTimeout)
-    assertEventLog(['first render: 0', 'render: loading', 'render: 0'])
+      render({query, params: 0, fetchPolicy: FetchPolicy.Always})
+      await act(advanceApiTimeout)
+      assertEventLog(['first render: 0', 'render: loading', 'render: 0'])
 
-    expect(getUser).toBeCalledTimes(1)
-  })
+      expect(getUser).toBeCalledTimes(1)
+    }
+  )
 
   test.each([FetchPolicy.NoCacheOrExpired, FetchPolicy.Always] as const)(
     'no fetch after params change with custom cache key',
@@ -317,74 +323,80 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     }
   )
 
-  test('no fetch when skip, without cancelling current request when setting to true', async () => {
-    render({query: 'getUser', params: 0, skipFetch: true})
-    await act(advanceHalfApiTimeout)
-    assertEventLog(['first render: undefined'])
+  test.each(['getUser', 'getUserCustomCacheKey'] as const)(
+    'no fetch when skip, without cancelling current request when setting to true',
+    async (query) => {
+      render({query, params: 0, skipFetch: true})
+      await act(advanceHalfApiTimeout)
+      assertEventLog(['first render: undefined'])
 
-    render({query: 'getUser', params: 1, skipFetch: true})
-    await act(advanceHalfApiTimeout)
-    assertEventLog(['render: undefined'])
+      render({query, params: 1, skipFetch: true})
+      await act(advanceHalfApiTimeout)
+      assertEventLog(['render: undefined'])
 
-    render({query: 'getUser', params: 2})
-    await act(advanceHalfApiTimeout)
-    assertEventLog(['render: undefined', 'render: loading'])
+      render({query, params: 2})
+      await act(advanceHalfApiTimeout)
+      assertEventLog(['render: undefined', 'render: loading'])
 
-    render({query: 'getUser', params: 2, skipFetch: true})
-    await act(advanceHalfApiTimeout)
-    assertEventLog(['render: loading', 'render: 2'])
+      render({query, params: 2, skipFetch: true})
+      await act(advanceHalfApiTimeout)
+      assertEventLog(['render: loading', 'render: 2'])
 
-    render({query: 'getUser', params: 3})
-    await act(advanceApiTimeout)
-    assertEventLog(['render: undefined', 'render: loading', 'render: 3'])
+      render({query, params: 3})
+      await act(advanceApiTimeout)
+      assertEventLog(['render: undefined', 'render: loading', 'render: 3'])
 
-    render({query: 'getUser', params: 2, skipFetch: true})
-    assertEventLog(['render: 2'])
+      render({query, params: 2, skipFetch: true})
+      assertEventLog(['render: 2'])
 
-    expect(getUser).toBeCalledTimes(2)
-  })
+      expect(getUser).toBeCalledTimes(2)
+    }
+  )
 
-  test('cancel manual refetch when currently loading same params, but return result', async () => {
-    render({query: 'getUser', params: 0})
+  test.each(['getUser', 'getUserCustomCacheKey'] as const)(
+    'cancel manual refetch when currently loading same params, but return result',
+    async (query) => {
+      render({query, params: 0})
 
-    let shouldBeCancelledResult
-    let refetchResult
-    await act(advanceHalfApiTimeout)
-    await act(() => {
-      refetch().then((x: unknown) => (shouldBeCancelledResult = x)) // should be cancelled because fetch already in progress
-    })
-    await act(advanceHalfApiTimeout) // first fetch finishes here
-    await act(() => {
-      refetch().then((x: unknown) => (refetchResult = x)) // this refetch should work
-    })
-    await act(advanceApiTimeout)
+      let shouldBeCancelledResult
+      let refetchResult
+      await act(advanceHalfApiTimeout)
+      await act(() => {
+        refetch().then((x: unknown) => (shouldBeCancelledResult = x)) // should be cancelled because fetch already in progress
+      })
+      await act(advanceHalfApiTimeout) // first fetch finishes here
+      await act(() => {
+        refetch().then((x: unknown) => (refetchResult = x)) // this refetch should work
+      })
+      await act(advanceApiTimeout)
 
-    expect(getUser).toBeCalledTimes(2)
-    expect(store.getState().cache).toStrictEqual({
-      ...EMPTY_STATE,
-      entities: withChangeKey(0, generateTestEntitiesMap(1, true, mutableCollections ? 0 : undefined)),
-      queries: withChangeKey(3, {
-        ...EMPTY_STATE.queries,
-        ...{
-          getUser: withChangeKey(3, {
-            0: {
-              result: 0,
-              params: 0,
-            },
-          }),
-        },
-      }),
-    })
-    expect(shouldBeCancelledResult).toStrictEqual({cancelled: 'loading', result: 0})
-    expect(refetchResult).toStrictEqual({result: 0})
-    assertEventLog([
-      'first render: undefined',
-      'render: loading',
-      'render: 0',
-      'render: loading',
-      'render: 0',
-    ])
-  })
+      expect(getUser).toBeCalledTimes(2)
+      expect(store.getState().cache).toStrictEqual({
+        ...EMPTY_STATE,
+        entities: withChangeKey(0, generateTestEntitiesMap(1, true, mutableCollections ? 0 : undefined)),
+        queries: withChangeKey(3, {
+          ...EMPTY_STATE.queries,
+          ...{
+            [query]: withChangeKey(3, {
+              [query === 'getUser' ? 0 : '[0]']: {
+                result: 0,
+                params: 0,
+              },
+            }),
+          },
+        }),
+      })
+      expect(shouldBeCancelledResult).toStrictEqual({cancelled: 'loading', result: 0})
+      expect(refetchResult).toStrictEqual({result: 0})
+      assertEventLog([
+        'first render: undefined',
+        'render: loading',
+        'render: 0',
+        'render: loading',
+        'render: 0',
+      ])
+    }
+  )
 
   // skipping if deep comparison disabled
   ;(cache.cache.options.deepComparisonEnabled ? test : test.skip)(
@@ -545,22 +557,25 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     assertEventLog(['render: 1'])
   })
 
-  test('selector comparer from globals', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const cache = createTestCache(false, (state: any) => state, createStateComparer(['result']))
+  test.each(['getUser', 'getUserCustomCacheKey'] as const)(
+    'selector comparer from globals',
+    async (query) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cache = createTestCache(false, (state: any) => state, createStateComparer(['result']))
 
-    store = createStore(cache.reducer)
-    useClient = cache.hooks.useClient
-    useQuery = cache.hooks.useQuery
+      store = createStore(cache.reducer)
+      useClient = cache.hooks.useClient
+      useQuery = cache.hooks.useQuery
 
-    render({query: 'getUser', params: 0}, undefined)
-    await act(advanceApiTimeout)
-    assertEventLog(['first render: undefined', 'render: 0'])
+      render({query, params: 0}, undefined)
+      await act(advanceApiTimeout)
+      assertEventLog(['first render: undefined', 'render: 0'])
 
-    render({query: 'getUser', params: 1}, undefined)
-    await act(advanceApiTimeout)
-    assertEventLog(['render: undefined', 'render: 1'])
-  })
+      render({query, params: 1}, undefined)
+      await act(advanceApiTimeout)
+      assertEventLog(['render: undefined', 'render: 1'])
+    }
+  )
 })
 
 const GET_USERS_ONE_PAGE_STATE = Object.freeze({

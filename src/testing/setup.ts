@@ -5,11 +5,6 @@ import {testCaches} from './redux/cache'
 
 jest.useFakeTimers()
 
-// https://github.com/jsdom/jsdom/issues/3363#issuecomment-2283886610
-global.structuredClone = (val) => {
-  return JSON.parse(JSON.stringify(val))
-}
-
 afterEach(() => {
   clearEventLog()
 })

@@ -3,6 +3,7 @@ import {applyMiddleware, combineReducers, createStore, Middleware} from 'redux'
 import {createReducer} from '../../createReducer'
 import {Typenames} from '../../types'
 import {logEvent} from '../api/utils'
+import {testCache} from './cache'
 
 export const createReduxStore = <N extends string, T extends Typenames, QP, QR, MP, MR>(
   {
@@ -24,3 +25,5 @@ export const createReduxStore = <N extends string, T extends Typenames, QP, QR, 
   }
   return createStore(combineReducers({[name]: reducer}), applyMiddleware(...middlewares))
 }
+
+export const EMPTY_STATE = Object.freeze(createReduxStore(testCache).getState().cache)

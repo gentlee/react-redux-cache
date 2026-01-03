@@ -23,6 +23,11 @@ const optionalQueryKeys = ['error', 'expiresAt', 'result', 'params', 'loading']
 const optionalMutationKeys = ['error', 'result', 'params', 'loading']
 export const createReducer = (actions, queryKeys, cacheOptions) => {
   const mutable = cacheOptions.mutableCollections
+  cacheOptions.logsEnabled &&
+    logDebug('createCacheReducer', {
+      queryKeys,
+      mutable,
+    })
   const getMutableInitialState = mutable
     ? () => {
         return {
@@ -47,15 +52,19 @@ export const createReducer = (actions, queryKeys, cacheOptions) => {
         ),
         mutations: Object.freeze({}),
       })
-  cacheOptions.logsEnabled &&
-    logDebug('createCacheReducer', {
-      queryKeys,
-      mutable,
-    })
+  const {
+    clearCache,
+    clearMutationState,
+    clearQueryState,
+    invalidateQuery,
+    mergeEntityChanges,
+    updateMutationStateAndEntities,
+    updateQueryStateAndEntities,
+  } = actions
   const deepEqual = cacheOptions.deepComparisonEnabled ? optionalUtils.deepEqual : undefined
   return (state = mutable ? getMutableInitialState() : immutableInitialState, action) => {
     switch (action.type) {
-      case actions.updateQueryStateAndEntities.type: {
+      case updateQueryStateAndEntities.type: {
         const {queryKey, queryCacheKey, state: queryState, entityChanges} = action
         const oldQueryState = state.queries[queryKey][queryCacheKey]
         let newQueryState = queryState && Object.assign(Object.assign({}, oldQueryState), queryState)
@@ -128,7 +137,7 @@ export const createReducer = (actions, queryKeys, cacheOptions) => {
         }
         return newState !== null && newState !== void 0 ? newState : state
       }
-      case actions.updateMutationStateAndEntities.type: {
+      case updateMutationStateAndEntities.type: {
         const {mutationKey, state: mutationState, entityChanges} = action
         const oldMutationState = state.mutations[mutationKey]
         let newMutationState =
@@ -195,12 +204,12 @@ export const createReducer = (actions, queryKeys, cacheOptions) => {
         }
         return newState !== null && newState !== void 0 ? newState : state
       }
-      case actions.mergeEntityChanges.type: {
+      case mergeEntityChanges.type: {
         const {changes} = action
         const newEntities = applyEntityChanges(state.entities, changes, cacheOptions)
         return newEntities ? Object.assign(Object.assign({}, state), {entities: newEntities}) : state
       }
-      case actions.invalidateQuery.type: {
+      case invalidateQuery.type: {
         const {queries: queriesToInvalidate} = action
         if (queriesToInvalidate.length === 0) {
           return state
@@ -257,7 +266,7 @@ export const createReducer = (actions, queryKeys, cacheOptions) => {
         }
         return Object.assign(Object.assign({}, state), {queries: newStatesByQueryKey})
       }
-      case actions.clearQueryState.type: {
+      case clearQueryState.type: {
         const {queries: queriesToClear} = action
         if (queriesToClear.length === 0) {
           return state
@@ -310,7 +319,7 @@ export const createReducer = (actions, queryKeys, cacheOptions) => {
         }
         return Object.assign(Object.assign({}, state), {queries: newStatesByQueryKey})
       }
-      case actions.clearMutationState.type: {
+      case clearMutationState.type: {
         const {mutationKeys} = action
         if (mutationKeys.length === 0) {
           return state
@@ -332,7 +341,7 @@ export const createReducer = (actions, queryKeys, cacheOptions) => {
         }
         return Object.assign(Object.assign({}, state), {mutations: newMutations})
       }
-      case actions.clearCache.type: {
+      case clearCache.type: {
         const {stateToKeep} = action
         const initialState = mutable ? getMutableInitialState() : immutableInitialState
         return stateToKeep ? Object.assign(Object.assign({}, initialState), stateToKeep) : initialState

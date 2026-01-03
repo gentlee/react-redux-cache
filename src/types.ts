@@ -108,8 +108,8 @@ export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
 export type CacheOptions = {
   /**
    * BETA: Optimization that makes state collections mutable.
-   * Collections still can be replaced with the new ones instead of mutating e.g. when clearing state,
-   * so subscription will work only when subscribed to both collection and its change key.
+   * Subscription to mutable collecitons will work only when subscribed to both collection and its change key - collections
+   * still can be replaced with the new ones instead of mutating e.g. when clearing state.
    * @Default false
    * */
   mutableCollections: boolean
@@ -141,14 +141,6 @@ export type CacheState<T extends Typenames, QP, QR, MP, MR> = {
     [MK in keyof (MP | MR)]: MutationState<T, MP[MK], MR[MK]>
   } & Mutable
 }
-
-// const _im: CacheState<{user: {name: string}}, {getUser: number}, {getUser: number}, unknown, unknown> = {
-//   entities: {},
-//   mutations: {},
-//   queries: {
-//     getUser: {123: {result: 123}},
-//   },
-// }
 
 // Query
 

@@ -1,4 +1,5 @@
 import type {Actions} from './createActions'
+import {Selectors} from './createSelectors'
 import type {Cache, Key, MutationResult, Store, Typenames} from './types'
 import {logDebug} from './utilsAndConstants'
 
@@ -9,14 +10,13 @@ export const mutate = async <
   QR,
   MP,
   MR,
-  MK extends keyof (MP & MR),
-  S extends object
+  MK extends keyof (MP & MR)
 >(
   logTag: string,
   store: Store,
   cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'mutations'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
-  selectors: S,
+  selectors: Selectors<N, T, QP, QR, MP, MR>,
   mutationKey: MK,
   params: MK extends keyof (MP | MR) ? MP[MK] : never,
   abortControllers: WeakMap<Store, Record<Key, AbortController>>,

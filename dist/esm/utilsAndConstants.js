@@ -173,16 +173,6 @@ export const isEmptyObject = (obj) => {
   return true
 }
 
-export const isEmptyMutable = (mutable) => {
-  for (const field in mutable) {
-    if (field === '_changeKey') {
-      continue
-    }
-    return false
-  }
-  return true
-}
-
 export const createStateComparer = (fields) => {
   return (x, y) => {
     if (x === y) {

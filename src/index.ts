@@ -6,7 +6,6 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noo
 // Backlog
 
 // ! high (1.0.0-rc.0)
-// tests with overridden getCacheKey
 
 // ! medium
 // optimistic response
@@ -30,6 +29,7 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noo
 // proper types, remove as, any, todo
 // add number of retries param?
 // mutation state wrong type - can be undefined?
+// possibility to override logs to custom logger
 
 // ! on hold
 // better support queries without params: useQuery & selectors optional cache key (making useQuery params optional doesn't seem like a good idea)

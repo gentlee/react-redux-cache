@@ -9,8 +9,8 @@ import {
   generateTestUser,
   logEvent,
 } from '../testing/api/utils'
-import {EMPTY_STATE} from '../testing/constants'
 import {testCaches} from '../testing/redux/cache'
+import {EMPTY_STATE} from '../testing/redux/store'
 import {createReduxStore} from '../testing/redux/store'
 import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
 

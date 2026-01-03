@@ -14,6 +14,7 @@ describe.each(testCaches)('%s', (_, cache) => {
         getUserExpires: {},
         getUserTtl: {},
         getUserWithResultComparer: {},
+        getUserCustomCacheKey: {},
         getUsers: {},
         queryWithError: {},
       },

@@ -1,5 +1,5 @@
 import {act, render} from '@testing-library/react'
-import React, {useRef} from 'react'
+import React from 'react'
 import {Provider} from 'react-redux'
 
 import {assertEventLog, logEvent} from '../../testing/api/utils'

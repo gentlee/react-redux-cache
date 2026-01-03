@@ -4,12 +4,12 @@ import type {Bank, User} from './types'
 
 // event log
 
-const LOG_EVENTS = false
+const LOG_EVENTS_TO_CONSOLE = false
 
 const eventLog: string[] = []
 
 export const logEvent = (event: string) => {
-  LOG_EVENTS && console.debug(event)
+  LOG_EVENTS_TO_CONSOLE && console.debug(event)
   eventLog.push(event)
 }
 

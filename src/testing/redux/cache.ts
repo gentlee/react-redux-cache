@@ -81,6 +81,12 @@ export const createTestCache = (mutable: boolean, cacheStateSelector?: any, sele
         query: getUser,
         selectorComparer: ['result'],
       },
+      getUserCustomCacheKey: {
+        query: getUser,
+        getCacheKey(params) {
+          return JSON.stringify([params])
+        },
+      },
     },
     mutations: {
       updateUser: {

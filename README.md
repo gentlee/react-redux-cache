@@ -23,7 +23,7 @@ Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with
 |Not overengineered|Simplicity is the main goal.|
 |Performance|Every function is heavily optimized. Immer is not used ([RTK performance issue](https://github.com/reduxjs/redux-toolkit/issues/4793)). Supports mutable collections (O(n) > O(1)).|
 |Reliability|High test coverage, zero issue policy.|
-|Lightweight|`npx minified-size dist/esm/*.js`<br/>minified: 19.1 kB<br/>gzipped: 8.28 kB<br/>brotlied: 7.4 kB
+|Lightweight|`npx minified-size dist/esm/*.js`<br/>minified: 19.1 kB<br/>gzipped: 8.29 kB<br/>brotlied: 7.41 kB
 
 |Feature|Description|
 |--|--|
@@ -141,6 +141,7 @@ Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with
    - [api.ts](https://github.com/gentlee/react-redux-cache#apits) 
  - [Usage](https://github.com/gentlee/react-redux-cache#usage)
  - [Advanced](https://github.com/gentlee/react-redux-cache#advanced)
+   - [Mutable collections](https://github.com/gentlee/react-redux-cache#mutable-collections)
    - [Error handling](https://github.com/gentlee/react-redux-cache#error-handling)
    - [Invalidation](https://github.com/gentlee/react-redux-cache#invalidation)
    - [Extended & custom fetch policy](https://github.com/gentlee/react-redux-cache#extended--custom-fetch-policy)
@@ -324,28 +325,35 @@ export const UserScreen = () => {
 
 ### Advanced
 
-#### Mutable collecitons
+#### Mutable collections
 
-For huge states immutable approach may be a bottleneck - every merge of entity, query or mutation state is O(n). There is an option `mutableCollections` that makes it O(1) by using mutable approach when working with collections, while still keeping separate entities, query and mutation states immutable.
+For huge collections (> 1000 items, see benchmark) immutable approach may be a bottleneck - every merge of entity, query or mutation state is O(n). There is an option `mutableCollections` that makes it O(1) by using mutable approach when working with collections, while still keeping separate entities, query and mutation states immutable.
 
-Nicely writtn code should not subcribe to whole collections, so just enabling this options most of the times should not break anything. But if it is still needed, you should subscribe to both collection (it may still change e.g. when clearing state) and to its `_changeKey`.
+[Benchmark](https://github.com/gentlee/react-redux-cache/blob/main/benchmark.ts) results of adding item to collection depending on collection size, in microseconds (less is better):
+    
+| Collection size | 0 | 1000 | 10000 | 100000 | 1000000 |
+|-|-|-|-|-|-|
+| immutable | 1.78 | 1.69 | 5.64 | 117.4 | 1284.6 |
+| mutable | 1.68 | 0.92 | 0.98 | 0.98 | 0.99 |
+
+Well written code should not subcribe to whole collections, so just enabling this options most of the times should not break anything. But if it is still needed, you should subscribe to both collection (it may still change e.g. when clearing state) and to its `_changeKey`.
 
 ```tsx
 const Component = () => {
   // It is usually a bad idea to subscribe to whole collections, consider using order of ids and subscribe to a single entity in each cell.
-  const entities = useSelector((state) => selectEntitiesByTypename(state, 'user'))
-  const changeKey = useSelector((state) => selectEntitiesByTypename(state, 'user')._changeKey) // <-- Add this line while subscribing to collections
+  const allUsers = useSelector((state) => selectEntitiesByTypename(state, 'users'))
+  const allUsersChangeKey = useSelector((state) => selectEntitiesByTypename(state, 'users')._changeKey) // <-- Add this line while subscribing to collections
 
   // For memoized components you should also pass it as extra prop to cause its re-render.
-  return <List data={entities} extra={changeKey}/>
+  return <List data={allUsers} extra={allUsersChangeKey}/>
 }
 
 // Or just use existing hook.
 
 const Component = () => {
-  const entities = useEntitiesByTypename('user')
+  const allUsers = useEntitiesByTypename('users')
 
-  return <List data={entities} extra={entities._changeKey}>
+  return <List data={allUsers} extra={allUsers._changeKey}>
 }
 ```
 
