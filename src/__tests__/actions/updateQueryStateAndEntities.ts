@@ -25,8 +25,8 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
           loading: undefined,
           error: undefined,
           expiresAt: 100,
-        })
-      )
+        }),
+      ),
     )
 
     states.push(
@@ -38,8 +38,8 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
           loading: loadingPromise,
           error: new Error('test'),
           expiresAt: undefined,
-        })
-      )
+        }),
+      ),
     )
 
     states.push(
@@ -50,8 +50,8 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
           params: 0,
           loading: undefined,
           error: undefined,
-        })
-      )
+        }),
+      ),
     )
 
     states.push(
@@ -60,8 +60,8 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
         updateQueryStateAndEntities('getUser', 'a', {
           result: undefined,
           params: undefined,
-        })
-      )
+        }),
+      ),
     )
 
     expect(states.map((x) => x.queries.getUser.a)).toStrictEqual(
@@ -85,7 +85,7 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
               params: 0,
             },
             undefined,
-          ]
+          ],
     )
   })
 
@@ -100,7 +100,7 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
         params: initialParams,
         result: initialResult,
         loading: new Promise(noop),
-      })
+      }),
     )
 
     for (let i = 0; i < 3; i += 1) {
@@ -109,7 +109,7 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
           params: {page: 1},
           result: {items: [1, 2, 3], page: 1},
           loading: undefined,
-        })
+        }),
       )
     }
 
@@ -122,7 +122,7 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
             result: initialResult,
           },
         }),
-      })
+      }),
     )
   })
 })

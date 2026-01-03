@@ -10,7 +10,7 @@ export const query = async <
   QR,
   MP,
   MR,
-  QK extends keyof (QP & QR)
+  QK extends keyof (QP & QR),
 >(
   logTag: string,
   store: Store,
@@ -27,7 +27,7 @@ export const query = async <
   mergeResults = cache.queries[queryKey].mergeResults,
   onCompleted = cache.queries[queryKey].onCompleted,
   onSuccess = cache.queries[queryKey].onSuccess,
-  onError = cache.queries[queryKey].onError
+  onError = cache.queries[queryKey].onError,
 ): Promise<QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>> => {
   const {selectQueryResult, selectQueryState} = selectors
 
@@ -66,14 +66,14 @@ export const query = async <
   const fetchPromise = cache.queries[queryKey].query(
     // @ts-expect-error fix later
     params,
-    store
+    store,
   )
 
   store.dispatch(
     updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, {
       loading: fetchPromise,
       params,
-    })
+    }),
   )
 
   logsEnabled && logDebug(`${logTag} started`, {queryKey, params, cacheKey, queryStateOnStart, onlyIfExpired})
@@ -86,7 +86,7 @@ export const query = async <
       updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, {
         error: error as Error,
         loading: undefined,
-      })
+      }),
     )
     // @ts-expect-error params
     if (!onError?.(error, params, store)) {
@@ -97,7 +97,7 @@ export const query = async <
         params,
         store,
         actions,
-        selectors
+        selectors,
       )
     }
     onCompleted?.(
@@ -107,7 +107,7 @@ export const query = async <
       params,
       store,
       actions,
-      selectors
+      selectors,
     )
     return {error, result: selectQueryResult(store.getState(), queryKey, cacheKey)}
   }
@@ -124,7 +124,7 @@ export const query = async <
           params,
           store,
           actions,
-          selectors
+          selectors,
         )
       : response.result,
   }
@@ -136,7 +136,7 @@ export const query = async <
     params,
     store,
     actions,
-    selectors
+    selectors,
   )
   onCompleted?.(
     // @ts-expect-error response
@@ -145,7 +145,7 @@ export const query = async <
     params,
     store,
     actions,
-    selectors
+    selectors,
   )
 
   // @ts-expect-error fix types

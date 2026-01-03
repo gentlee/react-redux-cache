@@ -129,7 +129,7 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
     return renderImpl(
       <Provider store={store}>
         <MutateComponent />
-      </Provider>
+      </Provider>,
     )
   }
 })

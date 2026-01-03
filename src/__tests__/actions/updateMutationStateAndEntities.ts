@@ -23,8 +23,8 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
           params: {id: 0, name: 'test'},
           loading: loadingPromise,
           error: undefined,
-        })
-      )
+        }),
+      ),
     )
 
     states.push(
@@ -35,8 +35,8 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
           params: {id: 1, name: 'test2'},
           loading: undefined,
           error: new Error('test'),
-        })
-      )
+        }),
+      ),
     )
 
     states.push(
@@ -46,8 +46,8 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
           result: 0,
           params: undefined,
           error: undefined,
-        })
-      )
+        }),
+      ),
     )
 
     states.push(
@@ -56,8 +56,8 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
         updateMutationStateAndEntities('updateUser', {
           result: undefined,
           params: undefined,
-        })
-      )
+        }),
+      ),
     )
 
     expect(states.map((x) => x.mutations.updateUser)).toStrictEqual(
@@ -79,7 +79,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
               result: 0,
             },
             undefined,
-          ]
+          ],
     )
   })
 
@@ -94,7 +94,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
         params: initialParams,
         result: initialResult,
         loading: new Promise(noop),
-      })
+      }),
     )
 
     store.dispatch(
@@ -102,7 +102,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
         params: {id: 1, name: '2'},
         result: {id: 1, name: '2'},
         loading: undefined,
-      })
+      }),
     )
 
     expect(store.getState().cache.mutations).toStrictEqual(
@@ -111,7 +111,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
           params: initialParams,
           result: initialResult,
         },
-      })
+      }),
     )
   })
 })

@@ -43,7 +43,7 @@ export const generateTestBank = (id: string, nameSuffix = ''): Bank => {
 export const generateTestEntitiesMap = (
   size: number,
   full = true,
-  changeKey?: number
+  changeKey?: number,
 ): EntitiesMap<TestTypenames> => {
   const users = Array.from({length: size}, (_, i) => generateTestUser(i, full))
   const banks = Array.from({length: size}, (_, i) => generateTestBank(String(i)))
@@ -60,10 +60,13 @@ export const generateTestEntitiesMap = (
 const mapFromArray = <T extends Record<string, any>, K extends keyof T>(
   array: T[],
   key: K,
-  changeKey?: number
+  changeKey?: number,
 ): Record<string, T> => {
-  return array.reduce((acc, item) => {
-    acc[item[key]] = item
-    return acc
-  }, (changeKey != null ? {_changeKey: changeKey} : {}) as Record<string, T>)
+  return array.reduce(
+    (acc, item) => {
+      acc[item[key]] = item
+      return acc
+    },
+    (changeKey != null ? {_changeKey: changeKey} : {}) as Record<string, T>,
+  )
 }

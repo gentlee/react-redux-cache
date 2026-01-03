@@ -34,7 +34,7 @@ describe.each(testCaches)('%s', (_, cache) => {
     render(
       <Provider store={store}>
         <TestComponent />
-      </Provider>
+      </Provider>,
     )
 
     act(() => store.dispatch(mergeEntityChanges({merge: {users: {0: {id: 0, name: 'new name'}}}})))
@@ -50,7 +50,7 @@ describe.each(testCaches)('%s', (_, cache) => {
             'render',
             'render', // entities.users: undefined -> {}
           ]
-        : ['render', 'render', 'render', 'render', 'render', 'render', 'render']
+        : ['render', 'render', 'render', 'render', 'render', 'render', 'render'],
     )
   })
 })

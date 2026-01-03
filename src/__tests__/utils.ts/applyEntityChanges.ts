@@ -19,7 +19,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     const result = applyEntityChanges(entitiesMap, changes)
 
     expect(result).toStrictEqual(
-      withChangeKey(0, generateTestEntitiesMap(2, true, mutableCollections ? 0 : undefined))
+      withChangeKey(0, generateTestEntitiesMap(2, true, mutableCollections ? 0 : undefined)),
     )
   })
 
@@ -42,7 +42,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
         banks: withChangeKey(0, {
           1: generateTestBank('1'),
         }),
-      })
+      }),
     )
   })
 
@@ -67,7 +67,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
           0: generateTestBank('0'),
           1: generateTestBank('1', ' updated'),
         }),
-      })
+      }),
     )
   })
 
@@ -92,7 +92,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
           0: generateTestBank('0'),
           1: generateTestBank('1', ' replaced'),
         }),
-      })
+      }),
     )
   })
 
@@ -129,7 +129,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
           2: generateTestBank('2', ' replaced'),
           3: generateTestBank('3'),
         }),
-      })
+      }),
     )
   })
 

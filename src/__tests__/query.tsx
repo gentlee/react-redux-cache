@@ -126,7 +126,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     return renderImpl(
       <Provider store={store}>
         <QueryComponent />
-      </Provider>
+      </Provider>,
     )
   }
 })

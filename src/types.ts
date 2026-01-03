@@ -71,7 +71,7 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
 
 export type QueryStateComparer<T extends Typenames, P, R> = (
   x: QueryState<T, P, R> | undefined,
-  y: QueryState<T, P, R> | undefined
+  y: QueryState<T, P, R> | undefined,
 ) => boolean
 
 export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
@@ -82,7 +82,7 @@ export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
     params: unknown,
     store: Store,
     actions: Actions<N, T, QP, QR, MP, MR>,
-    selectors: Selectors<N, T, QP, QR, MP, MR>
+    selectors: Selectors<N, T, QP, QR, MP, MR>,
   ) => void
   /** Query options. */
   queries: {
@@ -94,7 +94,7 @@ export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
       params: unknown,
       state: QueryState<T, unknown, unknown>,
       store: Store,
-      selectors: Selectors<N, T, QP, QR, MP, MR>
+      selectors: Selectors<N, T, QP, QR, MP, MR>,
     ) => boolean
     /** Disables any fetches when set to true. Triggers fetch when changed to false. @Default false */
     skipFetch: boolean
@@ -152,7 +152,7 @@ export type QueryInfo<
   QP = unknown,
   QR = unknown,
   MP = unknown,
-  MR = unknown
+  MR = unknown,
 > = Partial<Pick<Globals<N, T, QP, QR, MP, MR>['queries'], 'skipFetch' | 'secondsToLive'>> & {
   query: NormalizedQuery<T, P, R>
   /** Determines when useQuery fetch triggers should start fetching. Fetch is performed if function returns true.
@@ -163,7 +163,7 @@ export type QueryInfo<
     params: P,
     queryState: QueryState<T, P, R>,
     store: Store,
-    selectors: Selectors<N, T, QP, QR, MP, MR>
+    selectors: Selectors<N, T, QP, QR, MP, MR>,
   ) => boolean
   /** Merges results before saving to the store. Default implementation is using the latest result. */
   mergeResults?: (
@@ -172,7 +172,7 @@ export type QueryInfo<
     params: P | undefined,
     store: Store,
     actions: Actions<N, T, QP, QR, MP, MR>,
-    selectors: Selectors<N, T, QP, QR, MP, MR>
+    selectors: Selectors<N, T, QP, QR, MP, MR>,
   ) => R
   /**
    * Cache key is used for storing the query state and for performing a fetch when it changes. Queries with the same cache key share their state.
@@ -187,7 +187,7 @@ export type QueryInfo<
     params: P | undefined,
     store: Store,
     actions: Actions<N, T, QP, QR, MP, MR>,
-    selectors: Selectors<N, T, QP, QR, MP, MR>
+    selectors: Selectors<N, T, QP, QR, MP, MR>,
   ) => void
   /** Called after fetch finished successfully. */
   onSuccess?: (
@@ -195,7 +195,7 @@ export type QueryInfo<
     params: P | undefined,
     store: Store,
     actions: Actions<N, T, QP, QR, MP, MR>,
-    selectors: Selectors<N, T, QP, QR, MP, MR>
+    selectors: Selectors<N, T, QP, QR, MP, MR>,
   ) => void
   /** Called after fetch finished with error. Should return true if error was handled and does not require global onError handling. */
   onError?: (
@@ -203,7 +203,7 @@ export type QueryInfo<
     params: P | undefined,
     store: Store,
     actions: Actions<N, T, QP, QR, MP, MR>,
-    selectors: Selectors<N, T, QP, QR, MP, MR>
+    selectors: Selectors<N, T, QP, QR, MP, MR>,
   ) => boolean | void | null | undefined
   /** Either comparer function, or array of keys to subscribe by useQuery's useSelector. Default compares params, result, loading, error. */
   selectorComparer?: QueryStateComparer<T, P, R> | (keyof QueryState<T, P, R>)[]
@@ -213,7 +213,7 @@ export type Query<P = unknown, R = unknown> = (
   /** Query parameters */
   params: P,
   /** Store */
-  store: Store
+  store: Store,
 ) => Promise<QueryResponse<R>>
 
 export type NormalizedQuery<T extends Typenames = Typenames, P = unknown, R = unknown> = (
@@ -236,7 +236,7 @@ export type UseQueryOptions<
   QP,
   QR,
   MP,
-  MR
+  MR,
 > = {
   query: QK
   params: QK extends keyof (QP | QR) ? QP[QK] : never
@@ -268,7 +268,7 @@ export type QueryOptions<
   QR,
   QK extends keyof (QP & QR),
   MP,
-  MR
+  MR,
 > = Pick<
   UseQueryOptions<N, T, QK, QP, QR, MP, MR>,
   | 'query'
@@ -315,7 +315,7 @@ export type MutationInfo<
   QP = unknown,
   QR = unknown,
   MP = unknown,
-  MR = unknown
+  MR = unknown,
 > = Pick<QueryInfo<N, T, P, R, QP, QR, MP, MR>, 'onCompleted' | 'onSuccess' | 'onError'> & {
   mutation: NormalizedMutation<T, P, R>
 }
@@ -326,7 +326,7 @@ export type Mutation<P = unknown, R = unknown> = (
   /** Store */
   store: Store,
   /** Signal is aborted for current mutation when the same mutation was called once again. */
-  abortSignal: AbortSignal
+  abortSignal: AbortSignal,
 ) => Promise<MutationResponse<R>>
 
 export type NormalizedMutation<T extends Typenames = Typenames, P = unknown, R = unknown> = (
@@ -340,7 +340,7 @@ export type MutateOptions<
   QR,
   MP,
   MR,
-  MK extends keyof (MP & MR)
+  MK extends keyof (MP & MR),
 > = Pick<
   MutationInfo<
     N,

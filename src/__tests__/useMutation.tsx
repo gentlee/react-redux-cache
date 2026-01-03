@@ -117,7 +117,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       undefined,
       store,
       actions,
-      selectors
+      selectors,
     )
   })
 
@@ -125,7 +125,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     return renderImpl(
       <Provider store={store}>
         <UseMutationComponent />
-      </Provider>
+      </Provider>,
     )
   }
 

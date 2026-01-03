@@ -34,10 +34,13 @@ module.exports = {
       {blankLine: 'always', prev: 'export', next: '*'},
     ],
 
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-empty-function': 'off',
-    '@typescript-eslint/no-non-null-assertion': 'off',
-    '@typescript-eslint/no-var-requires': 'off',
+    'react-hooks/globals': 0,
+    'no-unused-vars': 0,
+    '@typescript-eslint/no-empty-function': 0,
+    '@typescript-eslint/no-non-null-assertion': 0,
+    '@typescript-eslint/no-var-requires': 0,
+    '@typescript-eslint/no-unused-expressions': 0,
+    '@typescript-eslint/no-require-imports': 0,
     '@typescript-eslint/no-unused-vars': [
       'error',
       {

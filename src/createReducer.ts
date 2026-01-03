@@ -27,14 +27,14 @@ const optionalMutationKeys: (keyof MutationState<Typenames, unknown, unknown>)[]
 export const createReducer = <N extends string, T extends Typenames, QP, QR, MP, MR>(
   actions: Actions<N, T, QP, QR, MP, MR>,
   queryKeys: (keyof (QP | QR))[],
-  cacheOptions: CacheOptions
+  cacheOptions: CacheOptions,
 ) => {
   type TypedCacheState = CacheState<T, QP, QR, MP, MR>
 
   const mutable = cacheOptions.mutableCollections
 
   cacheOptions.logsEnabled &&
-    logDebug('createCacheReducer', {
+    logDebug('createReducer', {
       queryKeys,
       mutable,
     })
@@ -43,10 +43,13 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
     ? (): TypedCacheState => {
         return {
           entities: {} as TypedCacheState['entities'],
-          queries: queryKeys.reduce((result, x) => {
-            result[x] = {} as TypedCacheState['queries'][keyof (QP | QR)]
-            return result
-          }, {} as TypedCacheState['queries']),
+          queries: queryKeys.reduce(
+            (result, x) => {
+              result[x] = {} as TypedCacheState['queries'][keyof (QP | QR)]
+              return result
+            },
+            {} as TypedCacheState['queries'],
+          ),
           mutations: {} as TypedCacheState['mutations'],
         }
       }
@@ -57,10 +60,13 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
     : (Object.freeze({
         entities: Object.freeze({}),
         queries: Object.freeze(
-          queryKeys.reduce((result, x) => {
-            result[x] = Object.freeze({}) as TypedCacheState['queries'][keyof (QP | QR)]
-            return result
-          }, {} as TypedCacheState['queries'])
+          queryKeys.reduce(
+            (result, x) => {
+              result[x] = Object.freeze({}) as TypedCacheState['queries'][keyof (QP | QR)]
+              return result
+            },
+            {} as TypedCacheState['queries'],
+          ),
         ),
         mutations: Object.freeze({}),
       }) as TypedCacheState)
@@ -79,7 +85,7 @@ export const createReducer = <N extends string, T extends Typenames, QP, QR, MP,
 
   return (
     state = mutable ? getMutableInitialState!() : immutableInitialState!,
-    action: ReturnType<(typeof actions)[keyof typeof actions]>
+    action: ReturnType<(typeof actions)[keyof typeof actions]>,
   ): TypedCacheState => {
     switch (action.type) {
       case updateQueryStateAndEntities.type: {

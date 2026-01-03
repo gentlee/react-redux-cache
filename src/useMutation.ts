@@ -13,13 +13,13 @@ export const useMutation = <
   QR,
   MP,
   MR,
-  MK extends keyof (MP & MR)
+  MK extends keyof (MP & MR),
 >(
   cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'mutations' | 'storeHooks'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
   selectors: Selectors<N, T, QP, QR, MP, MR>,
   options: Omit<MutateOptions<N, T, QP, QR, MP, MR, MK>, 'params'>,
-  abortControllers: WeakMap<Store, Record<Key, AbortController>>
+  abortControllers: WeakMap<Store, Record<Key, AbortController>>,
 ) => {
   type P = MK extends keyof (MP | MR) ? MP[MK] : never
   type R = MK extends keyof (MP | MR) ? MP[MK] : never
@@ -49,7 +49,7 @@ export const useMutation = <
           // @ts-expect-error fix later
           onCompleted,
           onSuccess,
-          onError
+          onError,
         )
       },
       // abort

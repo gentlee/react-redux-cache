@@ -19,7 +19,7 @@ test('createCache returns correct result', () => {
     'cache',
     true,
     undefined,
-    onError
+    onError,
   )
 
   expect(cache).toStrictEqual({
@@ -64,8 +64,8 @@ test('createCache returns correct result', () => {
     reducer(
       undefined,
       // @ts-expect-error Empty action
-      {}
-    )
+      {},
+    ),
   ).toStrictEqual({
     entities: {},
     queries: {
@@ -120,7 +120,7 @@ test('supports multiple cache reducers', () => {
       entities: {
         users: {1: {id: 1}},
       },
-    })
+    }),
   )
   // here reducer should not handle action from second cache - should not remove user
   const stateAfterSecondCacheAction = reducer(
@@ -130,7 +130,7 @@ test('supports multiple cache reducers', () => {
       remove: {
         users: [1],
       },
-    })
+    }),
   )
 
   expect(stateAfterSecondCacheAction).toBe(state)
@@ -205,7 +205,7 @@ const createTestingCache = <N extends string>(
   overrideHooks = true,
   cacheStateSelector?: Cache<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateSelector'],
   onError?: () => void,
-  selectorComparer?: QueryStateComparer<Typenames, unknown, unknown>
+  selectorComparer?: QueryStateComparer<Typenames, unknown, unknown>,
 ) => {
   return withTypenames<{
     users: {id: number}

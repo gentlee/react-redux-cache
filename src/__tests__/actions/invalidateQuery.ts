@@ -21,14 +21,14 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
         {query: 'getUser', cacheKey: 0},
         {query: 'getUser', cacheKey: 0},
         {query: 'getUser', cacheKey: 1, expiresAt: now + 1000},
-      ])
+      ]),
     )
     expect(store.getState().cache.queries.getUser).toStrictEqual(
       withChangeKey(4, {
         0: {result: 0, expiresAt: expect.any(Number)},
         1: {result: 1, expiresAt: now + 1000},
         2: {result: 2},
-      })
+      }),
     )
 
     // invalidate all cache keys
@@ -52,19 +52,19 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
         {query: 'getUser', cacheKey: 2},
         {query: 'getUser'},
         {query: 'getUser', cacheKey: 0},
-      ])
+      ]),
     )
 
     store.dispatch(
       updateQueryStateAndEntities('getUser', 0, {
         result: 0,
-      })
+      }),
     )
     store.dispatch(
       invalidateQuery([
         {query: 'getUser', cacheKey: 1},
         {query: 'getUser', cacheKey: 2},
-      ])
+      ]),
     )
 
     expect(store.getState().cache.queries.getUser).toStrictEqual(withChangeKey(0, {0: {result: 0}}))

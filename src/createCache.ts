@@ -68,7 +68,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
         'options' | 'queries' | 'mutations' | 'cacheStateSelector' | 'storeHooks'
       > & {
         globals?: OptionalPartial<Cache<N, T, QP, QR, MP, MR>['globals'], 'queries'>
-      }
+      },
     ) => {
       type TypedCache = Cache<N, T, QP, QR, MP, MR>
 
@@ -109,7 +109,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       if (cache.options.deepComparisonEnabled && !optionalUtils.deepEqual) {
         logWarn(
           'createCache',
-          'optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true'
+          'optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true',
         )
       }
 
@@ -117,7 +117,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
 
       // Transforms array of keys to comparer function.
       const setDefaultComparer = (
-        target: Pick<TypedCache['globals']['queries'], 'selectorComparer'> | undefined
+        target: Pick<TypedCache['globals']['queries'], 'selectorComparer'> | undefined,
       ) => {
         if (target?.selectorComparer != null && typeof target.selectorComparer === 'object') {
           target.selectorComparer = createStateComparer(target.selectorComparer)
@@ -172,7 +172,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       const reducer = createReducer<N, T, QP, QR, MP, MR>(
         actions,
         Object.keys(cache.queries) as (keyof (QP | QR))[],
-        cache.options
+        cache.options,
       )
 
       // Client creator
@@ -210,7 +210,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
               options.mergeResults,
               options.onCompleted,
               options.onSuccess,
-              options.onError
+              options.onError,
             ) as Promise<QueryResult<R>>
           },
           /**
@@ -231,7 +231,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
               // @ts-expect-error fix later
               options.onCompleted,
               options.onSuccess,
-              options.onError
+              options.onError,
             ) as Promise<MutationResult<R>>
           },
         }
@@ -304,16 +304,16 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           },
           /** Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). */
           useQuery: <QK extends keyof (QP & QR)>(
-            options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[3]
+            options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[3],
           ) => useQuery(cache, actions, selectors, options),
           /** Subscribes to provided mutation state and provides mutate function. */
           useMutation: <MK extends keyof (MP & MR)>(
-            options: Parameters<typeof useMutation<N, T, QP, QR, MP, MR, MK>>[3]
+            options: Parameters<typeof useMutation<N, T, QP, QR, MP, MR, MK>>[3],
           ) => useMutation(cache, actions, selectors, options, abortControllers),
           /** useSelector + selectEntityById. */
           useSelectEntityById: <TN extends keyof T>(
             id: Key | null | undefined,
-            typename: TN
+            typename: TN,
           ): T[TN] | undefined => {
             return cache.storeHooks.useSelector((state) => selectEntityById(state, id, typename))
           },
@@ -345,7 +345,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
            */
           applyEntityChanges: (
             entities: Parameters<typeof applyEntityChanges<T>>[0],
-            changes: Parameters<typeof applyEntityChanges<T>>[1]
+            changes: Parameters<typeof applyEntityChanges<T>>[1],
           ) => {
             return applyEntityChanges<T>(entities, changes, cache.options)
           },

@@ -8,7 +8,7 @@ export type Actions<
   QP = unknown,
   QR = unknown,
   MP = unknown,
-  MR = unknown
+  MR = unknown,
 > = ReturnType<typeof createActions<N, T, QP, QR, MP, MR>>
 
 export const createActions = <N extends string, T extends Typenames, QP, QR, MP, MR>(name: N) => {
@@ -19,7 +19,7 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
     queryKey: K,
     queryCacheKey: Key,
     state?: Partial<QueryState<T, QP[K], QR[K]>>,
-    entityChanges?: EntityChanges<T>
+    entityChanges?: EntityChanges<T>,
   ) => ({
     type: updateQueryStateAndEntitiesType,
     queryKey,
@@ -33,7 +33,7 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
   const updateMutationStateAndEntities = <K extends keyof (MP | MR)>(
     mutationKey: K,
     state?: Partial<MutationState<T, MP[K], MR[K]>>,
-    entityChanges?: EntityChanges<T>
+    entityChanges?: EntityChanges<T>,
   ) => ({
     type: updateMutationStateAndEntitiesType,
     mutationKey,
@@ -58,7 +58,7 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
       cacheKey?: Key
       /** Unix timestamp at which query expires. Is set to the query state. @Default Date.now() */
       expiresAt?: number
-    }[]
+    }[],
   ) => ({
     type: invalidateQueryType,
     queries,
@@ -72,7 +72,7 @@ export const createActions = <N extends string, T extends Typenames, QP, QR, MP,
       query: K
       /** Query cache key */
       cacheKey?: Key
-    }[]
+    }[],
   ) => ({
     type: clearQueryStateType,
     queries,

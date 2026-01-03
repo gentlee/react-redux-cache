@@ -7,16 +7,16 @@ export type Selectors<
   QP = unknown,
   QR = unknown,
   MP = unknown,
-  MR = unknown
+  MR = unknown,
 > = ReturnType<typeof createSelectors<N, T, QP, QR, MP, MR>>
 
 export const createSelectors = <N extends string, T extends Typenames, QP, QR, MP, MR>(
-  cache: Cache<N, T, QP, QR, MP, MR>
+  cache: Cache<N, T, QP, QR, MP, MR>,
 ) => {
   const selectEntityById = <TN extends keyof T>(
     state: unknown,
     id: Key | null | undefined,
-    typename: TN
+    typename: TN,
   ): T[TN] | undefined => {
     // @ts-expect-error fix later
     return id == null ? undefined : cache.cacheStateSelector(state).entities[typename]?.[id]
@@ -25,7 +25,7 @@ export const createSelectors = <N extends string, T extends Typenames, QP, QR, M
   const selectQueryState = <QK extends keyof (QP & QR)>(
     state: unknown,
     query: QK,
-    cacheKey: Key
+    cacheKey: Key,
   ): QueryState<
     T,
     QK extends keyof (QP | QR) ? QP[QK] : never,
@@ -36,7 +36,7 @@ export const createSelectors = <N extends string, T extends Typenames, QP, QR, M
 
   const selectMutationState = <MK extends keyof (MP & MR)>(
     state: unknown,
-    mutation: MK
+    mutation: MK,
   ): MutationState<
     T,
     MK extends keyof (MP | MR) ? MP[MK] : never,

@@ -10,7 +10,7 @@ export const mutate = async <
   QR,
   MP,
   MR,
-  MK extends keyof (MP & MR)
+  MK extends keyof (MP & MR),
 >(
   logTag: string,
   store: Store,
@@ -22,7 +22,7 @@ export const mutate = async <
   abortControllers: WeakMap<Store, Record<Key, AbortController>>,
   onCompleted = cache.mutations[mutationKey].onCompleted,
   onSuccess = cache.mutations[mutationKey].onSuccess,
-  onError = cache.mutations[mutationKey].onError
+  onError = cache.mutations[mutationKey].onError,
 ): Promise<MutationResult<MK extends keyof (MP | MR) ? MR[MK] : never>> => {
   const {updateMutationStateAndEntities} = actions
 
@@ -50,7 +50,7 @@ export const mutate = async <
     // @ts-expect-error fix later
     params,
     store,
-    abortController.signal
+    abortController.signal,
   )
 
   store.dispatch(
@@ -59,7 +59,7 @@ export const mutate = async <
       loading: mutatePromise,
       params,
       result: undefined,
-    })
+    }),
   )
 
   let response
@@ -84,7 +84,7 @@ export const mutate = async <
       updateMutationStateAndEntities(mutationKey as keyof (MP | MR), {
         error: error as Error,
         loading: undefined,
-      })
+      }),
     )
 
     // @ts-expect-error params
@@ -96,7 +96,7 @@ export const mutate = async <
         params,
         store,
         actions,
-        selectors
+        selectors,
       )
     }
     onCompleted?.(
@@ -106,7 +106,7 @@ export const mutate = async <
       params,
       store,
       actions,
-      selectors
+      selectors,
     )
 
     return {error}
@@ -126,7 +126,7 @@ export const mutate = async <
       params,
       store,
       actions,
-      selectors
+      selectors,
     )
     onCompleted?.(
       // @ts-expect-error response
@@ -135,7 +135,7 @@ export const mutate = async <
       params,
       store,
       actions,
-      selectors
+      selectors,
     )
 
     // @ts-expect-error fix later

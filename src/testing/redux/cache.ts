@@ -11,7 +11,7 @@ export type TestTypenames = {
 
 type TestWithChangeKey = (
   value: Parameters<typeof withChangeKey>[1],
-  mutable: Parameters<typeof withChangeKey>[2]
+  mutable: Parameters<typeof withChangeKey>[2],
 ) => typeof mutable
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

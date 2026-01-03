@@ -10,7 +10,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
   cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'queries' | 'storeHooks'>,
   actions: Actions<N, T, QP, QR, MP, MR>,
   selectors: Selectors<N, T, QP, QR, MP, MR>,
-  options: UseQueryOptions<N, T, QK, QP, QR, MP, MR>
+  options: UseQueryOptions<N, T, QK, QP, QR, MP, MR>,
 ) => {
   type P = QK extends keyof (QP | QR) ? QP[QK] : never
   type R = QK extends keyof (QP | QR) ? QR[QK] : never
@@ -36,12 +36,12 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
   const getCacheKey = queryInfo.getCacheKey ?? defaultGetCacheKey<P>
   const comparer =
     selectorComparer === undefined
-      ? (queryInfo.selectorComparer as QueryStateComparer<T, P, R>) ??
+      ? ((queryInfo.selectorComparer as QueryStateComparer<T, P, R>) ??
         (cache.globals.queries.selectorComparer as QueryStateComparer<T, P, R>) ??
-        defaultStateComparer
+        defaultStateComparer)
       : typeof selectorComparer === 'function'
-      ? selectorComparer
-      : createStateComparer(selectorComparer)
+        ? selectorComparer
+        : createStateComparer(selectorComparer)
 
   const store = cache.storeHooks.useStore()
 
@@ -69,11 +69,11 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
         mergeResults,
         onCompleted,
         onSuccess,
-        onError
+        onError,
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [store, queryKey, cacheKey]
+    [store, queryKey, cacheKey],
   )
 
   /** Query state */
@@ -96,7 +96,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
         params,
         queryState,
         store,
-        selectors
+        selectors,
       )
     ) {
       logsEnabled &&

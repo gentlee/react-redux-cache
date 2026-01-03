@@ -57,8 +57,8 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
         (loading
           ? 'render: loading'
           : error
-          ? 'error: ' + error.message
-          : 'render: ' + JSON.stringify(result))
+            ? 'error: ' + error.message
+            : 'render: ' + JSON.stringify(result)),
     )
 
     firstMountRef.current = false
@@ -70,7 +70,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     return rerender(
       <Provider store={store}>
         <TestUseQueryComponent key={key} options={options} />
-      </Provider>
+      </Provider>,
     )
   }
 
@@ -148,8 +148,8 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
           params: {page: 1},
           loading: undefined,
         },
-        {merge: generateTestEntitiesMap(3)}
-      )
+        {merge: generateTestEntitiesMap(3)},
+      ),
     )
 
     render({
@@ -249,7 +249,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
           },
         }),
       })
-    }
+    },
   )
 
   test('no refetch on params change with custom cache key', async () => {
@@ -283,8 +283,8 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
           query,
           query === 'getUser' ? '0' : '[0]',
           {result: 0},
-          {merge: generateTestEntitiesMap(1)}
-        )
+          {merge: generateTestEntitiesMap(1)},
+        ),
       )
 
       render({query, params: 0, fetchPolicy: FetchPolicy.Always})
@@ -292,7 +292,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       assertEventLog(['first render: 0', 'render: loading', 'render: 0'])
 
       expect(getUser).toBeCalledTimes(1)
-    }
+    },
   )
 
   test.each([FetchPolicy.NoCacheOrExpired, FetchPolicy.Always] as const)(
@@ -320,7 +320,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       assertEventLog(['render: ' + JSON.stringify({items: [0, 1, 2], page: 1})])
 
       expect(getUsers).toBeCalledTimes(1)
-    }
+    },
   )
 
   test.each(['getUser', 'getUserCustomCacheKey'] as const)(
@@ -350,7 +350,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       assertEventLog(['render: 2'])
 
       expect(getUser).toBeCalledTimes(2)
-    }
+    },
   )
 
   test.each(['getUser', 'getUserCustomCacheKey'] as const)(
@@ -395,7 +395,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
         'render: loading',
         'render: 0',
       ])
-    }
+    },
   )
 
   // skipping if deep comparison disabled
@@ -424,13 +424,13 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
             },
             {
               merge: generateTestEntitiesMap(1),
-            }
-          )
-        )
+            },
+          ),
+        ),
       )
 
       assertEventLog([])
-    }
+    },
   )
 
   test('secondsToLive, onlyIfExpired', async () => {
@@ -521,7 +521,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
 
     expect(selectQueryError(store.getState(), 'queryWithError', 'undefined')).toHaveProperty(
       'message',
-      'Test error'
+      'Test error',
     )
     expect(cache.cache.globals.onError).toBeCalledWith(
       new Error('Test error'),
@@ -529,7 +529,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       undefined,
       store,
       actions,
-      selectors
+      selectors,
     )
   })
 
@@ -574,7 +574,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       render({query, params: 1}, undefined)
       await act(advanceApiTimeout)
       assertEventLog(['render: undefined', 'render: 1'])
-    }
+    },
   )
 })
 

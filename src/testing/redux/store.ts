@@ -11,7 +11,7 @@ export const createReduxStore = <N extends string, T extends Typenames, QP, QR, 
     reducer,
   }: {cache: {name: N}; reducer: ReturnType<typeof createReducer<N, T, QP, QR, MP, MR>>},
   eventLogEnabled = false,
-  consoleLoggerEnabled = false
+  consoleLoggerEnabled = false,
 ) => {
   const middlewares: Middleware[] = []
   if (consoleLoggerEnabled) {

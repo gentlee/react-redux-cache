@@ -36,7 +36,7 @@ export const IS_DEV: boolean = (() => {
   try {
     // @ts-expect-error __DEV__ is only for React Native
     return __DEV__
-  } catch (e) {
+  } catch {
     return process.env.NODE_ENV === 'development'
   }
 })()
@@ -64,7 +64,7 @@ export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
 export const applyEntityChanges = <T extends Typenames>(
   entities: EntitiesMap<T> & Mutable,
   changes: EntityChanges<T>,
-  options: CacheOptions
+  options: CacheOptions,
 ): EntitiesMap<T> | undefined => {
   if (changes.merge && changes.entities) {
     logWarn('applyEntityChanges', 'merge and entities should not be both set')
@@ -123,7 +123,7 @@ export const applyEntityChanges = <T extends Typenames>(
       for (const id in entitiesToReplace) {
         const newEntity = entitiesToReplace[id]
         if (oldEntities === undefined || !deepEqual?.(oldEntities[id], newEntity)) {
-          newEntities ??= mutable ? oldEntities ?? {} : {...oldEntities}
+          newEntities ??= mutable ? (oldEntities ?? {}) : {...oldEntities}
           newEntities[id] = newEntity
         }
       }
@@ -135,7 +135,7 @@ export const applyEntityChanges = <T extends Typenames>(
         const oldEntity = oldEntities?.[id]
         const newEntity = {...oldEntity, ...entitiesToMerge[id]}
         if (!deepEqual?.(oldEntity, newEntity)) {
-          newEntities ??= mutable ? oldEntities ?? {} : {...oldEntities}
+          newEntities ??= mutable ? (oldEntities ?? {}) : {...oldEntities}
           // @ts-expect-error Warning: partial entity possible in the new state after merge
           newEntities[id] = newEntity
         }
@@ -182,7 +182,7 @@ export const isEmptyObject = (obj: object) => {
 
 /** Returns query state comparer that compares only provided fields. Used in implementation of `selectorComparer` option. */
 export const createStateComparer = <T extends Typenames = Typenames, Q = unknown, P = unknown>(
-  fields: (keyof QueryState<T, Q, P>)[]
+  fields: (keyof QueryState<T, Q, P>)[],
 ): QueryStateComparer<T, Q, P> => {
   return (x: QueryState<T, Q, P> | undefined, y: QueryState<T, Q, P> | undefined) => {
     if (x === y) {
@@ -210,7 +210,7 @@ export const FetchPolicy = {
   NoCacheOrExpired: <T extends Typenames = Typenames, P = unknown, R = unknown>(
     expired: boolean,
     _params: P,
-    state: QueryState<T, P, R>
+    state: QueryState<T, P, R>,
   ) => {
     return expired || state.result === undefined
   },
