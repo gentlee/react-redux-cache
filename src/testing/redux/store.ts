@@ -1,11 +1,17 @@
 import {applyMiddleware, combineReducers, createStore, Middleware} from 'redux'
 
+import {createReducer} from '../../createReducer'
+import {Typenames} from '../../types'
 import {logEvent} from '../api/utils'
-import {cache, reducer} from './cache'
+import {testCache} from './cache'
 
-export const createReduxStore = (
-  eventLogEnabled: boolean,
-  consoleLoggerEnabled = false //cache.options.logsEnabled
+export const createReduxStore = <N extends string, T extends Typenames, QP, QR, MP, MR>(
+  {
+    cache: {name},
+    reducer,
+  }: {cache: {name: N}; reducer: ReturnType<typeof createReducer<N, T, QP, QR, MP, MR>>},
+  eventLogEnabled = false,
+  consoleLoggerEnabled = false
 ) => {
   const middlewares: Middleware[] = []
   if (consoleLoggerEnabled) {
@@ -17,6 +23,7 @@ export const createReduxStore = (
       return next(action)
     })
   }
-
-  return createStore(combineReducers({[cache.name]: reducer}), applyMiddleware(...middlewares))
+  return createStore(combineReducers({[name]: reducer}), applyMiddleware(...middlewares))
 }
+
+export const EMPTY_STATE = Object.freeze(createReduxStore(testCache).getState().cache)

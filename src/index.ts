@@ -6,10 +6,9 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noo
 // Backlog
 
 // ! high (1.0.0-rc.0)
-// tests with overridden getCacheKey
-// optimistic response
 
 // ! medium
+// optimistic response
 // onCancel & onAbort
 // remove empty entities and queries from state
 // globals for success, completions and loading states?
@@ -17,10 +16,11 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noo
 // check type of function arguments in dev
 // make skipFetch a function?
 // example -> playground with changable options
+// better zustand init
+// persistor
 
 // ! low
 // make error type generic
-// allow multiple mutation with same keys?
 // easy access to all currently loading queries and mutations?
 // cancellation to queries
 // if mutation & query already loading - make options: last, throttle, debounce, parallel?
@@ -29,6 +29,7 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noo
 // proper types, remove as, any, todo
 // add number of retries param?
 // mutation state wrong type - can be undefined?
+// possibility to override logs to custom logger
 
 // ! on hold
 // better support queries without params: useQuery & selectors optional cache key (making useQuery params optional doesn't seem like a good idea)

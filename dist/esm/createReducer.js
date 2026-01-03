@@ -2,45 +2,69 @@ var __rest =
   (this && this.__rest) ||
   function (s, e) {
     var t = {}
-    for (var p in s) {
-      if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) {
-        t[p] = s[p]
-      }
-    }
-    if (s != null && typeof Object.getOwnPropertySymbols === 'function') {
-      for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-        if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i])) {
-          t[p[i]] = s[p[i]]
-        }
-      }
-    }
+    for (var p in s) {if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];}
+    if (s != null && typeof Object.getOwnPropertySymbols === 'function')
+      {for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }}
     return t
   }
-import {applyEntityChanges, EMPTY_OBJECT, isEmptyObject, logDebug, optionalUtils} from './utilsAndConstants'
-
+import {
+  applyEntityChanges,
+  EMPTY_OBJECT,
+  incrementChangeKey,
+  isEmptyObject,
+  logDebug,
+  optionalUtils,
+} from './utilsAndConstants'
 const optionalQueryKeys = ['error', 'expiresAt', 'result', 'params', 'loading']
 const optionalMutationKeys = ['error', 'result', 'params', 'loading']
-
 export const createReducer = (actions, queryKeys, cacheOptions) => {
-  const initialState = Object.freeze({
-    entities: Object.freeze({}),
-    queries: Object.freeze(
-      queryKeys.reduce((result, x) => {
-        result[x] = Object.freeze({})
-        return result
-      }, {})
-    ),
-    mutations: Object.freeze({}),
-  })
+  const mutable = cacheOptions.mutableCollections
   cacheOptions.logsEnabled &&
     logDebug('createCacheReducer', {
       queryKeys,
-      initialState,
+      mutable,
     })
+  const getMutableInitialState = mutable
+    ? () => {
+        return {
+          entities: {},
+          queries: queryKeys.reduce((result, x) => {
+            result[x] = {}
+            return result
+          }, {}),
+          mutations: {},
+        }
+      }
+    : undefined
+  const immutableInitialState = mutable
+    ? undefined
+    : Object.freeze({
+        entities: Object.freeze({}),
+        queries: Object.freeze(
+          queryKeys.reduce((result, x) => {
+            result[x] = Object.freeze({})
+            return result
+          }, {})
+        ),
+        mutations: Object.freeze({}),
+      })
+  const {
+    clearCache,
+    clearMutationState,
+    clearQueryState,
+    invalidateQuery,
+    mergeEntityChanges,
+    updateMutationStateAndEntities,
+    updateQueryStateAndEntities,
+  } = actions
   const deepEqual = cacheOptions.deepComparisonEnabled ? optionalUtils.deepEqual : undefined
-  return (state = initialState, action) => {
+  return (state = mutable ? getMutableInitialState() : immutableInitialState, action) => {
     switch (action.type) {
-      case actions.updateQueryStateAndEntities.type: {
+      case updateQueryStateAndEntities.type: {
         const {queryKey, queryCacheKey, state: queryState, entityChanges} = action
         const oldQueryState = state.queries[queryKey][queryCacheKey]
         let newQueryState = queryState && Object.assign(Object.assign({}, oldQueryState), queryState)
@@ -84,23 +108,36 @@ export const createReducer = (actions, queryKeys, cacheOptions) => {
         if (newQueryState) {
           if (!isEmptyObject(newQueryState)) {
             newState !== null && newState !== void 0 ? newState : (newState = Object.assign({}, state))
-            newState.queries = Object.assign(Object.assign({}, state.queries), {
-              [queryKey]: Object.assign(Object.assign({}, state.queries[queryKey]), {
-                [queryCacheKey]: newQueryState,
-              }),
-            })
-          } else if (oldQueryState !== undefined) {
-            const _a = state.queries[queryKey],
-              _b = queryCacheKey,
-              _ = _a[_b],
-              withoutCacheKey = __rest(_a, [typeof _b === 'symbol' ? _b : _b + ''])
+            if (mutable) {
+              newState.queries[queryKey][queryCacheKey] = newQueryState
+              incrementChangeKey(newState.queries)
+              incrementChangeKey(newState.queries[queryKey])
+            } else {
+              newState.queries = Object.assign(Object.assign({}, state.queries), {
+                [queryKey]: Object.assign(Object.assign({}, state.queries[queryKey]), {
+                  [queryCacheKey]: newQueryState,
+                }),
+              })
+            } else if (oldQueryState !== undefined) {
             newState !== null && newState !== void 0 ? newState : (newState = Object.assign({}, state))
-            newState.queries = Object.assign(Object.assign({}, state.queries), {[queryKey]: withoutCacheKey})
+            if (mutable) {
+              delete newState.queries[queryKey][queryCacheKey]
+              incrementChangeKey(newState.queries)
+              incrementChangeKey(newState.queries[queryKey])
+            } else {
+              const _a = state.queries[queryKey],
+                _b = queryCacheKey,
+                _ = _a[_b],
+                withoutCacheKey = __rest(_a, [typeof _b === 'symbol' ? _b : _b + ''])
+              newState.queries = Object.assign(Object.assign({}, state.queries), {
+                [queryKey]: withoutCacheKey,
+              })
+            }
           }
         }
         return newState !== null && newState !== void 0 ? newState : state
       }
-      case actions.updateMutationStateAndEntities.type: {
+      case updateMutationStateAndEntities.type: {
         const {mutationKey, state: mutationState, entityChanges} = action
         const oldMutationState = state.mutations[mutationKey]
         let newMutationState =
@@ -139,112 +176,150 @@ export const createReducer = (actions, queryKeys, cacheOptions) => {
         const newEntities = entityChanges && applyEntityChanges(state.entities, entityChanges, cacheOptions)
         let newState
         if (newEntities) {
-          newState !== null && newState !== void 0 ? newState : (newState = Object.assign({}, state))
-          newState.entities = newEntities
+          newState = Object.assign(Object.assign({}, state), {entities: newEntities})
         }
         if (newMutationState) {
           if (!isEmptyObject(newMutationState)) {
             newState !== null && newState !== void 0 ? newState : (newState = Object.assign({}, state))
-            newState.mutations = Object.assign(Object.assign({}, state.mutations), {
-              [mutationKey]: newMutationState,
-            })
-          } else if (oldMutationState !== undefined) {
-            const _c = state.mutations,
-              _d = mutationKey,
-              _ = _c[_d],
-              withoutMutationKey = __rest(_c, [typeof _d === 'symbol' ? _d : _d + ''])
+            if (mutable) {
+              state.mutations[mutationKey] = newMutationState
+              incrementChangeKey(state.mutations)
+            } else {
+              newState.mutations = Object.assign(Object.assign({}, state.mutations), {
+                [mutationKey]: newMutationState,
+              })
+            } else if (oldMutationState !== undefined) {
             newState !== null && newState !== void 0 ? newState : (newState = Object.assign({}, state))
-            newState.mutations = withoutMutationKey
+            if (mutable) {
+              delete state.mutations[mutationKey]
+              incrementChangeKey(state.mutations)
+            } else {
+              const _c = state.mutations,
+                _d = mutationKey,
+                _ = _c[_d],
+                withoutMutationKey = __rest(_c, [typeof _d === 'symbol' ? _d : _d + ''])
+              newState.mutations = withoutMutationKey
+            }
           }
         }
         return newState !== null && newState !== void 0 ? newState : state
       }
-      case actions.mergeEntityChanges.type: {
+      case mergeEntityChanges.type: {
         const {changes} = action
         const newEntities = applyEntityChanges(state.entities, changes, cacheOptions)
         return newEntities ? Object.assign(Object.assign({}, state), {entities: newEntities}) : state
       }
-      case actions.invalidateQuery.type: {
+      case invalidateQuery.type: {
         const {queries: queriesToInvalidate} = action
         if (queriesToInvalidate.length === 0) {
           return state
         }
         const now = Date.now()
-        let newQueries = undefined
+        let newStatesByQueryKey
+        const copiedQueryKeys = mutable ? undefined : new Set()
         for (const {query: queryKey, cacheKey, expiresAt = now} of queriesToInvalidate) {
-          const queryStates = (newQueries !== null && newQueries !== void 0 ? newQueries : state.queries)[
-            queryKey
-          ]
-          if (cacheKey != null) {
-            if (queryStates[cacheKey]) {
-              const queryState = queryStates[cacheKey]
-              if (queryState && queryState.expiresAt !== expiresAt) {
-                newQueries !== null && newQueries !== void 0
-                  ? newQueries
-                  : (newQueries = Object.assign({}, state.queries))
-                if (state.queries[queryKey] === newQueries[queryKey]) {
-                  newQueries[queryKey] = Object.assign({}, newQueries[queryKey])
-                }
-                newQueries[queryKey][cacheKey] = Object.assign(Object.assign({}, queryState), {expiresAt})
-                if (expiresAt === undefined) {
-                  delete newQueries[queryKey][cacheKey].expiresAt
-                }
+          const statesByCacheKey = (
+            newStatesByQueryKey !== null && newStatesByQueryKey !== void 0
+              ? newStatesByQueryKey
+              : state.queries
+          )[queryKey]
+          const cacheKeysToInvalidate = cacheKey != null ? [cacheKey] : Object.keys(statesByCacheKey)
+          for (const cacheKey of cacheKeysToInvalidate) {
+            const queryState = statesByCacheKey[cacheKey]
+            if (!queryState || queryState.expiresAt === expiresAt) {
+              continue
+            }
+            if (mutable) {
+              newStatesByQueryKey !== null && newStatesByQueryKey !== void 0
+                ? newStatesByQueryKey
+                : (newStatesByQueryKey = state.queries)
+              incrementChangeKey(newStatesByQueryKey[queryKey])
+            } else {
+              newStatesByQueryKey !== null && newStatesByQueryKey !== void 0
+                ? newStatesByQueryKey
+                : (newStatesByQueryKey = Object.assign({}, state.queries))
+              if (!copiedQueryKeys.has(queryKey)) {
+                newStatesByQueryKey[queryKey] = Object.assign({}, newStatesByQueryKey[queryKey])
+                copiedQueryKeys.add(queryKey)
               }
             }
-          } else {
-            for (const cacheKey in queryStates) {
-              const queryState = queryStates[cacheKey]
-              if (queryState && queryState.expiresAt !== expiresAt) {
-                newQueries !== null && newQueries !== void 0
-                  ? newQueries
-                  : (newQueries = Object.assign({}, state.queries))
-                if (state.queries[queryKey] === newQueries[queryKey]) {
-                  newQueries[queryKey] = Object.assign({}, newQueries[queryKey])
-                }
-                newQueries[queryKey][cacheKey] = Object.assign(Object.assign({}, queryState), {expiresAt})
-                if (expiresAt === undefined) {
-                  delete newQueries[queryKey][cacheKey].expiresAt
-                }
+            if (expiresAt !== undefined) {
+              newStatesByQueryKey[queryKey][cacheKey] = Object.assign(Object.assign({}, queryState), {
+                expiresAt,
+              })
+            } else {
+              const {expiresAt: _} = queryState,
+                newQueryState = __rest(queryState, ['expiresAt'])
+              if (isEmptyObject(newQueryState)) {
+                delete newStatesByQueryKey[queryKey][cacheKey]
+              } else {
+                newStatesByQueryKey[queryKey][cacheKey] = newQueryState
               }
             }
           }
         }
-        return newQueries === undefined
-          ? state
-          : Object.assign(Object.assign({}, state), {queries: newQueries})
+        if (!newStatesByQueryKey) {
+          return state
+        }
+        if (mutable) {
+          incrementChangeKey(newStatesByQueryKey)
+        }
+        return Object.assign(Object.assign({}, state), {queries: newStatesByQueryKey})
       }
-      case actions.clearQueryState.type: {
+      case clearQueryState.type: {
         const {queries: queriesToClear} = action
         if (queriesToClear.length === 0) {
           return state
         }
-        let newQueries = undefined
+        let newStatesByQueryKey
+        const copiedQueryKeys = mutable ? undefined : new Set()
         for (const {query: queryKey, cacheKey} of queriesToClear) {
-          const queryStates = (newQueries !== null && newQueries !== void 0 ? newQueries : state.queries)[
-            queryKey
-          ]
+          const statesByCacheKey = (
+            newStatesByQueryKey !== null && newStatesByQueryKey !== void 0
+              ? newStatesByQueryKey
+              : state.queries
+          )[queryKey]
           if (cacheKey != null) {
-            if (queryStates[cacheKey]) {
-              newQueries !== null && newQueries !== void 0
-                ? newQueries
-                : (newQueries = Object.assign({}, state.queries))
-              if (state.queries[queryKey] === newQueries[queryKey]) {
-                newQueries[queryKey] = Object.assign({}, newQueries[queryKey])
-              }
-              delete newQueries[queryKey][cacheKey]
+            if (!statesByCacheKey[cacheKey]) {
+              continue
             }
-          } else if (queryStates !== EMPTY_OBJECT) {
-            newQueries !== null && newQueries !== void 0
-              ? newQueries
-              : (newQueries = Object.assign({}, state.queries))
-            newQueries[queryKey] = EMPTY_OBJECT
+            if (mutable) {
+              newStatesByQueryKey !== null && newStatesByQueryKey !== void 0
+                ? newStatesByQueryKey
+                : (newStatesByQueryKey = state.queries)
+              incrementChangeKey(newStatesByQueryKey[queryKey])
+            } else {
+              newStatesByQueryKey !== null && newStatesByQueryKey !== void 0
+                ? newStatesByQueryKey
+                : (newStatesByQueryKey = Object.assign({}, state.queries))
+              if (!copiedQueryKeys.has(queryKey)) {
+                newStatesByQueryKey[queryKey] = Object.assign({}, newStatesByQueryKey[queryKey])
+                copiedQueryKeys.add(queryKey)
+              }
+            }
+            delete newStatesByQueryKey[queryKey][cacheKey]
+          } else if (mutable) {
+            newStatesByQueryKey !== null && newStatesByQueryKey !== void 0
+              ? newStatesByQueryKey
+              : (newStatesByQueryKey = state.queries)
+            newStatesByQueryKey[queryKey] = {}
+          } else if (statesByCacheKey !== EMPTY_OBJECT) {
+            newStatesByQueryKey !== null && newStatesByQueryKey !== void 0
+              ? newStatesByQueryKey
+              : (newStatesByQueryKey = Object.assign({}, state.queries))
+            newStatesByQueryKey[queryKey] = EMPTY_OBJECT
+            copiedQueryKeys.add(queryKey)
           }
         }
-        return newQueries === undefined
-          ? state
-          : Object.assign(Object.assign({}, state), {queries: newQueries})
+        if (newStatesByQueryKey === undefined) {
+          return state
+        }
+        if (mutable) {
+          incrementChangeKey(newStatesByQueryKey)
+        }
+        return Object.assign(Object.assign({}, state), {queries: newStatesByQueryKey})
       }
-      case actions.clearMutationState.type: {
+      case clearMutationState.type: {
         const {mutationKeys} = action
         if (mutationKeys.length === 0) {
           return state
@@ -254,16 +329,21 @@ export const createReducer = (actions, queryKeys, cacheOptions) => {
           if (state.mutations[mutation]) {
             newMutations !== null && newMutations !== void 0
               ? newMutations
-              : (newMutations = Object.assign({}, state.mutations))
+              : (newMutations = mutable ? state.mutations : Object.assign({}, state.mutations))
             delete newMutations[mutation]
           }
         }
-        return newMutations === undefined
-          ? state
-          : Object.assign(Object.assign({}, state), {mutations: newMutations})
+        if (newMutations === undefined) {
+          return state
+        }
+        if (mutable) {
+          incrementChangeKey(newMutations)
+        }
+        return Object.assign(Object.assign({}, state), {mutations: newMutations})
       }
-      case actions.clearCache.type: {
+      case clearCache.type: {
         const {stateToKeep} = action
+        const initialState = mutable ? getMutableInitialState() : immutableInitialState
         return stateToKeep ? Object.assign(Object.assign({}, initialState), stateToKeep) : initialState
       }
     }

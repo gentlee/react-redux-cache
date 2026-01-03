@@ -40,6 +40,7 @@ test('createCache returns correct result', () => {
       logsEnabled: false,
       additionalValidation: true,
       deepComparisonEnabled: true,
+      mutableCollections: false,
     },
     queries: {
       getUser: {
@@ -199,7 +200,7 @@ const updateUser = async (id: number) => {
   }
 }
 
-export const createTestingCache = <N extends string>(
+const createTestingCache = <N extends string>(
   name: N,
   overrideHooks = true,
   cacheStateSelector?: Cache<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateSelector'],

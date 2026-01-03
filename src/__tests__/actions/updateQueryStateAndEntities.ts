@@ -1,29 +1,128 @@
-import {updateQueryStateAndEntities} from '../../testing/redux/cache'
+import {testCaches} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
 import {noop} from '../../utilsAndConstants'
 
-test('should not change deeply equal params and result', () => {
-  const store = createReduxStore(false)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const loadingPromise = new Promise((x) => x({result: 0})) as any
 
-  const initialParams = {page: 1}
-  const initialResult = {items: [1, 2, 3], page: 1}
+describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
+  const {
+    reducer,
+    actions: {updateQueryStateAndEntities},
+    utils: {getInitialState},
+  } = cache
 
-  store.dispatch(
-    updateQueryStateAndEntities('getUsers', 0, {
-      params: initialParams,
-      result: initialResult,
-      loading: new Promise(noop),
-    })
-  )
+  test('removes all default query fields, clears default query states', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const states = [reducer(undefined, {} as any)]
 
-  store.dispatch(
-    updateQueryStateAndEntities('getUsers', 0, {
-      params: {page: 1},
-      result: {items: [1, 2, 3], page: 1},
-      loading: undefined,
-    })
-  )
+    states.push(
+      reducer(
+        states[0],
+        updateQueryStateAndEntities('getUser', 'a', {
+          result: 0,
+          params: 0,
+          loading: undefined,
+          error: undefined,
+          expiresAt: 100,
+        })
+      )
+    )
 
-  expect(store.getState().cache.queries.getUsers[0]?.params).toBe(initialParams)
-  expect(store.getState().cache.queries.getUsers[0]?.result).toBe(initialResult)
+    states.push(
+      reducer(
+        states[1],
+        updateQueryStateAndEntities('getUser', 'a', {
+          result: 2,
+          params: 1,
+          loading: loadingPromise,
+          error: new Error('test'),
+          expiresAt: undefined,
+        })
+      )
+    )
+
+    states.push(
+      reducer(
+        states[2],
+        updateQueryStateAndEntities('getUser', 'a', {
+          result: 0,
+          params: 0,
+          loading: undefined,
+          error: undefined,
+        })
+      )
+    )
+
+    states.push(
+      reducer(
+        states[3],
+        updateQueryStateAndEntities('getUser', 'a', {
+          result: undefined,
+          params: undefined,
+        })
+      )
+    )
+
+    expect(states.map((x) => x.queries.getUser.a)).toStrictEqual(
+      cache.cache.options.mutableCollections
+        ? [undefined, undefined, undefined, undefined, undefined]
+        : [
+            undefined,
+            {
+              result: 0,
+              params: 0,
+              expiresAt: 100,
+            },
+            {
+              result: 2,
+              params: 1,
+              loading: expect.any(Promise),
+              error: new Error('test'),
+            },
+            {
+              result: 0,
+              params: 0,
+            },
+            undefined,
+          ]
+    )
+  })
+
+  test('should not change deeply equal params and result', () => {
+    const store = createReduxStore(cache)
+
+    const initialParams = {page: 1}
+    const initialResult = {items: [1, 2, 3], page: 1}
+
+    store.dispatch(
+      updateQueryStateAndEntities('getUsers', 0, {
+        params: initialParams,
+        result: initialResult,
+        loading: new Promise(noop),
+      })
+    )
+
+    for (let i = 0; i < 3; i += 1) {
+      store.dispatch(
+        updateQueryStateAndEntities('getUsers', 0, {
+          params: {page: 1},
+          result: {items: [1, 2, 3], page: 1},
+          loading: undefined,
+        })
+      )
+    }
+
+    expect(store.getState().cache.queries).toStrictEqual(
+      withChangeKey(1, {
+        ...getInitialState().queries,
+        getUsers: withChangeKey(1, {
+          0: {
+            params: initialParams,
+            result: initialResult,
+          },
+        }),
+      })
+    )
+  })
 })

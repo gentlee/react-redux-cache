@@ -12,6 +12,11 @@ export type Selectors<
 export declare const createSelectors: <N extends string, T extends Typenames, QP, QR, MP, MR>(
   cache: Cache<N, T, QP, QR, MP, MR>
 ) => {
+  selectEntityById: <TN extends keyof T>(
+    state: unknown,
+    id: Key | null | undefined,
+    typename: TN
+  ) => T[TN] | undefined
   selectQueryState: <QK extends keyof (QP & QR)>(
     state: unknown,
     query: QK,
@@ -67,14 +72,9 @@ export declare const createSelectors: <N extends string, T extends Typenames, QP
     state: unknown,
     mutation: MK
   ) => (MK extends keyof MP & keyof MR ? MP[MK] : never) | undefined
-  selectEntityById: <TN extends keyof T>(
-    state: unknown,
-    id: Key | null | undefined,
-    typename: TN
-  ) => T[TN] | undefined
-  selectEntities: (state: unknown) => import('./types').EntitiesMap<T>
+  selectEntities: (state: unknown) => import('./types').EntitiesMap<T> & import('./types').Mutable
   selectEntitiesByTypename: <TN extends keyof T>(
     state: unknown,
     typename: TN
-  ) => import('./types').EntitiesMap<T>[TN]
+  ) => (import('./types').EntitiesMap<T> & import('./types').Mutable)[TN]
 }

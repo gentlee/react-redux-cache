@@ -77,6 +77,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
       // Provide all optional fields
 
       partialCache.options ??= {} as CacheOptions
+      partialCache.options.mutableCollections ??= false
       partialCache.options.logsEnabled ??= false
       partialCache.options.additionalValidation ??= IS_DEV
       partialCache.options.deepComparisonEnabled ??= true
@@ -251,7 +252,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           updateMutationStateAndEntities,
           /** Merges EntityChanges to the state. */
           mergeEntityChanges,
-          /** Invalidates query states. */
+          /** Sets expiresAt to Date.now(). */
           invalidateQuery,
           /** Clears states for provided query keys and cache keys.
            * If cache key for query key is not provided, the whole state for query key is cleared. */
@@ -315,6 +316,16 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
             typename: TN
           ): T[TN] | undefined => {
             return cache.storeHooks.useSelector((state) => selectEntityById(state, id, typename))
+          },
+          /**
+           * useSelector + selectEntitiesByTypename. Also subscribes to collection's change key if `mutableCollections` enabled.
+           * @warning Subscribing to collections should be avoided.
+           * */
+          useEntitiesByTypename: <TN extends keyof T>(typename: TN) => {
+            if (cache.options.mutableCollections) {
+              cache.storeHooks.useSelector((state) => selectEntitiesByTypename(state, typename)?._changeKey)
+            }
+            return cache.storeHooks.useSelector((state) => selectEntitiesByTypename(state, typename))
           },
         },
         // doc-header

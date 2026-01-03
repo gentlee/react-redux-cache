@@ -1,13 +1,15 @@
 import type {EntitiesMap} from '../../types'
-import {cache, TestTypenames} from '../redux/cache'
+import {TestTypenames} from '../redux/cache'
 import type {Bank, User} from './types'
 
 // event log
 
+const LOG_EVENTS_TO_CONSOLE = false
+
 const eventLog: string[] = []
 
 export const logEvent = (event: string) => {
-  cache.options.logsEnabled && console.debug(event)
+  LOG_EVENTS_TO_CONSOLE && console.debug(event)
   eventLog.push(event)
 }
 
@@ -38,13 +40,17 @@ export const generateTestBank = (id: string, nameSuffix = ''): Bank => {
   }
 }
 
-export const generateTestEntitiesMap = (size: number, full = true): EntitiesMap<TestTypenames> => {
+export const generateTestEntitiesMap = (
+  size: number,
+  full = true,
+  changeKey?: number
+): EntitiesMap<TestTypenames> => {
   const users = Array.from({length: size}, (_, i) => generateTestUser(i, full))
   const banks = Array.from({length: size}, (_, i) => generateTestBank(String(i)))
 
   return {
-    users: mapFromArray(users, 'id'),
-    banks: mapFromArray(banks, 'id'),
+    users: mapFromArray(users, 'id', changeKey),
+    banks: mapFromArray(banks, 'id', changeKey),
   }
 }
 
@@ -53,10 +59,11 @@ export const generateTestEntitiesMap = (size: number, full = true): EntitiesMap<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapFromArray = <T extends Record<string, any>, K extends keyof T>(
   array: T[],
-  key: K
+  key: K,
+  changeKey?: number
 ): Record<string, T> => {
   return array.reduce((acc, item) => {
     acc[item[key]] = item
     return acc
-  }, {} as Record<string, T>)
+  }, (changeKey != null ? {_changeKey: changeKey} : {}) as Record<string, T>)
 }

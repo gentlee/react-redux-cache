@@ -14,36 +14,39 @@ const utilsAndConstants_1 = require('./utilsAndConstants')
 const withTypenames = () => {
   return {
     createCache: (partialCache) => {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m
-      var _o, _p, _q, _r, _s, _t
+      var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o
+      var _p, _q, _r, _s, _t, _u, _v
       const abortControllers = new WeakMap()
       ;(_a = partialCache.options) !== null && _a !== void 0 ? _a : (partialCache.options = {})
-      ;(_b = (_o = partialCache.options).logsEnabled) !== null && _b !== void 0
+      ;(_b = (_p = partialCache.options).mutableCollections) !== null && _b !== void 0
         ? _b
-        : (_o.logsEnabled = false)
-      ;(_c = (_p = partialCache.options).additionalValidation) !== null && _c !== void 0
+        : (_p.mutableCollections = false)
+      ;(_c = (_q = partialCache.options).logsEnabled) !== null && _c !== void 0
         ? _c
-        : (_p.additionalValidation = utilsAndConstants_1.IS_DEV)
-      ;(_d = (_q = partialCache.options).deepComparisonEnabled) !== null && _d !== void 0
+        : (_q.logsEnabled = false)
+      ;(_d = (_r = partialCache.options).additionalValidation) !== null && _d !== void 0
         ? _d
-        : (_q.deepComparisonEnabled = true)
-      ;(_e = partialCache.globals) !== null && _e !== void 0 ? _e : (partialCache.globals = {})
-      ;(_f = (_r = partialCache.globals).queries) !== null && _f !== void 0 ? _f : (_r.queries = {})
-      ;(_g = (_s = partialCache.globals.queries).fetchPolicy) !== null && _g !== void 0
-        ? _g
-        : (_s.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired)
-      ;(_h = (_t = partialCache.globals.queries).skipFetch) !== null && _h !== void 0
+        : (_r.additionalValidation = utilsAndConstants_1.IS_DEV)
+      ;(_e = (_s = partialCache.options).deepComparisonEnabled) !== null && _e !== void 0
+        ? _e
+        : (_s.deepComparisonEnabled = true)
+      ;(_f = partialCache.globals) !== null && _f !== void 0 ? _f : (partialCache.globals = {})
+      ;(_g = (_t = partialCache.globals).queries) !== null && _g !== void 0 ? _g : (_t.queries = {})
+      ;(_h = (_u = partialCache.globals.queries).fetchPolicy) !== null && _h !== void 0
         ? _h
-        : (_t.skipFetch = false)
-      ;(_j = partialCache.cacheStateSelector) !== null && _j !== void 0
+        : (_u.fetchPolicy = utilsAndConstants_1.FetchPolicy.NoCacheOrExpired)
+      ;(_j = (_v = partialCache.globals.queries).skipFetch) !== null && _j !== void 0
         ? _j
+        : (_v.skipFetch = false)
+      ;(_k = partialCache.cacheStateSelector) !== null && _k !== void 0
+        ? _k
         : (partialCache.cacheStateSelector = (state) => state[cache.name])
-      ;(_k = partialCache.mutations) !== null && _k !== void 0 ? _k : (partialCache.mutations = {})
-      ;(_l = partialCache.queries) !== null && _l !== void 0 ? _l : (partialCache.queries = {})
+      ;(_l = partialCache.mutations) !== null && _l !== void 0 ? _l : (partialCache.mutations = {})
+      ;(_m = partialCache.queries) !== null && _m !== void 0 ? _m : (partialCache.queries = {})
       partialCache.abortControllers = abortControllers
       try {
-        ;(_m = partialCache.storeHooks) !== null && _m !== void 0
-          ? _m
+        ;(_o = partialCache.storeHooks) !== null && _o !== void 0
+          ? _o
           : (partialCache.storeHooks = {
               useStore: require('react-redux').useStore,
               useSelector: require('react-redux').useSelector,
@@ -187,6 +190,17 @@ const withTypenames = () => {
             (0, useMutation_1.useMutation)(cache, actions, selectors, options, abortControllers),
           useSelectEntityById: (id, typename) => {
             return cache.storeHooks.useSelector((state) => selectEntityById(state, id, typename))
+          },
+          useEntitiesByTypename: (typename) => {
+            if (cache.options.mutableCollections) {
+              cache.storeHooks.useSelector((state) => {
+                var _a
+                return (_a = selectEntitiesByTypename(state, typename)) === null || _a === void 0
+                  ? void 0
+                  : _a._changeKey
+              })
+            }
+            return cache.storeHooks.useSelector((state) => selectEntitiesByTypename(state, typename))
           },
         },
         utils: {

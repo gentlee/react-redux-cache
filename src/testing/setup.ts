@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
 
 import {clearEventLog} from './api/utils'
-import {cache} from './redux/cache'
+import {testCaches} from './redux/cache'
 
 jest.useFakeTimers()
 
@@ -10,8 +10,10 @@ afterEach(() => {
 })
 
 afterAll(() => {
-  // @ts-expect-error it is private
-  const abortControllers = cache.abortControllers
+  for (const [_, testCache] of testCaches) {
+    // @ts-expect-error it is private
+    const abortControllers = testCache.cache.abortControllers
 
-  expect(JSON.stringify(abortControllers)).toStrictEqual(JSON.stringify(new WeakMap()))
+    expect(JSON.stringify(abortControllers)).toStrictEqual(JSON.stringify(new WeakMap()))
+  }
 })
