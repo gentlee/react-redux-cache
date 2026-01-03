@@ -6,6 +6,9 @@ export const RootScreen = () => {
       <Link className={'link'} to={'/users'}>
         Redux: Normalized
       </Link>
+      <Link className={'link'} to={'/mutable/users'}>
+        Redux: Normalized, mutable collections
+      </Link>
       <Link className={'link'} to={'/not-normalized/users'}>
         Redux: Not normalized (invalidation)
       </Link>

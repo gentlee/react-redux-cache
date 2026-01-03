@@ -11,15 +11,15 @@
     "lint-fix": "eslint . --fix"
   },
   "dependencies": {
+    "@vitejs/plugin-react": "4.3.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-redux-cache": "0.21.0",
+    "react-redux-cache": "0.22.1",
     "react-router-dom": "6.11.2",
     "redux": "4.2.1",
     "redux-persist": "6.0.0",
-    "zustand": "5.0.3",
-    "@vitejs/plugin-react": "4.3.2",
-    "vite": "5.4.8"
+    "vite": "5.4.8",
+    "zustand": "5.0.3"
   },
   "devDependencies": {
     "@eslint/js": "9.12.0",

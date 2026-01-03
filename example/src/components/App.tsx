@@ -30,6 +30,8 @@ export const App = ({
         <Route path="/" element={<RootScreen />} />
         <Route path="/users" element={<UsersScreen />} />
         <Route path="/user/:id" element={<UserScreen />} />
+        <Route path="/mutable/users" element={<UsersScreen />} />
+        <Route path="/mutable/user/:id" element={<UserScreen />} />
         <Route path="/not-normalized/users" element={<UsersScreenNotNormalized />} />
         <Route path="/not-normalized/user/:id" element={<UserScreenNotNormalized />} />
         <Route path="/not-normalized-optimized/users" element={<UsersScreenNotNormalizedOptimized />} />
