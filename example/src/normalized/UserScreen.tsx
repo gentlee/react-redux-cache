@@ -49,7 +49,6 @@ export const UserScreen = () => {
       <button
         id="update-user"
         onClick={() => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
           user &&
             updateUser({
               id: user.id,

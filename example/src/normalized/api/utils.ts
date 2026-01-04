@@ -40,10 +40,13 @@ export const generateTestEntitiesMap = (size: number, full = true): EntitiesMap<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapFromArray = <T extends Record<string, any>, K extends keyof T>(
   array: T[],
-  key: K
+  key: K,
 ): Record<string, T> => {
-  return array.reduce((acc, item) => {
-    acc[item[key]] = item
-    return acc
-  }, {} as Record<string, T>)
+  return array.reduce(
+    (acc, item) => {
+      acc[item[key]] = item
+      return acc
+    },
+    {} as Record<string, T>,
+  )
 }

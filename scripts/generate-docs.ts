@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+const fs = require('fs')
+const path = require('path')
 
 type DocEntry = {
   header?: string
@@ -12,13 +12,13 @@ type DocEntry = {
 const HEADER = '// doc-header'
 const IGNORE = '// doc-ignore'
 
-export function extractDocumentation(filePath: string): string {
+function extractDocumentation(filePath: string): string {
   const content = fs.readFileSync(filePath, 'utf-8')
   const lines = content.split('\n')
 
   const entries: DocEntry[] = []
   let currentEntry: DocEntry = {comments: []}
-  let currentSymbol: string | null = null
+  let currentSymbol: string | undefined
   let currentDocs: string[] = []
   let inCommentBlock = false
   let nextLineIsHeader = false
@@ -95,11 +95,11 @@ export function extractDocumentation(filePath: string): string {
           nextLineIsHeader = false
         } else {
           currentEntry.comments.push({
-            symbol: currentSymbol,
+            symbol: currentSymbol!,
             docs: currentDocs,
           })
           currentDocs = []
-          currentSymbol = null
+          currentSymbol = undefined
         }
       }
     }

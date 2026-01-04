@@ -17,9 +17,9 @@
   "scripts": {
     "example": "(cd example && yarn --production && yarn dev)",
     "clean": "rm -rf dist",
-    "lint": "yarn eslint ./src",
-    "lint-fix": "yarn eslint --fix ./src",
-    "lint-fix-dist": "yarn eslint --quiet --fix dist/ > /dev/null 2>&1 || true",
+    "lint": "yarn eslint .",
+    "lint-fix": "yarn eslint --fix .",
+    "lint-fix-dist": "yarn eslint --quiet --no-ignore --fix dist/ > /dev/null 2>&1 || true",
     "build-cjs": "tsc -p tsconfig.cjs.json && rm -rf dist/cjs/testing && rm -rf dist/cjs/__tests__",
     "build-esm": "tsc -p tsconfig.esm.json > /dev/null ; rm -rf dist/esm/testing && rm -rf dist/esm/__tests__",
     "build-types": "tsc -p tsconfig.types.json > /dev/null ; rm -rf dist/types/testing && rm -rf dist/types/__tests__",
@@ -32,7 +32,7 @@
     "remove-rc": "npm version <same-version-without-rc>",
     "prepublishOnly": "yarn build && yarn test",
     "generate-docs": "node --experimental-strip-types scripts/generate-docs.ts",
-    "benchmark": "NODE_ENV=production node --expose-gc benchmark.mjs"
+    "benchmark": "NODE_ENV=production node --expose-gc scripts/benchmark.mjs"
   },
   "peerDependencies": {
     "fast-deep-equal": "*",

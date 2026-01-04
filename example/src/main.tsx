@@ -7,7 +7,7 @@ import {App} from './components/App'
 
 createRoot(document.getElementById('root')!).render(
   // <StrictMode>
-  <App persistEnabled={false} reduxLoggerEnabled />
+  <App persistEnabled={false} reduxLoggerEnabled />,
   // </StrictMode>
 )
 

@@ -21,7 +21,7 @@ export const cacheNotNormalizedOptimized = createCache({
               updateQueryStateAndEntities('getUser', defaultGetCacheKey(user.id), {
                 result: user,
                 params: user.id,
-              })
+              }),
             )
           })
         }

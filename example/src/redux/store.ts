@@ -26,7 +26,7 @@ export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean
         // @ts-expect-error wrong type
         serialize: (value: unknown) => JSON.stringify(value, stringifyReplacer),
       },
-      reducer
+      reducer,
     ) as T
   }
 
@@ -35,10 +35,10 @@ export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean
       [cache.name]: addPersistence(cache.name, reducer),
       [cacheNotNormalized.cache.name]: addPersistence(
         cacheNotNormalized.cache.name,
-        cacheNotNormalized.reducer
+        cacheNotNormalized.reducer,
       ),
     }),
-    loggerEnabled ? applyMiddleware(reduxLogger) : undefined
+    loggerEnabled ? applyMiddleware(reduxLogger) : undefined,
   )
 
   const persistor = persistEnabled ? persistStore(store) : undefined
@@ -50,7 +50,9 @@ export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean
 }
 
 export type AppStore = ReturnType<typeof createReduxStore>['store']
+
 export const useAppStore = useStore as () => AppStore
+
 export const useAppDispatch = useDispatch as () => AppStore['dispatch']
 
 export type ReduxState = ReturnType<typeof reducer>

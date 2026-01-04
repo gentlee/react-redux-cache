@@ -17,7 +17,7 @@ export const {
 } = withTypenames<Typenames>().createCache({
   name: 'cache',
   options: {
-    mutableCollections: true
+    mutableCollections: true,
   },
   globals: {
     queries: {

@@ -1,6 +1,7 @@
 import js from '@eslint/js'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import typescriptParser from '@typescript-eslint/parser'
+import {globalIgnores} from 'eslint/config'
 import prettier from 'eslint-plugin-prettier/recommended'
 import reactHooks from 'eslint-plugin-react-hooks'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
@@ -9,11 +10,10 @@ import globals from 'globals'
 const {['AudioWorkletGlobalScope ']: _, ...fixedGlobalsBrowser} = globals.browser
 
 export default [
-  js.configs.recommended,
+  globalIgnores(['**/node_modules/**', './example/**', './dist/**']),
   prettier,
   {
     files: ['**/*.{mjs,js,jsx,ts,tsx}'],
-    ignores: ['**/node_modules/**'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -31,6 +31,7 @@ export default [
       'simple-import-sort': simpleImportSort,
     },
     rules: {
+      ...js.configs.recommended.rules,
       ...typescriptEslint.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       curly: ['error', 'all'],

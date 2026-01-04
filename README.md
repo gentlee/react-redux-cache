@@ -329,7 +329,7 @@ export const UserScreen = () => {
 
 For huge collections (> 1000 items, see benchmark) immutable approach may be a bottleneck - every merge of entity, query or mutation state is O(n). There is an option `mutableCollections` that makes it O(1) by using mutable approach when working with collections, while still keeping separate entities, query and mutation states immutable.
 
-[Benchmark](https://github.com/gentlee/react-redux-cache/blob/main/benchmark.ts) results of adding item to collection depending on collection size, in microseconds (less is better):
+[Benchmark](https://github.com/gentlee/react-redux-cache/blob/main/scripts/benchmark.mjs) results of adding item to collection depending on collection size, in microseconds (less is better):
     
 | Collection size | 0 | 1000 | 10000 | 100000 | 1000000 |
 |-|-|-|-|-|-|
