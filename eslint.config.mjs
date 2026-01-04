@@ -35,7 +35,6 @@ export default [
       ...reactHooks.configs.recommended.rules,
       curly: ['error', 'all'],
       'object-shorthand': 'error',
-      'brace-style': ['error', '1tbs', {allowSingleLine: false}],
       'padding-line-between-statements': [
         'error',
         {blankLine: 'always', prev: '*', next: 'export'},

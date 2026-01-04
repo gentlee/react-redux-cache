@@ -333,8 +333,8 @@ For huge collections (> 1000 items, see benchmark) immutable approach may be a b
     
 | Collection size | 0 | 1000 | 10000 | 100000 | 1000000 |
 |-|-|-|-|-|-|
-| immutable | 1.78 | 1.69 | 5.64 | 117.4 | 1284.6 |
-| mutable | 1.68 | 0.92 | 0.98 | 0.98 | 0.99 |
+| immutable | 1.57 | 1.81 | 7.62 | 103.82 | 1457.89 |
+| mutable | 1.4 | 1.15 | 0.65 | 1.03 | 0.76 |
 
 Well written code should not subcribe to whole collections, so just enabling this options most of the times should not break anything. But if it is still needed, you should subscribe to both collection (it may still change e.g. when clearing state) and to its `_changeKey`.
 

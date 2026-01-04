@@ -23,7 +23,7 @@
     "build-cjs": "tsc -p tsconfig.cjs.json && rm -rf dist/cjs/testing && rm -rf dist/cjs/__tests__",
     "build-esm": "tsc -p tsconfig.esm.json > /dev/null ; rm -rf dist/esm/testing && rm -rf dist/esm/__tests__",
     "build-types": "tsc -p tsconfig.types.json > /dev/null ; rm -rf dist/types/testing && rm -rf dist/types/__tests__",
-    "build": "yarn clean && yarn lint && yarn build-cjs && yarn build-esm && yarn build-types && yarn size && yarn generate-docs",
+    "build": "yarn clean && yarn lint && yarn build-cjs && yarn build-esm && yarn build-types && yarn lint-fix-dist && yarn size && yarn generate-docs && yarn benchmark",
     "size": "npx minified-size dist/esm/*.js | grep 'total:' | sed -E 's/.*total: [^,]*, ([^,]*), ([^,]*), ([^,]*).*/<br\\/>minified: \\1<br\\/>gzipped: \\2<br\\/>brotlied: \\3/'",
     "test": "node node_modules/jest/bin/jest.js",
     "preminor-rc": "yarn build && npm version preminor --preid rc",
@@ -32,7 +32,7 @@
     "remove-rc": "npm version <same-version-without-rc>",
     "prepublishOnly": "yarn build && yarn test",
     "generate-docs": "node --experimental-strip-types scripts/generate-docs.ts",
-    "benchmark": "NODE_ENV=production node -r ts-node/register --expose-gc benchmark.ts"
+    "benchmark": "NODE_ENV=production node --expose-gc benchmark.mjs"
   },
   "peerDependencies": {
     "fast-deep-equal": "*",
@@ -73,7 +73,6 @@
     "redux": "4.2.1",
     "redux-logger": "3.0.6",
     "ts-jest": "29.1.0",
-    "ts-node": "10.9.2",
     "typescript": "5.6.3"
   },
   "files": [

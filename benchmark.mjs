@@ -1,4 +1,7 @@
-import {createCache} from './src'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck fix later
+
+import {createCache} from './dist/cjs/index.js'
 
 const {
   reducer: immutableReducer,
@@ -7,14 +10,9 @@ const {
 
 const {reducer: mutableReducer} = createCache({name: 'cache', options: {mutableCollections: true}})
 
-const results: Record<string, Record<number, number>> = {}
+const results = {}
 
-const benchmark = (
-  name: 'mutable' | 'immutable',
-  reducer: typeof immutableReducer,
-  initialCollectionSize: number,
-  isWarmup = false
-) => {
+const benchmark = (name, reducer, initialCollectionSize, isWarmup = false) => {
   {
     // Warmup
 
@@ -24,17 +22,16 @@ const benchmark = (
 
     // Setup
 
-    let state: ReturnType<typeof reducer> = {
+    let state = {
       ...getInitialState(),
       entities: {
         users: Array.from({length: initialCollectionSize})
           .map((_, i) => ({id: i, name: String(i), bankId: String(i)}))
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .reduce((r, x) => ((r[x.id] = x), r), {} as any),
+          .reduce((r, x) => ((r[x.id] = x), r), {}),
       },
     }
 
-    const run = (id: number) => {
+    const run = (id) => {
       state = reducer(state, {
         type: '@rrc/cache/mergeEntityChanges',
         changes: {replace: {users: {[id]: {id}}}},
