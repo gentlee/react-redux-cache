@@ -6,6 +6,7 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noo
 // Backlog
 
 // ! high (1.0.0-rc.0)
+// enable / disable deep comparison for separate actions
 
 // ! medium
 // optimistic response
@@ -18,6 +19,7 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noo
 // example -> playground with changable options
 // better zustand init
 // persistor
+// ImmutableJs?
 
 // ! low
 // make error type generic

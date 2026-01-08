@@ -46,7 +46,7 @@ Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with
   ```js
   {
     entities: {
-      // each typename has its own map of entities, stored by id
+      // Each typename has its own map of entities, stored by id.
       users: {
         "0": {id: 0, bankId: "0", name: "User 0 *"},
         "1": {id: 1, bankId: "1", name: "User 1 *"},
@@ -61,13 +61,13 @@ Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with
       }
     },
     queries: {
-      // each query has its own map of query states, stored by cache key, which is generated from query params
+      // Each query has its own map of query states, stored by cache key, which is generated from query params.
       getUser: {
         "2": {result: 2, params: 2, expiresAt: 1727217298025},
         "3": {loading: Promise<...>, params: 3}
       },
       getUsers: {
-        // example of paginated state under custom cache key
+        // Example of paginated state under custom cache key.
         "feed": {
           result: {items: [0,1,2], page: 1},
           params: {page: 1}
@@ -273,15 +273,15 @@ export const getUser = (async (id) => {
   return normalize(response, getUserSchema)
 }) satisfies NormalizedQuery<CacheTypenames, number>
 
-// Example of query without normalization (not recommended), with selecting access token from the store
+// Example of query without normalization (not recommended), with selecting access token from the store.
 
 export const getBank = (async (id, {getState}) => {
   const token = tokenSelector(getState())
   const result: Bank = ...
-  return {result} // result is bank object, no entities passed
+  return {result} // result is bank object, no entities passed.
 }) satisfies Query<string>
 
-// Example of mutation with normalization
+// Example of mutation with normalization.
 
 export const removeUser = (async (id, _, abortSignal) => {
   await ...
@@ -311,7 +311,7 @@ export const UserScreen = () => {
     mutation: 'updateUser',
   })
 
-  // This selector returns entities with proper types - User and Bank
+  // This selector returns entities with proper types - User and Bank.
   const user = useSelectEntityById(userId, 'users')
   const bank = useSelectEntityById(user?.bankId, 'banks')
 
@@ -342,7 +342,7 @@ Well written code should not subcribe to whole collections, so just enabling thi
 const Component = () => {
   // It is usually a bad idea to subscribe to whole collections, consider using order of ids and subscribe to a single entity in each cell.
   const allUsers = useSelector((state) => selectEntitiesByTypename(state, 'users'))
-  const allUsersChangeKey = useSelector((state) => selectEntitiesByTypename(state, 'users')._changeKey) // <-- Add this line while subscribing to collections
+  const allUsersChangeKey = useSelector((state) => selectEntitiesByTypename(state, 'users')._changeKey) // <-- Add this line while subscribing to collections.
 
   // For memoized components you should also pass it as extra prop to cause its re-render.
   return <List data={allUsers} extra={allUsersChangeKey}/>
@@ -366,8 +366,8 @@ export const updateBank = (async (bank) => {
   const {httpError, response} = ...
   return {
     result: {
-      httpError,            // Error is a part of the result, containing e.g. map of not valid fields and threir error messages
-      bank: response?.bank  // Bank still can be returned from the backend with error e.g. when only some of fields were udpated
+      httpError,            // Error is a part of the result, containing e.g. map of not valid fields and threir error messages.
+      bank: response?.bank  // Bank still can be returned from the backend with error e.g. when only some of fields were udpated.
     }
   }
 }) satisfies Mutation<Partial<Bank>>
@@ -402,7 +402,7 @@ export const cache = createCache({
     updateUser: {
       mutation: updateUser,
       onSuccess(_, __, {dispatch}, {invalidateQuery}) {
-        // Invalidate getUsers after a single user update (can be done better by updating getUsers state with updateQueryStateAndEntities)
+        // Invalidate getUsers after a single user update (can be done better by updating getUsers state with updateQueryStateAndEntities).
         dispatch(invalidateQuery([{query: 'getUsers'}]))
       },
     },
@@ -425,7 +425,7 @@ export const UserScreen = () => {
   const [{loading, error}] = useQuery({
     query: 'getUser',
     params: userId,
-    skipFetch: !!user // Disable fetches if we already have user cached by some other query, e.g. getUsers
+    skipFetch: !!user // Disable fetches if we already have user cached by some other query, e.g. getUsers.
   })
 
   ...
@@ -440,10 +440,10 @@ But if more control is needed, e.g. checking if entity is full, custom fetch pol
     query: getUser,
     fetchPolicy(expired, id, _, {getState}, {selectEntityById}) {
       if (expired) {
-        return true // fetch if expired
+        return true // Fetch if expired.
       }
 
-      // fetch if user is not full
+      // Fetch if user is not full.
       const user = selectEntityById(getState(), id, 'users')
       return !user || !('name' in user) || !('bankId' in user)
     },
@@ -465,7 +465,9 @@ export const UserScreen = () => {
 
   useEffect(() => {
     if (screenIsVisible) {
-      fetchUser({ onlyIfExpired: true }) // expiration happens if expiresAt was set before e.g. by secondsToLive option or invalidateQuery action. If result is not cached yet, it is also considered as expired.
+      // Expiration happens if expiresAt was set before e.g. by secondsToLive option or invalidateQuery action.
+      // If result is not cached yet, it is also considered as expired.
+      fetchUser({ onlyIfExpired: true })
     }
   }, [screenIsVisible])
 
@@ -486,7 +488,7 @@ Here is an example of `getUsers` query configuration with pagination support. Yo
   queries: {
     getUsers: {
       query: getUsers,
-      getCacheKey: () => 'feed', // single cache key is used for all pages
+      getCacheKey: () => 'feed', // Single cache key is used for all pages.
       mergeResults: (oldResult, {result: newResult}) => {
         if (!oldResult || newResult.page === 1) {
           return newResult
@@ -549,16 +551,17 @@ export const GetUsersScreen = () => {
 Here is a simple `redux-persist` configuration:
 
 ```typescript
-// removes `loading` and `error` from persisted state
+// Removes `loading` and `error` from persisted state.
+// '_changeKey' is needed only when `mutuableCollections` enabled.
 function stringifyReplacer(key: string, value: unknown) {
-  return key === 'loading' || key === 'error' ? undefined : value
+  return key === 'loading' || key === 'error' || key === '_changeKey' ? undefined : value
 }
 
 const persistedReducer = persistReducer(
   {
     key: 'cache',
     storage,
-    whitelist: ['entities', 'queries'], // mutations are ignored
+    whitelist: ['entities', 'queries'], // Mutation states are ignored.
     throttle: 1000, // ms
     serialize: (value: unknown) => JSON.stringify(value, stringifyReplacer),
   },
