@@ -597,6 +597,6 @@ As example, can be overridden when implementing pagination.
 
 #### How race conditions are handled?
 
-**Queries:** Queries are throttled: query with the same cache key (generated from params by default) is cancelled if already running.
+**Queries:** Queries are deduplicated: queries with the same cache key (generated from params by default) use existing fetch promise if already fetching.
 
-**Mutations:** Mutations are debounced: previous similar mutation is aborted if it was running when the new one started. Third argument in mutations is `AbortSignal`, which can be used e.g. for cancelling http requests.
+**Mutations:** Mutations are cancelled: previous similar mutation is aborted if it was running when the new one started. Third argument in mutations is `AbortSignal`, which can be used e.g. for cancelling http requests.
