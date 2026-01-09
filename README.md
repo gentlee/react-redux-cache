@@ -192,7 +192,7 @@ export const {
   reducer,
   hooks: {useClient, useMutation, useQuery},
 } = withTypenames<CacheTypenames>().createCache({
-  name: 'cache', // Used as prefix for actions and in default cacheStateSelector for selecting cache state from redux state.
+  name: 'cache', // Used as prefix for actions and in default cacheStateSelector for selecting cache state from the store.
   queries: {
     getUsers: { query: getUsers },
     getUser: {
@@ -300,18 +300,19 @@ Please check `example/` folder (`npm run example` to run). There are examples fo
 export const UserScreen = () => {
   const {id} = useParams()
 
-  // useQuery connects to redux state and if user with that id is already cached, fetch won't happen (with default FetchPolicy.NoCacheOrExpired).
-  // Infers all types from created cache, telling here that params and result are of type `number`.
-  const [{result: userId, loading, error}] = useQuery({
+  // useQuery fetches data if query not cached already (with default FetchPolicy.NoCacheOrExpired).
+  // Infers all types from created cache so expects params of type `number`.
+  const [{result: user, loading, error}] = useQuery({
     query: 'getUser',
     params: Number(id),
   })
 
+  // Globally tracks loading state for mutation.
   const [updateUser, {loading: updatingUser}] = useMutation({
     mutation: 'updateUser',
   })
 
-  // This selector returns entities with proper types - User and Bank.
+  // This selector used only with normalization and returns entities with proper types - User and Bank.
   const user = useSelectEntityById(userId, 'users')
   const bank = useSelectEntityById(user?.bankId, 'banks')
 
