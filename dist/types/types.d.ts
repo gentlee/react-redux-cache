@@ -20,11 +20,14 @@ export type OptionalPartial<T, K extends keyof T> = Partial<{
 
 /** Entity changes to be merged to the state. */
 export type EntityChanges<T extends Typenames> = {
-  /** Entities that will be merged with existing. */
+  /**
+   * If the entity already exists, merge it. If not, add it.
+   * @warning Adding a partial entity will keep it partial in the state under full type.
+   */
   merge?: PartialEntitiesMap<T>
-  /** Entities that will replace existing. */
+  /** If the entity already exists, replace it. If not, add it. */
   replace?: Partial<EntitiesMap<T>>
-  /** Ids of entities that will be removed. */
+  /** If the entity exists, remove it. If not, do nothing. */
   remove?: EntityIds<T>
   /** Alias for `merge` to support normalizr. */
   entities?: EntityChanges<T>['merge']

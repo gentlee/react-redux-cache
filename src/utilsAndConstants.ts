@@ -133,7 +133,7 @@ export const applyEntityChanges = <T extends Typenames>(
     if (entitiesToMerge) {
       for (const id in entitiesToMerge) {
         const oldEntity = oldEntities?.[id]
-        const newEntity = {...oldEntity, ...entitiesToMerge[id]}
+        const newEntity = oldEntity ? {...oldEntity, ...entitiesToMerge[id]} : entitiesToMerge[id]
         if (!deepEqual?.(oldEntity, newEntity)) {
           newEntities ??= mutable ? (oldEntities ?? {}) : {...oldEntities}
           // @ts-expect-error Warning: partial entity possible in the new state after merge

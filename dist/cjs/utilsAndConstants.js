@@ -143,7 +143,9 @@ const applyEntityChanges = (entities, changes, options) => {
     if (entitiesToMerge) {
       for (const id in entitiesToMerge) {
         const oldEntity = oldEntities === null || oldEntities === void 0 ? void 0 : oldEntities[id]
-        const newEntity = Object.assign(Object.assign({}, oldEntity), entitiesToMerge[id])
+        const newEntity = oldEntity
+          ? Object.assign(Object.assign({}, oldEntity), entitiesToMerge[id])
+          : entitiesToMerge[id]
         if (!(deepEqual === null || deepEqual === void 0 ? void 0 : deepEqual(oldEntity, newEntity))) {
           newEntities !== null && newEntities !== void 0
             ? newEntities
