@@ -7,7 +7,7 @@
   <b>DOGE:</b> D7GMQdKhKC9ymbT9PtcetSFTQjyPRRfkwT <br>
 </details>
 
-# react-redux-cache (RRC)
+# RRC
 
 ### Supports both `Redux` and `Zustand` (check /example)
 
