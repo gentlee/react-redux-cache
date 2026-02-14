@@ -11,7 +11,7 @@
 
 ### Supports both `Redux` and `Zustand` (check /example)
 
-**Powerful**, **performant** yet **lightweight** data fetching and caching library that supports **normalization** unlike `React Query` and `RTK-Query`, while having similar but not over-engineered, simple interface. Covered with tests, fully typed and written on Typescript.
+**Powerful**, **performant** yet **lightweight** data fetching and caching library for immutable stores that supports **normalization** unlike `React Query` and `RTK-Query`, while having similar but not over-engineered, simple interface. Covered with tests, fully typed and written on Typescript.
 
 Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with **full control** over its store - redux or zustand.
 
