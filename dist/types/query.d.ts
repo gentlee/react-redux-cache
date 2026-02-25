@@ -1,6 +1,5 @@
-import type {Actions} from './createActions'
-import {Selectors} from './createSelectors'
-import type {Cache, Key, QueryResult, Store, Typenames} from './types'
+import {CachePrivate, InnerStore} from './private-types'
+import type {AnyStore, Key, QueryResult, Typenames} from './types'
 
 export declare const query: <
   N extends string,
@@ -12,40 +11,33 @@ export declare const query: <
   QK extends keyof (QP & QR),
 >(
   logTag: string,
-  store: Store,
-  cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'queries'>,
-  actions: Actions<N, T, QP, QR, MP, MR>,
-  selectors: Selectors<N, T, QP, QR, MP, MR>,
+  innerStore: InnerStore,
+  externalStore: AnyStore,
+  cache: Pick<CachePrivate<N, T, QP, QR, MP, MR>, 'config' | 'actions' | 'selectors'>,
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never,
-  secondsToLive: number | undefined,
   onlyIfExpired: boolean | undefined,
   skipFetch: boolean | undefined,
+  secondsToLive?: number | undefined,
   mergeResults?:
     | ((
         oldResult: QR[keyof QP & keyof QR & string] | undefined,
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & string]>,
         params: QP[keyof QP & keyof QR & string] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => QR[keyof QP & keyof QR & string])
     | ((
         oldResult: QR[keyof QP & keyof QR & number] | undefined,
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & number]>,
         params: QP[keyof QP & keyof QR & number] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => QR[keyof QP & keyof QR & number])
     | ((
         oldResult: QR[keyof QP & keyof QR & symbol] | undefined,
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & symbol]>,
         params: QP[keyof QP & keyof QR & symbol] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => QR[keyof QP & keyof QR & symbol])
     | undefined,
   onCompleted?:
@@ -53,71 +45,53 @@ export declare const query: <
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & string]> | undefined,
         error: unknown | undefined,
         params: QP[keyof QP & keyof QR & string] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & number]> | undefined,
         error: unknown | undefined,
         params: QP[keyof QP & keyof QR & number] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & symbol]> | undefined,
         error: unknown | undefined,
         params: QP[keyof QP & keyof QR & symbol] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => void)
     | undefined,
   onSuccess?:
     | ((
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & string]>,
         params: QP[keyof QP & keyof QR & string] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & number]>,
         params: QP[keyof QP & keyof QR & number] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & symbol]>,
         params: QP[keyof QP & keyof QR & symbol] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => void)
     | undefined,
   onError?:
     | ((
         error: unknown,
         params: QP[keyof QP & keyof QR & string] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => boolean | void | null | undefined)
     | ((
         error: unknown,
         params: QP[keyof QP & keyof QR & number] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => boolean | void | null | undefined)
     | ((
         error: unknown,
         params: QP[keyof QP & keyof QR & symbol] | undefined,
-        store: Store,
-        actions: Actions<N, T, QP, QR, MP, MR>,
-        selectors: Selectors<N, T, QP, QR, MP, MR>,
+        store: AnyStore,
       ) => boolean | void | null | undefined)
     | undefined,
 ) => Promise<QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>>

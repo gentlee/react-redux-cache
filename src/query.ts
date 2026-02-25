@@ -1,6 +1,5 @@
-import type {Actions} from './createActions'
-import {Selectors} from './createSelectors'
-import type {Cache, Key, QueryResult, Store, Typenames} from './types'
+import {CachePrivate, InnerStore} from './private-types'
+import type {AnyStore, Key, QueryResult, Typenames} from './types'
 import {logDebug, noop} from './utilsAndConstants'
 
 export const query = async <
@@ -13,27 +12,32 @@ export const query = async <
   QK extends keyof (QP & QR),
 >(
   logTag: string,
-  store: Store,
-  cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'queries'>,
-  actions: Actions<N, T, QP, QR, MP, MR>,
-  selectors: Selectors<N, T, QP, QR, MP, MR>,
+  innerStore: InnerStore,
+  externalStore: AnyStore,
+  cache: Pick<CachePrivate<N, T, QP, QR, MP, MR>, 'config' | 'actions' | 'selectors'>,
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never,
-  secondsToLive: number | undefined = cache.queries[queryKey].secondsToLive ??
-    cache.globals.queries.secondsToLive,
   onlyIfExpired: boolean | undefined,
   skipFetch: boolean | undefined,
-  mergeResults = cache.queries[queryKey].mergeResults,
-  onCompleted = cache.queries[queryKey].onCompleted,
-  onSuccess = cache.queries[queryKey].onSuccess,
-  onError = cache.queries[queryKey].onError,
+  secondsToLive: number | undefined = cache.config.queries[queryKey].secondsToLive ??
+    cache.config.globals.queries.secondsToLive,
+  mergeResults = cache.config.queries[queryKey].mergeResults,
+  onCompleted = cache.config.queries[queryKey].onCompleted,
+  onSuccess = cache.config.queries[queryKey].onSuccess,
+  onError = cache.config.queries[queryKey].onError,
 ): Promise<QueryResult<QK extends keyof (QP | QR) ? QR[QK] : never>> => {
-  const {selectQueryResult, selectQueryState} = selectors
+  const {
+    config: {
+      options: {logsEnabled},
+      queries,
+      globals,
+    },
+    actions,
+    selectors: {selectQueryResult, selectQueryState},
+  } = cache
 
-  const logsEnabled = cache.options.logsEnabled
-
-  const queryStateOnStart = selectQueryState(store.getState(), queryKey, cacheKey)
+  const queryStateOnStart = selectQueryState(innerStore.getState(), queryKey, cacheKey)
 
   if (skipFetch) {
     return {result: queryStateOnStart.result}
@@ -44,7 +48,7 @@ export const query = async <
       logDebug(`${logTag} fetch cancelled: already loading`, {queryStateOnStart, params, cacheKey})
 
     const error = await queryStateOnStart.loading.then(noop).catch(catchAndReturn)
-    const result = selectQueryResult(store.getState(), queryKey, cacheKey)
+    const result = selectQueryResult(innerStore.getState(), queryKey, cacheKey)
     const cancelled = 'loading'
     return error ? {cancelled, result, error} : {cancelled, result}
   }
@@ -63,13 +67,13 @@ export const query = async <
 
   const {updateQueryStateAndEntities} = actions
 
-  const fetchPromise = cache.queries[queryKey].query(
+  const fetchPromise = queries[queryKey].query(
     // @ts-expect-error fix later
     params,
-    store,
+    externalStore,
   )
 
-  store.dispatch(
+  innerStore.dispatch(
     updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, {
       loading: fetchPromise,
       params,
@@ -82,22 +86,20 @@ export const query = async <
   try {
     response = await fetchPromise
   } catch (error) {
-    store.dispatch(
+    innerStore.dispatch(
       updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, {
         error: error as Error,
         loading: undefined,
       }),
     )
     // @ts-expect-error params
-    if (!onError?.(error, params, store)) {
-      cache.globals.onError?.(
+    if (!onError?.(error, params, externalStore)) {
+      globals.onError?.(
         error,
         // @ts-expect-error queryKey
         queryKey,
         params,
-        store,
-        actions,
-        selectors,
+        externalStore,
       )
     }
     onCompleted?.(
@@ -105,11 +107,9 @@ export const query = async <
       error,
       // @ts-expect-error params
       params,
-      store,
-      actions,
-      selectors,
+      externalStore,
     )
-    return {error, result: selectQueryResult(store.getState(), queryKey, cacheKey)}
+    return {error, result: selectQueryResult(innerStore.getState(), queryKey, cacheKey)}
   }
 
   const newState = {
@@ -119,33 +119,27 @@ export const query = async <
     result: mergeResults
       ? mergeResults(
           // @ts-expect-error fix later
-          selectQueryResult(store.getState(), queryKey, cacheKey),
+          selectQueryResult(innerStore.getState(), queryKey, cacheKey),
           response,
           params,
-          store,
-          actions,
-          selectors,
+          externalStore,
         )
       : response.result,
   }
 
-  store.dispatch(updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, newState, response))
+  innerStore.dispatch(updateQueryStateAndEntities(queryKey as keyof (QP | QR), cacheKey, newState, response))
   onSuccess?.(
     // @ts-expect-error response
     response,
     params,
-    store,
-    actions,
-    selectors,
+    externalStore,
   )
   onCompleted?.(
     // @ts-expect-error response
     response,
     undefined,
     params,
-    store,
-    actions,
-    selectors,
+    externalStore,
   )
 
   // @ts-expect-error fix types

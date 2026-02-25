@@ -1,10 +1,11 @@
 import {generateTestBank, generateTestEntitiesMap, generateTestUser} from '../../testing/api/utils'
 import {testCaches, TestTypenames} from '../../testing/redux/cache'
+import {consoleWarnSpy} from '../../testing/setup'
 import {EntityChanges} from '../../types'
 
 describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
   const {
-    cache: {
+    config: {
       options: {mutableCollections},
     },
     utils: {applyEntityChanges},
@@ -158,8 +159,6 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
   })
 
   test('warn if merge and entities both set', () => {
-    const warnSpy = jest.spyOn(console, 'warn')
-
     const entitiesMap = generateTestEntitiesMap(1)
     const changes: EntityChanges<TestTypenames> = {
       merge: {
@@ -172,15 +171,12 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
 
     applyEntityChanges(entitiesMap, changes)
 
-    expect(warnSpy.mock.calls).toStrictEqual([
+    expect(consoleWarnSpy.mock.calls).toStrictEqual([
       ['@rrc [applyEntityChanges]', 'merge and entities should not be both set'],
     ])
-    warnSpy.mockClear()
   })
 
   test('warn if merge, replace or remove have intersections', () => {
-    const warnSpy = jest.spyOn(console, 'warn')
-
     const entitiesMap = generateTestEntitiesMap(1)
     const changes: EntityChanges<TestTypenames> = {
       merge: {
@@ -205,12 +201,11 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     ;[changes, changes2, changes3].forEach((changes) => {
       applyEntityChanges(entitiesMap, changes)
     })
-    expect(warnSpy.mock.calls).toStrictEqual([
+    expect(consoleWarnSpy.mock.calls).toStrictEqual([
       ['@rrc [applyEntityChanges]', 'merge, replace and remove changes have intersections for: users'],
       ['@rrc [applyEntityChanges]', 'merge, replace and remove changes have intersections for: users'],
       ['@rrc [applyEntityChanges]', 'merge, replace and remove changes have intersections for: users'],
       ['@rrc [applyEntityChanges]', 'merge, replace and remove changes have intersections for: banks'],
     ])
-    warnSpy.mockClear()
   })
 })

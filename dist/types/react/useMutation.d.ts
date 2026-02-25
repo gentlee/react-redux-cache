@@ -1,6 +1,5 @@
-import {Actions} from './createActions'
-import {Selectors} from './createSelectors'
-import {Cache, Key, MutateOptions, MutationState, Store, Typenames} from './types'
+import {CachePrivate} from '../private-types'
+import {MutateOptions, MutationState, Typenames} from '../types'
 
 export declare const useMutation: <
   N extends string,
@@ -11,16 +10,16 @@ export declare const useMutation: <
   MR,
   MK extends keyof (MP & MR),
 >(
-  cache: Pick<Cache<N, T, QP, QR, MP, MR>, 'options' | 'globals' | 'mutations' | 'storeHooks'>,
-  actions: Actions<N, T, QP, QR, MP, MR>,
-  selectors: Selectors<N, T, QP, QR, MP, MR>,
-  options: Omit<MutateOptions<N, T, QP, QR, MP, MR, MK>, 'params'>,
-  abortControllers: WeakMap<Store, Record<Key, AbortController>>,
+  cache: Pick<
+    CachePrivate<N, T, QP, QR, MP, MR>,
+    'abortControllers' | 'actions' | 'selectors' | 'storeHooks' | 'config'
+  >,
+  options: Omit<MutateOptions<T, MP, MR, MK>, 'params'>,
 ) => readonly [
   (
     params: MK extends keyof MP & keyof MR ? MP[MK] : never,
   ) => Promise<
-    import('./types').MutationResult<
+    import('../types').MutationResult<
       MK extends infer T_1
         ? T_1 extends MK
           ? T_1 extends keyof MP & keyof MR

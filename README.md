@@ -192,7 +192,7 @@ export const {
   reducer,
   hooks: {useClient, useMutation, useQuery},
 } = withTypenames<CacheTypenames>().createCache({
-  name: 'cache', // Used as prefix for actions and in default cacheStateSelector for selecting cache state from the store.
+  name: 'cache', // Used as prefix for actions and in default cacheStateKey for selecting cache state from the store.
   queries: {
     getUsers: { query: getUsers },
     getUser: {
@@ -231,6 +231,8 @@ type EntityChanges<T extends Typenames> = {
 
 Redux:
 ```typescript
+const {actions, reducer} = initializeForRedux(cache)
+
 // Create store as usual, passing the new cache reducer under the name of the cache.
 // If some other redux structure is needed, provide custom cacheStateSelector when creating cache.
 const store = configureStore({
@@ -243,19 +245,13 @@ const store = configureStore({
 
 Zustand:
 ```typescript
-type State = {[cache.name]: ReturnType<typeof reducer>}
-type Actions = {dispatch: (action: Parameters<typeof reducer>[1]) => void}
 
-const initialState = {[cache.name]: getInitialState()}
+const initialState = getInitialState()
 
-export const useStore = create<State & Actions>((set, get) => ({
-  ...initialState,
-  dispatch: (action) => set({[cache.name]: reducer(get()[cache.name], action)}),
-}))
+const useStore = create((set, get) => initialState)
 
-const store = {dispatch: useStore.getState().dispatch, getState: useStore.getState}
-cache.storeHooks.useStore = () => store
-cache.storeHooks.useSelector = useStore
+// `actions` are the same synchronous functions as used by RRC to manage the cache.
+const {actions} = initializeForZustand(cache, useStore)
 ```
 
 #### api.ts
