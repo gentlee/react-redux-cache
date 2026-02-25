@@ -2,6 +2,7 @@ import {act, render} from '@testing-library/react'
 import React from 'react'
 import {Provider} from 'react-redux'
 
+import {createHooks} from '../../react/createHooks'
 import {assertEventLog, logEvent} from '../../testing/api/utils'
 import {testCaches} from '../../testing/redux/cache'
 import {createReduxStore} from '../../testing/redux/store'
@@ -9,8 +10,8 @@ import {createReduxStore} from '../../testing/redux/store'
 describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
   const {
     actions: {mergeEntityChanges, updateQueryStateAndEntities, updateMutationStateAndEntities},
-    hooks: {useEntitiesByTypename},
   } = cache
+  const {useEntitiesByTypename} = createHooks(cache)
 
   test('useEntitiesByTypename', () => {
     const store = createReduxStore(cache)

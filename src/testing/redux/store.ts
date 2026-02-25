@@ -7,9 +7,9 @@ import {testCache} from './cache'
 
 export const createReduxStore = <N extends string, T extends Typenames, QP, QR, MP, MR>(
   {
-    cache: {name},
+    config: {name},
     reducer,
-  }: {cache: {name: N}; reducer: ReturnType<typeof createReducer<N, T, QP, QR, MP, MR>>},
+  }: {config: {name: N}; reducer: ReturnType<typeof createReducer<N, T, QP, QR, MP, MR>>},
   eventLogEnabled = false,
   consoleLoggerEnabled = false,
 ) => {
@@ -23,7 +23,8 @@ export const createReduxStore = <N extends string, T extends Typenames, QP, QR, 
       return next(action)
     })
   }
-  return createStore(combineReducers({[name]: reducer}), applyMiddleware(...middlewares))
+  const store = createStore(combineReducers({[name]: reducer} as const), applyMiddleware(...middlewares))
+  return store
 }
 
 export const EMPTY_STATE = Object.freeze(createReduxStore(testCache).getState().cache)

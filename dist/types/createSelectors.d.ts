@@ -1,17 +1,17 @@
-import {Cache, Key, MutationState, QueryState, Typenames} from './types'
+import {CacheState, Key, MutationState, QueryState, Typenames} from './types'
 
 export type Selectors<
-  N extends string = string,
   T extends Typenames = Typenames,
   QP = unknown,
   QR = unknown,
   MP = unknown,
   MR = unknown,
-> = ReturnType<typeof createSelectors<N, T, QP, QR, MP, MR>>
+> = ReturnType<typeof createSelectors<T, QP, QR, MP, MR>>
 
-export declare const createSelectors: <N extends string, T extends Typenames, QP, QR, MP, MR>(
-  cache: Cache<N, T, QP, QR, MP, MR>,
+export declare const createSelectors: <T extends Typenames, QP, QR, MP, MR>(
+  selectCacheState: (state: unknown) => CacheState<T, QP, QR, MP, MR>,
 ) => {
+  selectCacheState: (state: unknown) => CacheState<T, QP, QR, MP, MR>
   selectEntityById: <TN extends keyof T>(
     state: unknown,
     id: Key | null | undefined,

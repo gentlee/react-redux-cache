@@ -2,6 +2,7 @@ import {act, render as renderImpl} from '@testing-library/react'
 import React from 'react'
 import {Provider} from 'react-redux'
 
+import {createHooks} from '../react/createHooks'
 import {assertEventLog, generateTestEntitiesMap, generateTestUser, logEvent} from '../testing/api/utils'
 import {testCaches} from '../testing/redux/cache'
 import {EMPTY_STATE} from '../testing/redux/store'
@@ -10,12 +11,9 @@ import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
 
 describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
   const {
-    actions,
-    cache: {
+    config: {
       options: {mutableCollections},
     },
-    hooks: {useMutation},
-    selectors,
     selectors: {
       selectMutationError,
       selectMutationLoading,
@@ -24,6 +22,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       selectMutationState,
     },
   } = cache
+  const {useMutation} = createHooks(cache)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let store: ReturnType<typeof createReduxStore<'cache', any, any, any, any, any>>
@@ -111,13 +110,11 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     await act(advanceApiTimeout)
 
     expect(selectMutationError(store.getState(), 'mutationWithError')).toHaveProperty('message', 'Test error')
-    expect(cache.cache.globals.onError).toBeCalledWith(
+    expect(cache.config.globals.onError).toBeCalledWith(
       new Error('Test error'),
       'mutationWithError',
       undefined,
       store,
-      actions,
-      selectors,
     )
   })
 

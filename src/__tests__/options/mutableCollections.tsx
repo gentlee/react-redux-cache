@@ -8,23 +8,23 @@ import {createReduxStore} from '../../testing/redux/store'
 
 describe.each(testCaches)('%s', (_, cache) => {
   const {
-    cache: {
-      storeHooks,
+    config: {
       options: {mutableCollections},
     },
     actions: {mergeEntityChanges, updateQueryStateAndEntities, updateMutationStateAndEntities},
     selectors,
+    storeHooks,
   } = cache
 
   test('subscription to collections', () => {
     const store = createReduxStore(cache)
 
     const TestComponent = () => {
-      storeHooks.useSelector(selectors.selectEntities)
-      storeHooks.useSelector((state) => selectors.selectEntitiesByTypename(state, 'users'))
-      storeHooks.useSelector((state) => selectors.selectCacheState(state).queries)
-      storeHooks.useSelector((state) => selectors.selectCacheState(state).queries.getUser)
-      storeHooks.useSelector((state) => selectors.selectCacheState(state).mutations)
+      storeHooks!.useSelector(selectors.selectEntities)
+      storeHooks!.useSelector((state) => selectors.selectEntitiesByTypename(state, 'users'))
+      storeHooks!.useSelector((state) => selectors.selectCacheState(state).queries)
+      storeHooks!.useSelector((state) => selectors.selectCacheState(state).queries.getUser)
+      storeHooks!.useSelector((state) => selectors.selectCacheState(state).mutations)
 
       logEvent('render')
 

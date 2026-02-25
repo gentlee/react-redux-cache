@@ -1,27 +1,26 @@
 import {EMPTY_OBJECT} from './utilsAndConstants'
 
-export const createSelectors = (cache) => {
+export const createSelectors = (selectCacheState) => {
   const selectEntityById = (state, id, typename) => {
     var _a
     return id == null
       ? undefined
-      : (_a = cache.cacheStateSelector(state).entities[typename]) === null || _a === void 0
+      : (_a = selectCacheState(state).entities[typename]) === null || _a === void 0
         ? void 0
         : _a[id]
   }
   const selectQueryState = (state, query, cacheKey) => {
     var _a
-    return (_a = cache.cacheStateSelector(state).queries[query][cacheKey]) !== null && _a !== void 0
+    return (_a = selectCacheState(state).queries[query][cacheKey]) !== null && _a !== void 0
       ? _a
       : EMPTY_OBJECT
   }
   const selectMutationState = (state, mutation) => {
     var _a
-    return (_a = cache.cacheStateSelector(state).mutations[mutation]) !== null && _a !== void 0
-      ? _a
-      : EMPTY_OBJECT
+    return (_a = selectCacheState(state).mutations[mutation]) !== null && _a !== void 0 ? _a : EMPTY_OBJECT
   }
   return {
+    selectCacheState,
     selectEntityById,
     selectQueryState,
     selectQueryResult: (state, query, cacheKey) => {
@@ -55,10 +54,10 @@ export const createSelectors = (cache) => {
       return selectMutationState(state, mutation).params
     },
     selectEntities: (state) => {
-      return cache.cacheStateSelector(state).entities
+      return selectCacheState(state).entities
     },
     selectEntitiesByTypename: (state, typename) => {
-      return cache.cacheStateSelector(state).entities[typename]
+      return selectCacheState(state).entities[typename]
     },
   }
 }

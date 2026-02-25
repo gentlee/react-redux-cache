@@ -1,14 +1,20 @@
 /* eslint-disable padding-line-between-statements */
 export {createCache, withTypenames} from './createCache'
+export * from './react/createHooks'
+export * from './redux'
 export * from './types'
 export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noop} from './utilsAndConstants'
+export * from './zustand'
 
 // Backlog
 
 // ! high (1.0.0-rc.0)
-// enable / disable deep comparison for separate actions
+// better init and imports for react/redux/zustand
 
 // ! medium
+// remove empty states by query key
+// enable / disable deep comparison for separate actions
+// override deep comparison for entities & states
 // optimistic response
 // onCancel & onAbort
 // remove empty entities and queries from state

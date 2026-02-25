@@ -1,4 +1,6 @@
 import {withTypenames} from '../../createCache'
+import {CacheToPrivate} from '../../private-types'
+import {initializeForRedux} from '../../redux'
 import {getUser, getUsers, removeUser, updateUser, updateUserNotNormalized} from '../api/mocks'
 import type {Bank, User} from '../api/types'
 import {logEvent} from '../api/utils'
@@ -15,10 +17,10 @@ type TestWithChangeKey = (
 ) => typeof mutable
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const createTestCache = (mutable: boolean, cacheStateSelector?: any, selectorComparer?: any) =>
-  withTypenames<TestTypenames>().createCache({
+export const createTestCache = (mutable: boolean, cacheStateKey?: string, selectorComparer?: any) => {
+  const cache = withTypenames<TestTypenames>().createCache({
     name: 'cache',
-    cacheStateSelector,
+    cacheStateKey,
     options: {
       // logsEnabled: true,
       additionalValidation: true,
@@ -64,13 +66,13 @@ export const createTestCache = (mutable: boolean, cacheStateSelector?: any, sele
       },
       getFullUser: {
         query: getUser,
-        fetchPolicy(expired, id, _, {getState}, {selectEntityById}) {
+        fetchPolicy(expired, id, _, {getState}): boolean {
           if (expired) {
             return true
           }
 
           // fetch if user is not full
-          const user = selectEntityById(getState(), id, 'users')
+          const user = cache.selectors.selectEntityById(getState(), id, 'users')
           return !user || !('name' in user) || !('bankId' in user)
         },
       },
@@ -103,6 +105,9 @@ export const createTestCache = (mutable: boolean, cacheStateSelector?: any, sele
       },
     },
   })
+  const {actions, reducer} = initializeForRedux(cache)
+  return {...(cache as CacheToPrivate<typeof cache>), actions, reducer}
+}
 
 export const testCache = createTestCache(false)
 
