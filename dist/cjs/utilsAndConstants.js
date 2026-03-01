@@ -1,6 +1,8 @@
 'use strict'
 Object.defineProperty(exports, '__esModule', {value: true})
-exports.incrementChangeKey =
+exports.validateStoreHooks =
+  exports.isRootState =
+  exports.incrementChangeKey =
   exports.FetchPolicy =
   exports.createStateComparer =
   exports.isEmptyObject =
@@ -221,3 +223,13 @@ const incrementChangeKey = (mutable) => {
   }
 }
 exports.incrementChangeKey = incrementChangeKey
+const isRootState = (cacheStateKey) => cacheStateKey === '.' || cacheStateKey === ''
+exports.isRootState = isRootState
+const validateStoreHooks = (storeHooks) => {
+  if (storeHooks === undefined) {
+    throw new Error(
+      `@${exports.PACKAGE_SHORT_NAME} Cache not initialized yet. Use initializeForRedux or initializeFoZustand before creating hooks.`,
+    )
+  }
+}
+exports.validateStoreHooks = validateStoreHooks

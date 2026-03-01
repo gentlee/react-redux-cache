@@ -9,12 +9,13 @@ import {advanceHalfApiTimeout} from '../testing/utils'
 
 describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
   const {
-    cache: {
+    actions: {updateQueryStateAndEntities},
+    config: {
       options: {mutableCollections},
     },
-    actions: {updateQueryStateAndEntities},
-    hooks: {useClient},
+    hooks,
   } = cache
+  const {useClient} = hooks!
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let store: ReturnType<typeof createReduxStore<'cache', any, any, any, any, any>>

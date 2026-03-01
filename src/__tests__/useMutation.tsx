@@ -10,12 +10,9 @@ import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
 
 describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
   const {
-    actions,
-    cache: {
+    config: {
       options: {mutableCollections},
     },
-    hooks: {useMutation},
-    selectors,
     selectors: {
       selectMutationError,
       selectMutationLoading,
@@ -23,7 +20,9 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       selectMutationResult,
       selectMutationState,
     },
+    hooks,
   } = cache
+  const {useMutation} = hooks!
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let store: ReturnType<typeof createReduxStore<'cache', any, any, any, any, any>>
@@ -111,13 +110,11 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     await act(advanceApiTimeout)
 
     expect(selectMutationError(store.getState(), 'mutationWithError')).toHaveProperty('message', 'Test error')
-    expect(cache.cache.globals.onError).toBeCalledWith(
+    expect(cache.config.globals.onError).toBeCalledWith(
       new Error('Test error'),
       'mutationWithError',
       undefined,
       store,
-      actions,
-      selectors,
     )
   })
 

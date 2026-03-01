@@ -1,3 +1,4 @@
+'use strict'
 var __awaiter =
   (this && this.__awaiter) ||
   function (thisArg, _arguments, P, generator) {
@@ -29,83 +30,86 @@ var __awaiter =
       step((generator = generator.apply(thisArg, _arguments || [])).next())
     })
   }
-import {useCallback, useEffect} from 'react'
-
-import {query as queryImpl} from './query'
-import {createStateComparer, defaultGetCacheKey, EMPTY_OBJECT, logDebug} from './utilsAndConstants'
-
-export const useQuery = (cache, actions, selectors, options) => {
+Object.defineProperty(exports, '__esModule', {value: true})
+exports.useQuery = void 0
+const react_1 = require('react')
+const query_1 = require('../query')
+const utilsAndConstants_1 = require('../utilsAndConstants')
+const useQuery = (cache, useQueryOptions) => {
   var _a, _b, _c, _d, _e
+  const {
+    storeHooks,
+    config: {queries, globals, options: configOptions},
+    selectors: {selectQueryState},
+  } = cache
+  ;(0, utilsAndConstants_1.validateStoreHooks)(storeHooks)
   const {
     query: queryKey,
     skipFetch = false,
     params,
-    secondsToLive,
     selectorComparer,
-    fetchPolicy = (_a = cache.queries[queryKey].fetchPolicy) !== null && _a !== void 0
+    fetchPolicy = (_a = queries[queryKey].fetchPolicy) !== null && _a !== void 0
       ? _a
-      : cache.globals.queries.fetchPolicy,
-    mergeResults,
-    onCompleted,
-    onSuccess,
-    onError,
-  } = options
-  const {selectQueryState} = selectors
-  const queryInfo = cache.queries[queryKey]
-  const logsEnabled = cache.options.logsEnabled
-  const getCacheKey = (_b = queryInfo.getCacheKey) !== null && _b !== void 0 ? _b : defaultGetCacheKey
+      : globals.queries.fetchPolicy,
+  } = useQueryOptions
+  const queryInfo = queries[queryKey]
+  const logsEnabled = configOptions.logsEnabled
+  const getCacheKey =
+    (_b = queryInfo.getCacheKey) !== null && _b !== void 0 ? _b : utilsAndConstants_1.defaultGetCacheKey
   const comparer =
     selectorComparer === undefined
       ? (_d =
           (_c = queryInfo.selectorComparer) !== null && _c !== void 0
             ? _c
-            : cache.globals.queries.selectorComparer) !== null && _d !== void 0
+            : globals.queries.selectorComparer) !== null && _d !== void 0
         ? _d
         : defaultStateComparer
       : typeof selectorComparer === 'function'
         ? selectorComparer
-        : createStateComparer(selectorComparer)
-  const store = cache.storeHooks.useStore()
+        : (0, utilsAndConstants_1.createStateComparer)(selectorComparer)
+  const innerStore = storeHooks.useStore()
+  const externalStore = storeHooks.useExternalStore()
   const cacheKey = getCacheKey(params)
-  const performFetch = useCallback(
+  const performFetch = (0, react_1.useCallback)(
     (options) =>
       __awaiter(void 0, void 0, void 0, function* () {
         const paramsPassed = options && 'params' in options
-        return yield queryImpl(
+        const {secondsToLive, mergeResults, onCompleted, onSuccess, onError} = useQueryOptions
+        return yield (0, query_1.query)(
           'useQuery.fetch',
-          store,
+          innerStore,
+          externalStore,
           cache,
-          actions,
-          selectors,
           queryKey,
           paramsPassed ? getCacheKey(options.params) : cacheKey,
           paramsPassed ? options.params : params,
-          secondsToLive,
           options === null || options === void 0 ? void 0 : options.onlyIfExpired,
           false,
+          secondsToLive,
           mergeResults,
           onCompleted,
           onSuccess,
           onError,
         )
       }),
-    [store, queryKey, cacheKey],
+    [innerStore, externalStore, queryKey, cacheKey],
   )
   const queryState =
-    (_e = cache.storeHooks.useSelector((state) => {
+    (_e = storeHooks.useSelector((state) => {
       return selectQueryState(state, queryKey, cacheKey)
     }, comparer)) !== null && _e !== void 0
       ? _e
-      : EMPTY_OBJECT
-  useEffect(() => {
+      : utilsAndConstants_1.EMPTY_OBJECT
+  ;(0, react_1.useEffect)(() => {
     if (skipFetch) {
-      logsEnabled && logDebug('useQuery.useEffect skip fetch', {skipFetch, queryKey, cacheKey})
+      logsEnabled &&
+        (0, utilsAndConstants_1.logDebug)('useQuery.useEffect skip fetch', {skipFetch, queryKey, cacheKey})
       return
     }
     const expired = queryState.expiresAt != null && queryState.expiresAt <= Date.now()
-    if (!fetchPolicy(expired, params, queryState, store, selectors)) {
+    if (!fetchPolicy(expired, params, queryState, externalStore)) {
       logsEnabled &&
-        logDebug('useQuery.useEffect skip fetch due to fetch policy', {
+        (0, utilsAndConstants_1.logDebug)('useQuery.useEffect skip fetch due to fetch policy', {
           queryState,
           expired,
           queryKey,
@@ -115,8 +119,14 @@ export const useQuery = (cache, actions, selectors, options) => {
     }
     performFetch()
   }, [cacheKey, skipFetch])
-  logsEnabled && logDebug('useQuery', {cacheKey, options, queryState})
+  logsEnabled &&
+    (0, utilsAndConstants_1.logDebug)('useQuery', {cacheKey, options: useQueryOptions, queryState})
   return [queryState, performFetch]
 }
-
-const defaultStateComparer = createStateComparer(['result', 'loading', 'params', 'error'])
+exports.useQuery = useQuery
+const defaultStateComparer = (0, utilsAndConstants_1.createStateComparer)([
+  'result',
+  'loading',
+  'params',
+  'error',
+])

@@ -9,8 +9,9 @@ import {createReduxStore} from '../../testing/redux/store'
 describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
   const {
     actions: {mergeEntityChanges, updateQueryStateAndEntities, updateMutationStateAndEntities},
-    hooks: {useEntitiesByTypename},
+    hooks,
   } = cache
+  const {useEntitiesByTypename} = hooks!
 
   test('useEntitiesByTypename', () => {
     const store = createReduxStore(cache)

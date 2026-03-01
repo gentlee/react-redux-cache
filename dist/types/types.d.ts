@@ -1,5 +1,5 @@
 import type {Actions} from './createActions'
-import type {Selectors} from './createSelectors'
+import {createCache} from './createCache'
 
 export type Key = string | number | symbol
 
@@ -33,39 +33,62 @@ export type EntityChanges<T extends Typenames> = {
   entities?: EntityChanges<T>['merge']
 }
 
-export type Store<S = unknown> = {
+export type ReduxStoreLike<S = unknown> = {
   dispatch: (action: ReturnType<Actions[keyof Actions]>) => unknown
   getState: () => S
 }
 
+export type ZustandStoreLike<S = unknown> = UseSelector & {
+  setState: (state: Partial<S>) => void
+  getState: () => S
+}
+
+export type AnyStore<S = unknown> = ReduxStoreLike<S> | ZustandStoreLike<S>
+
+export type UseSelector = <S = unknown, R = unknown>(
+  selector: (state: S) => R,
+  comparer?: (x: R, y: R) => boolean,
+) => R
+
 /** Record of typename and its corresponding entity type */
 export type Typenames = Record<string, object>
 
-export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = {
-  /** Used as prefix for actions and in default cacheStateSelector for selecting cache state from store root state. */
+export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = ReturnType<
+  typeof createCache<N, T, QP, QR, MP, MR>
+>
+
+export type StoreHooks = {
+  useStore: () => ReduxStoreLike
+  useSelector: UseSelector
+  useExternalStore: () => AnyStore
+}
+
+export type CacheConfig<
+  N extends string = string,
+  T extends Typenames = Typenames,
+  QP = unknown,
+  QR = unknown,
+  MP = unknown,
+  MR = unknown,
+> = {
+  /** Used as prefix for actions and as default `cacheStateKey`. */
   name: N
+  /**
+   * Key of the cache state in the original store state. Empty string or '.' are considered as root. Default equals to name.
+   * @warning Deep nesting is not supported - only root or first level.
+   */
+  cacheStateKey: string
   /** Cache options. */
   options: CacheOptions
   /** Default options for queries and mutations. */
-  globals: Globals<N, T, QP, QR, MP, MR>
-  /** Hooks to access and subscribe to the store. Imported from react-redux if not overridden. */
-  storeHooks: {
-    useStore: () => Store
-    useSelector: <R>(selector: (state: unknown) => R, comparer?: (x: R, y: R) => boolean) => R
-  }
-  /** Should return cache state from store root state. Default implementation returns `state[name]`. */
-  cacheStateSelector: (state: any) => CacheState<T, QP, QR, MP, MR>
+  globals: Globals<T>
   /** Queries. */
   queries: {
-    [QK in keyof (QP & QR)]: QK extends keyof (QP | QR)
-      ? QueryInfo<N, T, QP[QK], QR[QK], QP, QR, MP, MR>
-      : never
+    [QK in keyof (QP & QR)]: QK extends keyof (QP | QR) ? QueryInfo<T, QP[QK], QR[QK]> : never
   }
   /** Mutations. */
   mutations: {
-    [MK in keyof (MP & MR)]: MK extends keyof (MP | MR)
-      ? MutationInfo<N, T, MP[MK], MR[MK], QP, QR, MP, MR>
-      : never
+    [MK in keyof (MP & MR)]: MK extends keyof (MP | MR) ? MutationInfo<T, MP[MK], MR[MK]> : never
   }
 }
 
@@ -74,16 +97,9 @@ export type QueryStateComparer<T extends Typenames, P, R> = (
   y: QueryState<T, P, R> | undefined,
 ) => boolean
 
-export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
+export type Globals<T extends Typenames> = {
   /** Handles errors, not handled by onError from queries and mutations. @Default undefined. */
-  onError?: (
-    error: unknown,
-    key: string,
-    params: unknown,
-    store: Store,
-    actions: Actions<N, T, QP, QR, MP, MR>,
-    selectors: Selectors<N, T, QP, QR, MP, MR>,
-  ) => void
+  onError?: (error: unknown, key: string, params: unknown, store: AnyStore) => void
   /** Query options. */
   queries: {
     /** Determines when useQuery fetch triggers should start fetching. Fetch is performed if function returns true.
@@ -93,15 +109,14 @@ export type Globals<N extends string, T extends Typenames, QP, QR, MP, MR> = {
       expired: boolean,
       params: unknown,
       state: QueryState<T, unknown, unknown>,
-      store: Store,
-      selectors: Selectors<N, T, QP, QR, MP, MR>,
+      store: AnyStore,
     ) => boolean
     /** Disables any fetches when set to true. Triggers fetch when changed to false. @Default false */
     skipFetch: boolean
     /** If set, this value updates expiresAt value of query state when query result is received. @Default undefined */
     secondsToLive?: number
     /** Either comparer function, or array of keys to subscribe by useQuery's useSelector. @Default compares result, loading, params, error. */
-    selectorComparer?: QueryStateComparer<T, unknown, unknown> | (keyof QueryState<T, unknown, unknown>)[]
+    selectorComparer?: QueryStateComparer<T, unknown, unknown> | (keyof QueryState)[]
   }
 }
 
@@ -148,35 +163,29 @@ export type CacheState<T extends Typenames, QP, QR, MP, MR> = {
   } & Mutable
 }
 
-export type QueryInfo<
-  N extends string,
-  T extends Typenames = Typenames,
-  P = unknown,
-  R = unknown,
-  QP = unknown,
-  QR = unknown,
-  MP = unknown,
-  MR = unknown,
-> = Partial<Pick<Globals<N, T, QP, QR, MP, MR>['queries'], 'skipFetch' | 'secondsToLive'>> & {
+export type CacheClient<T extends Typenames, QP, QR, MP, MR> = {
+  query: <QK extends keyof (QP & QR)>(
+    options: QueryOptions<T, QP, QR, QK>,
+  ) => Promise<QueryResult<QK extends keyof (QP | QR) ? QP[QK] : never>>
+  mutate: <MK extends keyof (MP & MR)>(
+    options: MutateOptions<T, MP, MR, MK>,
+  ) => Promise<MutationResult<MK extends keyof (MP | MR) ? MR[MK] : never>>
+}
+
+export type QueryInfo<T extends Typenames = Typenames, P = unknown, R = unknown> = Partial<
+  Pick<Globals<T>['queries'], 'skipFetch' | 'secondsToLive'>
+> & {
   query: NormalizedQuery<T, P, R>
   /** Determines when useQuery fetch triggers should start fetching. Fetch is performed if function returns true.
    * Fetch triggers are: 1) mount 2) cache key change 3) skipFetch value change to false.
    * @Default FetchPolicy.NoCacheOrExpired */
-  fetchPolicy?: (
-    expired: boolean,
-    params: P,
-    queryState: QueryState<T, P, R>,
-    store: Store,
-    selectors: Selectors<N, T, QP, QR, MP, MR>,
-  ) => boolean
+  fetchPolicy?: (expired: boolean, params: P, queryState: QueryState<T, P, R>, store: AnyStore) => boolean
   /** Merges results before saving to the store. Default implementation is using the latest result. */
   mergeResults?: (
     oldResult: R | undefined,
     response: NormalizedQueryResponse<T, R>,
     params: P | undefined,
-    store: Store,
-    actions: Actions<N, T, QP, QR, MP, MR>,
-    selectors: Selectors<N, T, QP, QR, MP, MR>,
+    store: AnyStore,
   ) => R
   /**
    * Cache key is used for storing the query state and for performing a fetch when it changes. Queries with the same cache key share their state.
@@ -189,42 +198,28 @@ export type QueryInfo<
     response: NormalizedQueryResponse<T, R> | undefined,
     error: unknown | undefined,
     params: P | undefined,
-    store: Store,
-    actions: Actions<N, T, QP, QR, MP, MR>,
-    selectors: Selectors<N, T, QP, QR, MP, MR>,
+    store: AnyStore,
   ) => void
   /** Called after fetch finished successfully. */
-  onSuccess?: (
-    response: NormalizedQueryResponse<T, R>,
-    params: P | undefined,
-    store: Store,
-    actions: Actions<N, T, QP, QR, MP, MR>,
-    selectors: Selectors<N, T, QP, QR, MP, MR>,
-  ) => void
+  onSuccess?: (response: NormalizedQueryResponse<T, R>, params: P | undefined, store: AnyStore) => void
   /** Called after fetch finished with error. Should return true if error was handled and does not require global onError handling. */
-  onError?: (
-    error: unknown,
-    params: P | undefined,
-    store: Store,
-    actions: Actions<N, T, QP, QR, MP, MR>,
-    selectors: Selectors<N, T, QP, QR, MP, MR>,
-  ) => boolean | void | null | undefined
+  onError?: (error: unknown, params: P | undefined, store: AnyStore) => boolean | void | null | undefined
   /** Either comparer function, or array of keys to subscribe by useQuery's useSelector. Default compares params, result, loading, error. */
-  selectorComparer?: QueryStateComparer<T, P, R> | (keyof QueryState<T, P, R>)[]
+  selectorComparer?: QueryStateComparer<T, P, R> | (keyof QueryState)[]
 }
 
 export type Query<P = unknown, R = unknown> = (
   /** Query parameters */
   params: P,
   /** Store */
-  store: Store,
+  store: AnyStore,
 ) => Promise<QueryResponse<R>>
 
 export type NormalizedQuery<T extends Typenames = Typenames, P = unknown, R = unknown> = (
   ...args: Parameters<Query<P, R>>
 ) => Promise<NormalizedQueryResponse<T, R>>
 
-export type QueryState<T extends Typenames, P, R> = MutationState<T, P, R> & {
+export type QueryState<T extends Typenames = Typenames, P = unknown, R = unknown> = MutationState<T, P, R> & {
   /**
    * Timestamp in milliseconds, after which state is considered expired.
    * Hooks may refetch the query again when component mounts, cache key or skip option change, depending on the fetch policy.
@@ -233,28 +228,11 @@ export type QueryState<T extends Typenames, P, R> = MutationState<T, P, R> & {
   expiresAt?: number
 }
 
-export type UseQueryOptions<
-  N extends string,
-  T extends Typenames,
-  QK extends keyof (QP & QR),
-  QP,
-  QR,
-  MP,
-  MR,
-> = {
+export type UseQueryOptions<T extends Typenames, QK extends keyof (QP & QR), QP, QR> = {
   query: QK
   params: QK extends keyof (QP | QR) ? QP[QK] : never
 } & Pick<
-  QueryInfo<
-    N,
-    T,
-    QK extends keyof (QP | QR) ? QP[QK] : never,
-    QK extends keyof (QP | QR) ? QR[QK] : never,
-    QP,
-    QR,
-    MP,
-    MR
-  >,
+  QueryInfo<T, QK extends keyof (QP | QR) ? QP[QK] : never, QK extends keyof (QP | QR) ? QR[QK] : never>,
   | 'fetchPolicy'
   | 'skipFetch'
   | 'secondsToLive'
@@ -265,16 +243,8 @@ export type UseQueryOptions<
   | 'onError'
 >
 
-export type QueryOptions<
-  N extends string,
-  T extends Typenames,
-  QP,
-  QR,
-  QK extends keyof (QP & QR),
-  MP,
-  MR,
-> = Pick<
-  UseQueryOptions<N, T, QK, QP, QR, MP, MR>,
+export type QueryOptions<T extends Typenames, QP, QR, QK extends keyof (QP & QR)> = Pick<
+  UseQueryOptions<T, QK, QP, QR>,
   | 'query'
   | 'params'
   | 'skipFetch'
@@ -309,16 +279,10 @@ export type QueryResult<R = unknown> = {
   result?: R
 }
 
-export type MutationInfo<
-  N extends string,
-  T extends Typenames = Typenames,
-  P = unknown,
-  R = unknown,
-  QP = unknown,
-  QR = unknown,
-  MP = unknown,
-  MR = unknown,
-> = Pick<QueryInfo<N, T, P, R, QP, QR, MP, MR>, 'onCompleted' | 'onSuccess' | 'onError'> & {
+export type MutationInfo<T extends Typenames = Typenames, P = unknown, R = unknown> = Pick<
+  QueryInfo<T, P, R>,
+  'onCompleted' | 'onSuccess' | 'onError'
+> & {
   mutation: NormalizedMutation<T, P, R>
 }
 
@@ -326,7 +290,7 @@ export type Mutation<P = unknown, R = unknown> = (
   /** Mutation parameters */
   params: P,
   /** Store */
-  store: Store,
+  store: AnyStore,
   /** Signal is aborted for current mutation when the same mutation was called once again. */
   abortSignal: AbortSignal,
 ) => Promise<MutationResponse<R>>
@@ -335,25 +299,8 @@ export type NormalizedMutation<T extends Typenames = Typenames, P = unknown, R =
   ...args: Parameters<Mutation<P, R>>
 ) => Promise<NormalizedMutationResponse<T, R>>
 
-export type MutateOptions<
-  N extends string,
-  T extends Typenames,
-  QP,
-  QR,
-  MP,
-  MR,
-  MK extends keyof (MP & MR),
-> = Pick<
-  MutationInfo<
-    N,
-    T,
-    MK extends keyof (MP | MR) ? MP[MK] : never,
-    MK extends keyof (MP | MR) ? MR[MK] : never,
-    QP,
-    QR,
-    MP,
-    MR
-  >,
+export type MutateOptions<T extends Typenames, MP, MR, MK extends keyof (MP & MR)> = Pick<
+  MutationInfo<T, MK extends keyof (MP | MR) ? MP[MK] : never, MK extends keyof (MP | MR) ? MR[MK] : never>,
   'onCompleted' | 'onSuccess' | 'onError'
 > & {
   mutation: MK

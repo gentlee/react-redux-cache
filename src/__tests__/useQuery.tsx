@@ -3,6 +3,7 @@ import React, {Key, useRef} from 'react'
 import {Provider} from 'react-redux'
 import {createStore} from 'redux'
 
+import {initializeForReact} from '../react/initializeForReact'
 import {getUser, getUsers} from '../testing/api/mocks'
 import {assertEventLog, clearEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
 import {createTestCache, testCaches} from '../testing/redux/cache'
@@ -13,13 +14,10 @@ import {createStateComparer, FetchPolicy} from '../utilsAndConstants'
 
 describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
   const {
-    actions,
-    cache: {
+    config: {
       options: {mutableCollections},
     },
     actions: {clearCache, invalidateQuery, mergeEntityChanges, updateQueryStateAndEntities},
-    hooks: {useClient: defaultUseClient, useQuery: defaultUseQuery},
-    selectors,
     selectors: {
       selectCacheState,
       selectEntityById,
@@ -30,7 +28,9 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       selectQueryResult,
       selectQueryState,
     },
+    hooks,
   } = cache
+  const {useClient: defaultUseClient, useQuery: defaultUseQuery} = hooks!
 
   const defaultStore = createReduxStore(cache)
 
@@ -399,7 +399,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
   )
 
   // skipping if deep comparison disabled
-  ;(cache.cache.options.deepComparisonEnabled ? test : test.skip)(
+  ;(cache.config.options.deepComparisonEnabled ? test : test.skip)(
     'deep comparison opimizes re-renders',
     async () => {
       render({
@@ -523,13 +523,11 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       'message',
       'Test error',
     )
-    expect(cache.cache.globals.onError).toBeCalledWith(
+    expect(cache.config.globals.onError).toBeCalledWith(
       new Error('Test error'),
       'queryWithError',
       undefined,
       store,
-      actions,
-      selectors,
     )
   })
 
@@ -560,12 +558,13 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
   test.each(['getUser', 'getUserCustomCacheKey'] as const)(
     'selector comparer from globals',
     async (query) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cache = createTestCache(false, (state: any) => state, createStateComparer(['result']))
+      const cache = createTestCache(false, '.', createStateComparer(['result']))
+      const hooks = cache.hooks!
 
       store = createStore(cache.reducer)
-      useClient = cache.hooks.useClient
-      useQuery = cache.hooks.useQuery
+
+      useClient = hooks.useClient
+      useQuery = hooks.useQuery
 
       render({query, params: 0}, undefined)
       await act(advanceApiTimeout)

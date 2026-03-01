@@ -140,23 +140,30 @@ function extractDocumentation(filePath: string): string {
   return markdown
 }
 
+const basePath = path.join(process.cwd(), 'src')
 const markdown = [
-  path.join(process.cwd(), 'src', 'createCache.ts'),
-  path.join(process.cwd(), 'src', 'utilsAndConstants.ts'),
+  ['createCache.ts'],
+  ['utilsAndConstants.ts'],
+  ['react', 'createHooks.ts'],
+  ['redux.ts'],
+  ['zustand.ts'],
 ]
-  .map((filePath) => {
-    // Use filename as title
-    let title = path
-      .basename(filePath)
-      .split('.')[0]
-      .split(/(?=[A-Z])/)
-      .join(' ')
-      .toLowerCase()
+  .map((pathArray) => {
+    // Use {folder - filename} as title
+    let title = pathArray
+      .map((x) =>
+        x
+          .split('.')[0] // Remove extension
+          .split(/(?=[A-Z])/) // Split by capitalized letters
+          .join(' ')
+          .toLowerCase(),
+      )
+      .join(' – ')
 
     // Capitalize
     title = title[0].toUpperCase() + title.slice(1)
 
-    const fileMarkdown = extractDocumentation(filePath)
+    const fileMarkdown = extractDocumentation(path.join(basePath, ...pathArray))
 
     return `### ${title}\n\n${fileMarkdown}`
   })

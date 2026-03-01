@@ -31,54 +31,31 @@ var __awaiter =
   }
 import {logDebug} from './utilsAndConstants'
 
-export const mutate = (
-  logTag_1,
-  store_1,
-  cache_1,
-  actions_1,
-  selectors_1,
-  mutationKey_1,
-  params_1,
-  abortControllers_1,
-  ...args_1
-) =>
+export const mutate = (logTag_1, innerStore_1, externalStore_1, _a, mutationKey_1, params_1, ...args_1) =>
   __awaiter(
     void 0,
-    [
-      logTag_1,
-      store_1,
-      cache_1,
-      actions_1,
-      selectors_1,
-      mutationKey_1,
-      params_1,
-      abortControllers_1,
-      ...args_1,
-    ],
+    [logTag_1, innerStore_1, externalStore_1, _a, mutationKey_1, params_1, ...args_1],
     void 0,
     function* (
       logTag,
-      store,
-      cache,
-      actions,
-      selectors,
+      innerStore,
+      externalStore,
+      {config: {mutations, options, globals}, actions: {updateMutationStateAndEntities}, abortControllers},
       mutationKey,
       params,
-      abortControllers,
-      onCompleted = cache.mutations[mutationKey].onCompleted,
-      onSuccess = cache.mutations[mutationKey].onSuccess,
-      onError = cache.mutations[mutationKey].onError,
+      onCompleted = mutations[mutationKey].onCompleted,
+      onSuccess = mutations[mutationKey].onSuccess,
+      onError = mutations[mutationKey].onError,
     ) {
-      var _a, _b
-      const {updateMutationStateAndEntities} = actions
-      let abortControllersOfStore = abortControllers.get(store)
+      var _b
+      let abortControllersOfStore = abortControllers.get(innerStore)
       if (abortControllersOfStore === undefined) {
         abortControllersOfStore = {}
-        abortControllers.set(store, abortControllersOfStore)
+        abortControllers.set(innerStore, abortControllersOfStore)
       }
       {
         const abortController = abortControllersOfStore[mutationKey]
-        cache.options.logsEnabled &&
+        options.logsEnabled &&
           logDebug(logTag, {mutationKey, params, previousAborted: abortController !== undefined})
         if (abortController !== undefined) {
           abortController.abort()
@@ -86,8 +63,8 @@ export const mutate = (
       }
       const abortController = new AbortController()
       abortControllersOfStore[mutationKey] = abortController
-      const mutatePromise = cache.mutations[mutationKey].mutation(params, store, abortController.signal)
-      store.dispatch(
+      const mutatePromise = mutations[mutationKey].mutation(params, externalStore, abortController.signal)
+      innerStore.dispatch(
         updateMutationStateAndEntities(mutationKey, {
           loading: mutatePromise,
           params,
@@ -101,31 +78,27 @@ export const mutate = (
       } catch (e) {
         error = e
       }
-      cache.options.logsEnabled &&
+      options.logsEnabled &&
         logDebug(`${logTag} finished`, {response, error, aborted: abortController.signal.aborted})
       if (abortController.signal.aborted) {
         return ABORTED_RESULT
       }
       delete abortControllersOfStore[mutationKey]
       if (error) {
-        store.dispatch(
+        innerStore.dispatch(
           updateMutationStateAndEntities(mutationKey, {
             error,
             loading: undefined,
           }),
         )
-        if (
-          !(onError === null || onError === void 0
+        if (!(onError === null || onError === void 0 ? void 0 : onError(error, params, externalStore))) {
+          ;(_b = globals.onError) === null || _b === void 0
             ? void 0
-            : onError(error, params, store, actions, selectors))
-        ) {
-          ;(_b = (_a = cache.globals).onError) === null || _b === void 0
-            ? void 0
-            : _b.call(_a, error, mutationKey, params, store, actions, selectors)
+            : _b.call(globals, error, mutationKey, params, externalStore)
         }
         onCompleted === null || onCompleted === void 0
           ? void 0
-          : onCompleted(response, error, params, store, actions, selectors)
+          : onCompleted(response, error, params, externalStore)
         return {error}
       }
       if (response) {
@@ -134,13 +107,11 @@ export const mutate = (
           loading: undefined,
           result: response.result,
         }
-        store.dispatch(updateMutationStateAndEntities(mutationKey, newState, response))
-        onSuccess === null || onSuccess === void 0
-          ? void 0
-          : onSuccess(response, params, store, actions, selectors)
+        innerStore.dispatch(updateMutationStateAndEntities(mutationKey, newState, response))
+        onSuccess === null || onSuccess === void 0 ? void 0 : onSuccess(response, params, externalStore)
         onCompleted === null || onCompleted === void 0
           ? void 0
-          : onCompleted(response, error, params, store, actions, selectors)
+          : onCompleted(response, error, params, externalStore)
         return {result: response.result}
       }
       throw new Error(`${logTag}: both error and response are not defined`)

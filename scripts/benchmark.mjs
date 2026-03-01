@@ -3,10 +3,7 @@
 
 import {createCache} from '../dist/cjs/index.js'
 
-const {
-  reducer: immutableReducer,
-  utils: {getInitialState},
-} = createCache({name: 'cache'})
+const {reducer: immutableReducer} = createCache({name: 'cache'})
 
 const {reducer: mutableReducer} = createCache({name: 'cache', options: {mutableCollections: true}})
 
@@ -23,7 +20,7 @@ const benchmark = (name, reducer, initialCollectionSize, isWarmup = false) => {
     // Setup
 
     let state = {
-      ...getInitialState(),
+      ...immutableReducer(undefined, {}),
       entities: {
         users: Array.from({length: initialCollectionSize})
           .map((_, i) => ({id: i, name: String(i), bankId: String(i)}))
