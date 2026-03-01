@@ -1,9 +1,10 @@
 import {useMemo} from 'react'
 
 import {mutate as mutateImpl} from '../mutate'
-import {CachePrivate} from '../private-types'
 import {MutateOptions, MutationState, Typenames} from '../types'
-import {EMPTY_OBJECT, logDebug, validateStoreHooks} from '../utilsAndConstants'
+import {CachePrivate} from '../typesPrivate'
+import {EMPTY_OBJECT, logDebug} from '../utilsAndConstants'
+import {validateStoreHooks} from './utils'
 
 export const useMutation = <
   N extends string,
@@ -16,7 +17,7 @@ export const useMutation = <
 >(
   cache: Pick<
     CachePrivate<N, T, QP, QR, MP, MR>,
-    'abortControllers' | 'actions' | 'selectors' | 'storeHooks' | 'config'
+    'abortControllers' | 'actions' | 'selectors' | 'config' | 'extensions'
   >,
   options: Omit<MutateOptions<T, MP, MR, MK>, 'params'>,
 ) => {
@@ -25,18 +26,18 @@ export const useMutation = <
 
   const {
     config,
-    storeHooks,
     abortControllers,
     selectors: {selectMutationState},
     actions: {updateMutationStateAndEntities},
+    extensions,
   } = cache
 
   const {mutation: mutationKey, onCompleted, onSuccess, onError} = options
 
-  validateStoreHooks(storeHooks)
-
-  const innerStore = storeHooks!.useStore()
-  const externalStore = storeHooks!.useExternalStore()
+  validateStoreHooks(extensions)
+  const {useStore, useExternalStore, useSelector} = extensions!.react!.storeHooks
+  const innerStore = useStore()
+  const externalStore = useExternalStore()
 
   // Using single useMemo for better performance
   const [mutationStateSelector, mutate, abort] = useMemo(() => {
@@ -71,7 +72,7 @@ export const useMutation = <
   }, [mutationKey, innerStore, externalStore])
 
   // @ts-expect-error TODO fix types
-  const mutationState: MutationState<T, P, R> = storeHooks!.useSelector(mutationStateSelector) ?? EMPTY_OBJECT
+  const mutationState: MutationState<T, P, R> = useSelector(mutationStateSelector) ?? EMPTY_OBJECT
 
   config.options.logsEnabled && logDebug('useMutation', {options, mutationState})
 

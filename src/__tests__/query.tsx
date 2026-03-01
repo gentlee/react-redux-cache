@@ -2,7 +2,6 @@ import {act, render as renderImpl} from '@testing-library/react'
 import React from 'react'
 import {Provider} from 'react-redux'
 
-import {createHooks} from '../react/createHooks'
 import {assertEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
 import {testCaches} from '../testing/redux/cache'
 import {createReduxStore} from '../testing/redux/store'
@@ -14,8 +13,9 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     config: {
       options: {mutableCollections},
     },
+    hooks,
   } = cache
-  const {useClient} = createHooks(cache)
+  const {useClient} = hooks!
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let store: ReturnType<typeof createReduxStore<'cache', any, any, any, any, any>>

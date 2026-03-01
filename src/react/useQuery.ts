@@ -1,30 +1,23 @@
 import {useCallback, useEffect} from 'react'
 
-import {CachePrivate} from '../private-types'
 import {query as queryImpl} from '../query'
 import {QueryOptions, QueryState, QueryStateComparer, Typenames, UseQueryOptions} from '../types'
-import {
-  createStateComparer,
-  defaultGetCacheKey,
-  EMPTY_OBJECT,
-  logDebug,
-  validateStoreHooks,
-} from '../utilsAndConstants'
+import {CachePrivate} from '../typesPrivate'
+import {createStateComparer, defaultGetCacheKey, EMPTY_OBJECT, logDebug} from '../utilsAndConstants'
+import {validateStoreHooks} from './utils'
 
 export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
-  cache: Pick<CachePrivate<N, T, QP, QR, MP, MR>, 'storeHooks' | 'config' | 'actions' | 'selectors'>,
+  cache: Pick<CachePrivate<N, T, QP, QR, MP, MR>, 'config' | 'actions' | 'selectors' | 'extensions'>,
   useQueryOptions: UseQueryOptions<T, QK, QP, QR>,
 ) => {
   type P = QK extends keyof (QP | QR) ? QP[QK] : never
   type R = QK extends keyof (QP | QR) ? QR[QK] : never
 
   const {
-    storeHooks,
+    extensions,
     config: {queries, globals, options: configOptions},
     selectors: {selectQueryState},
   } = cache
-
-  validateStoreHooks(storeHooks)
 
   const {
     query: queryKey,
@@ -33,6 +26,11 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
     selectorComparer,
     fetchPolicy = queries[queryKey].fetchPolicy ?? globals.queries.fetchPolicy,
   } = useQueryOptions
+
+  validateStoreHooks(extensions)
+  const {useStore, useSelector, useExternalStore} = extensions!.react!.storeHooks
+  const innerStore = useStore()
+  const externalStore = useExternalStore()
 
   const queryInfo = queries[queryKey]
 
@@ -46,9 +44,6 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
       : typeof selectorComparer === 'function'
         ? selectorComparer
         : createStateComparer(selectorComparer)
-
-  const innerStore = storeHooks!.useStore()
-  const externalStore = storeHooks!.useExternalStore()
 
   // @ts-expect-error fix types later
   const cacheKey = getCacheKey(params)
@@ -83,7 +78,7 @@ export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, 
 
   /** Query state */
   const queryState =
-    storeHooks!.useSelector((state: unknown) => {
+    useSelector((state: unknown) => {
       return selectQueryState(state, queryKey, cacheKey) as QueryState<T, P, R> | undefined // TODO proper type
     }, comparer) ?? (EMPTY_OBJECT as QueryState<T, P, R>)
 

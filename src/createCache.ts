@@ -4,7 +4,6 @@
 import {createActions} from './createActions'
 import {createReducer} from './createReducer'
 import {createSelectors} from './createSelectors'
-import {CachePrivate, InnerStore} from './private-types'
 import type {
   AnyStore,
   Cache,
@@ -39,12 +38,12 @@ import type {
   QueryState,
   QueryStateComparer,
   ReduxStoreLike,
-  StoreHooks,
   Typenames,
   UseQueryOptions,
   UseSelector,
   ZustandStoreLike,
 } from './types'
+import {CachePrivate, InnerStore} from './typesPrivate'
 import {
   applyEntityChanges,
   createStateComparer,

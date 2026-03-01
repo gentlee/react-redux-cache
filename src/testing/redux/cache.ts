@@ -1,6 +1,7 @@
 import {withTypenames} from '../../createCache'
-import {CacheToPrivate} from '../../private-types'
+import {initializeForReact} from '../../react'
 import {initializeForRedux} from '../../redux'
+import {CacheToPrivate} from '../../typesPrivate'
 import {getUser, getUsers, removeUser, updateUser, updateUserNotNormalized} from '../api/mocks'
 import type {Bank, User} from '../api/types'
 import {logEvent} from '../api/utils'
@@ -16,8 +17,13 @@ type TestWithChangeKey = (
   mutable: Parameters<typeof withChangeKey>[2],
 ) => typeof mutable
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const createTestCache = (mutable: boolean, cacheStateKey?: string, selectorComparer?: any) => {
+export const createTestCache = (
+  mutable: boolean,
+  cacheStateKey?: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectorComparer?: any,
+  shouldInitializeForReact = true,
+) => {
   const cache = withTypenames<TestTypenames>().createCache({
     name: 'cache',
     cacheStateKey,
@@ -106,7 +112,8 @@ export const createTestCache = (mutable: boolean, cacheStateKey?: string, select
     },
   })
   const {actions, reducer} = initializeForRedux(cache)
-  return {...(cache as CacheToPrivate<typeof cache>), actions, reducer}
+  const hooks = shouldInitializeForReact ? initializeForReact(cache).hooks : undefined
+  return {...(cache as CacheToPrivate<typeof cache>), actions, reducer, hooks}
 }
 
 export const testCache = createTestCache(false)

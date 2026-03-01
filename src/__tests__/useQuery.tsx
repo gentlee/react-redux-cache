@@ -3,7 +3,7 @@ import React, {Key, useRef} from 'react'
 import {Provider} from 'react-redux'
 import {createStore} from 'redux'
 
-import {createHooks} from '../react/createHooks'
+import {initializeForReact} from '../react/initializeForReact'
 import {getUser, getUsers} from '../testing/api/mocks'
 import {assertEventLog, clearEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
 import {createTestCache, testCaches} from '../testing/redux/cache'
@@ -28,8 +28,9 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       selectQueryResult,
       selectQueryState,
     },
+    hooks,
   } = cache
-  const {useClient: defaultUseClient, useQuery: defaultUseQuery} = createHooks(cache)
+  const {useClient: defaultUseClient, useQuery: defaultUseQuery} = hooks!
 
   const defaultStore = createReduxStore(cache)
 
@@ -558,10 +559,10 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     'selector comparer from globals',
     async (query) => {
       const cache = createTestCache(false, '.', createStateComparer(['result']))
+      const hooks = cache.hooks!
 
       store = createStore(cache.reducer)
 
-      const hooks = createHooks(cache)
       useClient = hooks.useClient
       useQuery = hooks.useQuery
 

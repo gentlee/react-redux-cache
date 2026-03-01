@@ -58,12 +58,6 @@ export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = Retur
   typeof createCache<N, T, QP, QR, MP, MR>
 >
 
-export type StoreHooks = {
-  useStore: () => ReduxStoreLike
-  useSelector: UseSelector
-  useExternalStore: () => AnyStore
-}
-
 export type CacheConfig<
   N extends string = string,
   T extends Typenames = Typenames,

@@ -2,7 +2,7 @@ import {act, render as renderImpl} from '@testing-library/react'
 import React from 'react'
 import {Provider} from 'react-redux'
 
-import {createHooks} from '../react/createHooks'
+import {initializeForReact} from '../react/initializeForReact'
 import {
   assertEventLog,
   generateTestBank,
@@ -18,8 +18,9 @@ import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
 describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
   const {
     actions: {mergeEntityChanges},
+    hooks,
   } = cache
-  const {useClient} = createHooks(cache)
+  const {useClient} = hooks!
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let store: ReturnType<typeof createReduxStore<'cache', any, any, any, any, any>>

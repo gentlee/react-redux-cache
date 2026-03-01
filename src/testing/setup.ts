@@ -9,7 +9,8 @@ jest.useFakeTimers()
 
 afterEach(() => {
   clearEventLog()
-  consoleWarnSpy.mockClear()
+
+  expect(consoleWarnSpy).toBeCalledTimes(0)
 })
 
 afterAll(() => {

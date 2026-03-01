@@ -1,4 +1,4 @@
-import {CachePrivate, InnerStore} from './private-types'
+import {CachePrivate, InnerStore} from './typesPrivate'
 import type {AnyStore, MutationResult, Typenames} from './types'
 import {logDebug} from './utilsAndConstants'
 

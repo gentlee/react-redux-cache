@@ -1,16 +1,13 @@
 import {act} from '@testing-library/react'
-import {useSelector, useStore} from 'react-redux'
 import {createStore} from 'redux'
 
 import {withTypenames} from '../createCache'
-import {CacheToPrivate} from '../private-types'
-import {initializeForRedux, setCustomStoreHooks} from '../redux'
+import {initializeForRedux} from '../redux'
 import {getUsers, removeUser} from '../testing/api/mocks'
-import {consoleWarnSpy} from '../testing/setup'
 import {advanceApiTimeout, advanceHalfApiTimeout, apiTimeout} from '../testing/utils'
-import {CacheConfig, QueryStateComparer, Typenames, ZustandStoreLike} from '../types'
+import {CacheConfig, QueryStateComparer, Typenames} from '../types'
+import {CacheToPrivate} from '../typesPrivate'
 import {FetchPolicy} from '../utilsAndConstants'
-import {initializeForZustand} from '../zustand'
 
 test('createCache returns correct result', () => {
   const onError = jest.fn()
@@ -141,61 +138,6 @@ test.each(['', '.'])('root cacheStateKey', (cacheStateKey) => {
   const store = createStore(reducer)
 
   expect(selectEntities(store.getState())).toBe(store.getState().entities)
-})
-
-test('storeHooks undefined, default redux from react-redux, custom redux and proper zustand, double init, reuse config', () => {
-  const cache = createTestingCache('cache')
-
-  // Initial
-
-  expect(cache.storeHooks).toBe(undefined)
-
-  // Redux
-
-  initializeForRedux(cache)
-
-  expect(cache.storeHooks).toStrictEqual({useStore, useSelector, useExternalStore: useStore})
-
-  // Redux double
-
-  const freezedCache = Object.freeze(cache)
-  initializeForRedux(freezedCache)
-
-  // Redux Custom
-
-  const customUseStore = jest.fn()
-  const customUseSelector = jest.fn()
-  setCustomStoreHooks(cache, {
-    useStore: customUseStore,
-    useSelector: customUseSelector,
-    useExternalStore: customUseStore,
-  })
-
-  expect(cache.storeHooks).toStrictEqual({
-    useStore: customUseStore,
-    useSelector: customUseSelector,
-    useExternalStore: customUseStore,
-  })
-
-  // Zustand & reuse config
-
-  const cache2 = withTypenames<{users: {id: number}}>().createCache(freezedCache.config)
-  const zustandLikeStore = {getState: jest.fn} as ZustandStoreLike
-  initializeForZustand(cache2, zustandLikeStore)
-
-  expect((cache2 as CacheToPrivate<typeof cache2>).storeHooks).toStrictEqual({
-    useStore: expect.any(Function),
-    useSelector: zustandLikeStore,
-    useExternalStore: expect.any(Function),
-  })
-
-  // Zustand double
-
-  initializeForZustand(cache2, zustandLikeStore)
-
-  expect(consoleWarnSpy.mock.calls).toStrictEqual([
-    ['@rrc [initializeForZustand]', 'Cache seems to be already initialized'],
-  ])
 })
 
 test('same cache works with the new store, previous async operations are ignored, state not mutated', async () => {

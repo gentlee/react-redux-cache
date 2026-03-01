@@ -174,6 +174,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     expect(consoleWarnSpy.mock.calls).toStrictEqual([
       ['@rrc [applyEntityChanges]', 'merge and entities should not be both set'],
     ])
+    consoleWarnSpy.mockClear()
   })
 
   test('warn if merge, replace or remove have intersections', () => {
@@ -207,5 +208,6 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
       ['@rrc [applyEntityChanges]', 'merge, replace and remove changes have intersections for: users'],
       ['@rrc [applyEntityChanges]', 'merge, replace and remove changes have intersections for: banks'],
     ])
+    consoleWarnSpy.mockClear()
   })
 })

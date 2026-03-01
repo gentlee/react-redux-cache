@@ -1,8 +1,8 @@
-import {Actions} from './createActions'
-import {createClient} from './createClient'
-import {CachePrivate, CacheToPrivate, InnerStore} from './private-types'
-import {Cache, CacheState, Typenames, ZustandStoreLike} from './types'
-import {EMPTY_OBJECT, isRootState, logWarn} from './utilsAndConstants'
+import {Actions} from '../createActions'
+import {createClient as createClientImpl} from '../createClient'
+import {Cache, CacheState, Typenames, ZustandStoreLike} from '../types'
+import {CacheExtensions, CachePrivate} from '../typesPrivate'
+import {EMPTY_OBJECT, isRootState, logDebug, logWarn} from '../utilsAndConstants'
 
 export const initializeForZustand = <N extends string, T extends Typenames, QP, QR, MP, MR, S = unknown>(
   cache: Cache<N, T, QP, QR, MP, MR>,
@@ -11,9 +11,11 @@ export const initializeForZustand = <N extends string, T extends Typenames, QP, 
   type TypedActions = Actions<N, T, QP, QR, MP, MR>
 
   const privateCache = cache as CachePrivate<N, T, QP, QR, MP, MR>
-
   const {
-    config: {cacheStateKey},
+    config: {
+      cacheStateKey,
+      options: {logsEnabled},
+    },
     reducer,
     actions,
     selectors: {selectCacheState},
@@ -32,16 +34,15 @@ export const initializeForZustand = <N extends string, T extends Typenames, QP, 
     store.setState(getStateToMerge(state))
   }
 
-  if (privateCache.storeHooks !== undefined) {
-    logWarn('initializeForZustand', 'Cache seems to be already initialized')
+  const innerStore = {dispatch, getState: store.getState}
+  privateCache.extensions ??= {}
+  if (privateCache.extensions.zustand !== undefined) {
+    logWarn('initializeForZustand', 'Already initialized for Zustand')
   }
-
-  const innerStore: InnerStore = {dispatch, getState: store.getState}
-  privateCache.storeHooks = {
-    useStore: () => innerStore,
-    useSelector: store,
-    useExternalStore: () => store,
-  }
+  privateCache.extensions.zustand ??= {} as NonNullable<CacheExtensions['zustand']>
+  privateCache.extensions.zustand.innerStore = innerStore
+  privateCache.extensions.zustand.externalStore = store
+  logsEnabled && logDebug('initializeForZustand', 'Initialized for Zustand')
 
   // Bind actions to dispatch
 
@@ -67,11 +68,16 @@ export const initializeForZustand = <N extends string, T extends Typenames, QP, 
     {} as {[key in keyof TypedActions]: (...args: Parameters<TypedActions[key]>) => void},
   )
 
+  // Utils
+
   const getInitialState = () => {
-    const {reducer} = cache as CacheToPrivate<typeof cache>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const state = reducer(undefined, EMPTY_OBJECT as any)
     return getStateToMerge(state)
+  }
+
+  const createClient = () => {
+    return createClientImpl(privateCache, innerStore, store)
   }
 
   return {
@@ -98,7 +104,7 @@ export const initializeForZustand = <N extends string, T extends Typenames, QP, 
       /** Generates the initial state. */
       getInitialState,
       /** Creates client by providing the store. Can be used when the store is a singleton for direct client import. */
-      createClient: (store: ZustandStoreLike) => createClient(privateCache, innerStore, store),
+      createClient,
     },
   }
 }

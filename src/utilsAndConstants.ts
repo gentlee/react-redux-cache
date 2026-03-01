@@ -6,7 +6,6 @@ import type {
   Mutable,
   QueryState,
   QueryStateComparer,
-  StoreHooks,
   Typenames,
 } from './types'
 
@@ -228,11 +227,3 @@ export const incrementChangeKey = (mutable: Mutable) => {
 }
 
 export const isRootState = (cacheStateKey: string) => cacheStateKey === '.' || cacheStateKey === ''
-
-export const validateStoreHooks = (storeHooks: StoreHooks | undefined) => {
-  if (storeHooks === undefined) {
-    throw new Error(
-      `@${PACKAGE_SHORT_NAME} Cache not initialized yet. Use initializeForRedux or initializeFoZustand before creating hooks.`,
-    )
-  }
-}

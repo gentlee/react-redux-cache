@@ -13,7 +13,7 @@ describe.each(testCaches)('%s', (_, cache) => {
     },
     actions: {mergeEntityChanges, updateQueryStateAndEntities, updateMutationStateAndEntities},
     selectors,
-    storeHooks,
+    extensions: {react: {storeHooks} = {}} = {},
   } = cache
 
   test('subscription to collections', () => {

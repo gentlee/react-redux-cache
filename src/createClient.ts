@@ -1,7 +1,7 @@
 import {mutate as mutateImpl} from './mutate'
-import {CachePrivate, InnerStore} from './private-types'
 import {query as queryImpl} from './query'
 import type {AnyStore, MutateOptions, MutationResult, QueryOptions, QueryResult, Typenames} from './types'
+import {CachePrivate, InnerStore} from './typesPrivate'
 import {defaultGetCacheKey} from './utilsAndConstants'
 
 export const createClient = <N extends string, T extends Typenames, QP, QR, MP, MR>(
