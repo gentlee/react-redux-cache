@@ -12,9 +12,7 @@
 ### Supported stores: `Redux` and `Zustand` (check /example)
 ### Supported UI libs: `React`
 
-**Powerful**, **performant** yet **lightweight** data fetching and caching library for immutable stores that supports **normalization** unlike `React Query` and `RTK-Query`, while having similar but not over-engineered, simple interface. Covered with tests, fully typed and written on Typescript.
-
-Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with **full control** over its store - redux or zustand.
+**Powerful**, **performant** yet **lightweight** data fetching and caching library for immutable stores that supports **normalization** unlike `React Query` and `RTK-Query`, while having similar but not over-engineered, simple interface, with full control over underlying store. Covered with tests, fully typed and written on Typescript.
 
 |Principle|Description|
 |--|--|
