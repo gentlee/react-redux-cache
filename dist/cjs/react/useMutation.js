@@ -35,19 +35,21 @@ exports.useMutation = void 0
 const react_1 = require('react')
 const mutate_1 = require('../mutate')
 const utilsAndConstants_1 = require('../utilsAndConstants')
+const utils_1 = require('./utils')
 const useMutation = (cache, options) => {
   var _a
   const {
     config,
-    storeHooks,
     abortControllers,
     selectors: {selectMutationState},
     actions: {updateMutationStateAndEntities},
+    extensions,
   } = cache
   const {mutation: mutationKey, onCompleted, onSuccess, onError} = options
-  ;(0, utilsAndConstants_1.validateStoreHooks)(storeHooks)
-  const innerStore = storeHooks.useStore()
-  const externalStore = storeHooks.useExternalStore()
+  ;(0, utils_1.validateStoreHooks)(extensions)
+  const {useStore, useExternalStore, useSelector} = extensions.react.storeHooks
+  const innerStore = useStore()
+  const externalStore = useExternalStore()
   const [mutationStateSelector, mutate, abort] = (0, react_1.useMemo)(() => {
     const mutationStateSelectorFromUseMutation = (state) => selectMutationState(state, mutationKey)
     const mutateFromUseMutation = (params) =>
@@ -78,7 +80,7 @@ const useMutation = (cache, options) => {
     return [mutationStateSelectorFromUseMutation, mutateFromUseMutation, abortFromUseMutation]
   }, [mutationKey, innerStore, externalStore])
   const mutationState =
-    (_a = storeHooks.useSelector(mutationStateSelector)) !== null && _a !== void 0
+    (_a = useSelector(mutationStateSelector)) !== null && _a !== void 0
       ? _a
       : utilsAndConstants_1.EMPTY_OBJECT
   config.options.logsEnabled && (0, utilsAndConstants_1.logDebug)('useMutation', {options, mutationState})

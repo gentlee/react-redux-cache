@@ -209,11 +209,3 @@ export const incrementChangeKey = (mutable) => {
 }
 
 export const isRootState = (cacheStateKey) => cacheStateKey === '.' || cacheStateKey === ''
-
-export const validateStoreHooks = (storeHooks) => {
-  if (storeHooks === undefined) {
-    throw new Error(
-      `@${PACKAGE_SHORT_NAME} Cache not initialized yet. Use initializeForRedux or initializeFoZustand before creating hooks.`,
-    )
-  }
-}

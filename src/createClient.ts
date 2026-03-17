@@ -4,8 +4,11 @@ import type {AnyStore, MutateOptions, MutationResult, QueryOptions, QueryResult,
 import {CachePrivate, InnerStore} from './typesPrivate'
 import {defaultGetCacheKey} from './utilsAndConstants'
 
-export const createClient = <N extends string, T extends Typenames, QP, QR, MP, MR>(
-  cache: Pick<CachePrivate<N, T, QP, QR, MP, MR>, 'abortControllers' | 'config' | 'selectors' | 'actions'>,
+export const createClient = <N extends string, SK extends string, T extends Typenames, QP, QR, MP, MR>(
+  cache: Pick<
+    CachePrivate<N, SK, T, QP, QR, MP, MR>,
+    'abortControllers' | 'config' | 'selectors' | 'actions'
+  >,
   innerStore: InnerStore,
   externalStore: AnyStore,
 ) => {

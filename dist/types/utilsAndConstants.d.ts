@@ -6,7 +6,6 @@ import type {
   Mutable,
   QueryState,
   QueryStateComparer,
-  StoreHooks,
   Typenames,
 } from './types'
 
@@ -63,5 +62,3 @@ export declare const FetchPolicy: {
 export declare const incrementChangeKey: (mutable: Mutable) => void
 
 export declare const isRootState: (cacheStateKey: string) => cacheStateKey is '.' | ''
-
-export declare const validateStoreHooks: (storeHooks: StoreHooks | undefined) => void

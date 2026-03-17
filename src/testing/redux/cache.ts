@@ -17,16 +17,17 @@ type TestWithChangeKey = (
   mutable: Parameters<typeof withChangeKey>[2],
 ) => typeof mutable
 
-export const createTestCache = (
+export const createTestCache = <SK extends string>(
   mutable: boolean,
-  cacheStateKey?: string,
+  cacheStateKey?: SK,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   selectorComparer?: any,
   shouldInitializeForReact = true,
 ) => {
+  const name = 'cache'
   const cache = withTypenames<TestTypenames>().createCache({
-    name: 'cache',
-    cacheStateKey,
+    name,
+    cacheStateKey: cacheStateKey ?? name,
     options: {
       // logsEnabled: true,
       additionalValidation: true,

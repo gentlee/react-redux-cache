@@ -1,8 +1,9 @@
-import {CachePrivate, InnerStore} from './private-types'
 import type {AnyStore, MutationResult, Typenames} from './types'
+import {CachePrivate, InnerStore} from './typesPrivate'
 
 export declare const mutate: <
   N extends string,
+  SK extends string,
   T extends Typenames,
   QP,
   QR,
@@ -17,7 +18,7 @@ export declare const mutate: <
     config: {mutations, options, globals},
     actions: {updateMutationStateAndEntities},
     abortControllers,
-  }: Pick<CachePrivate<N, T, QP, QR, MP, MR>, 'config' | 'actions' | 'abortControllers'>,
+  }: Pick<CachePrivate<N, SK, T, QP, QR, MP, MR>, 'config' | 'actions' | 'abortControllers'>,
   mutationKey: MK,
   params: MK extends keyof (MP | MR) ? MP[MK] : never,
   onCompleted?:

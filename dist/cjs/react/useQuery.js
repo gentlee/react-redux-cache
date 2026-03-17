@@ -35,14 +35,14 @@ exports.useQuery = void 0
 const react_1 = require('react')
 const query_1 = require('../query')
 const utilsAndConstants_1 = require('../utilsAndConstants')
+const utils_1 = require('./utils')
 const useQuery = (cache, useQueryOptions) => {
   var _a, _b, _c, _d, _e
   const {
-    storeHooks,
+    extensions,
     config: {queries, globals, options: configOptions},
     selectors: {selectQueryState},
   } = cache
-  ;(0, utilsAndConstants_1.validateStoreHooks)(storeHooks)
   const {
     query: queryKey,
     skipFetch = false,
@@ -52,6 +52,10 @@ const useQuery = (cache, useQueryOptions) => {
       ? _a
       : globals.queries.fetchPolicy,
   } = useQueryOptions
+  ;(0, utils_1.validateStoreHooks)(extensions)
+  const {useStore, useSelector, useExternalStore} = extensions.react.storeHooks
+  const innerStore = useStore()
+  const externalStore = useExternalStore()
   const queryInfo = queries[queryKey]
   const logsEnabled = configOptions.logsEnabled
   const getCacheKey =
@@ -67,8 +71,6 @@ const useQuery = (cache, useQueryOptions) => {
       : typeof selectorComparer === 'function'
         ? selectorComparer
         : (0, utilsAndConstants_1.createStateComparer)(selectorComparer)
-  const innerStore = storeHooks.useStore()
-  const externalStore = storeHooks.useExternalStore()
   const cacheKey = getCacheKey(params)
   const performFetch = (0, react_1.useCallback)(
     (options) =>
@@ -95,7 +97,7 @@ const useQuery = (cache, useQueryOptions) => {
     [innerStore, externalStore, queryKey, cacheKey],
   )
   const queryState =
-    (_e = storeHooks.useSelector((state) => {
+    (_e = useSelector((state) => {
       return selectQueryState(state, queryKey, cacheKey)
     }, comparer)) !== null && _e !== void 0
       ? _e

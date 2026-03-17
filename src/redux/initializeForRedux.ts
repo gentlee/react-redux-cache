@@ -2,10 +2,11 @@ import {createClient} from '../createClient'
 import {Cache, ReduxStoreLike, Typenames} from '../types'
 import {CachePrivate} from '../typesPrivate'
 
-export const initializeForRedux = <N extends string, T extends Typenames, QP, QR, MP, MR>(
-  cache: Cache<N, T, QP, QR, MP, MR>,
+/** Initializes cache for Redux, returning reducer, actions and utils. */
+export const initializeForRedux = <N extends string, SK extends string, T extends Typenames, QP, QR, MP, MR>(
+  cache: Cache<N, SK, T, QP, QR, MP, MR>,
 ) => {
-  const privateCache = cache as CachePrivate<N, T, QP, QR, MP, MR>
+  const privateCache = cache as CachePrivate<N, SK, T, QP, QR, MP, MR>
 
   const {
     actions: {
@@ -20,6 +21,7 @@ export const initializeForRedux = <N extends string, T extends Typenames, QP, QR
   } = privateCache
 
   return {
+    // doc-ignore
     /** Reducer of the cache, should be added to Redux store. */
     reducer: privateCache.reducer,
     // doc-header

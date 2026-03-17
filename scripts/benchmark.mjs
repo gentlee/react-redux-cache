@@ -57,7 +57,7 @@ const benchmark = (name, reducer, initialCollectionSize, isWarmup = false) => {
   globalThis.gc?.()
 }
 
-for (let i = 0, size = [0, 1000, 10_000, 100_000, 1000_000]; i < size.length; i += 1) {
+for (let i = 0, size = [0, 100, 1000, 10_000, 100_000, 1000_000]; i < size.length; i += 1) {
   benchmark('immutable', immutableReducer, size[i])
   benchmark('mutable', mutableReducer, size[i])
 }

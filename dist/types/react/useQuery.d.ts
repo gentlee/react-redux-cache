@@ -1,8 +1,9 @@
-import {CachePrivate} from '../private-types'
 import {QueryOptions, QueryState, Typenames, UseQueryOptions} from '../types'
+import {CachePrivate} from '../typesPrivate'
 
 export declare const useQuery: <
   N extends string,
+  SK extends string,
   T extends Typenames,
   QP,
   QR,
@@ -10,7 +11,7 @@ export declare const useQuery: <
   MR,
   QK extends keyof (QP & QR),
 >(
-  cache: Pick<CachePrivate<N, T, QP, QR, MP, MR>, 'storeHooks' | 'config' | 'actions' | 'selectors'>,
+  cache: Pick<CachePrivate<N, SK, T, QP, QR, MP, MR>, 'config' | 'actions' | 'selectors' | 'extensions'>,
   useQueryOptions: UseQueryOptions<T, QK, QP, QR>,
 ) => readonly [
   Omit<

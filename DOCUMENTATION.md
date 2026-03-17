@@ -2,20 +2,14 @@
 
 | Symbol | Description |
 |--------|---------------|
-| withTypenames | Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.  Returns object with createCache function with provided typenames.  @example  `const cache = withTypenames<MyTypenames>().createCache({...})` |
-| createCache | Creates reducer, actions and hooks for managing queries and mutations. |
-
-##### createCache result
-
-| Symbol | Description |
-|--------|---------------|
-| config | Keeps config, passed while creating the cache, with default values set. |
+| withTypenames | Function to provide generic Typenames if normalization is needed.  Returns object with createCache function with provided typenames.  @example  const cache = withTypenames<MyTypenames>().createCache({...}) |
+| createCache | Creates cache with selectors, utils and full config with all default values set, that should be used for further initialization for specific stores and UI libs. |
 
 ##### selectors
 
 | Symbol | Description |
 |--------|---------------|
-| selectCacheState | Selects cache state from root state. Depends on `cacheStateKey`. |
+| selectCacheState | Selects cache state from the root state. Depends on `cacheStateKey`. |
 | selectQueryState | Selects query state. |
 | selectQueryResult | Selects query latest result. |
 | selectQueryLoading | Selects query loading state. |
@@ -36,6 +30,7 @@
 | Symbol | Description |
 |--------|---------------|
 | applyEntityChanges | Apply changes to the entities map.  Returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes.  Uses deep comparison if `deepComparisonEnabled` option is `true`.  Performs additional checks for intersections if `additionalValidation` option is `true`, and prints warnings if finds any issues. |
+| getInitialState | Generates the initial root state using `cacheStateKey`. Not needed for Redux — it automatically generates it when creating the store by calling the root reducer. |
 
 
 ### Utils and constants
@@ -55,11 +50,17 @@
 | Always | Every fetch trigger. |
 
 
-### React – create hooks
+### React
 
 | Symbol | Description |
 |--------|---------------|
-| useClient | Returns memoized object with query and mutate functions. Memoization dependency is the store. |
+| initializeForReact | Initialized cache to be used with React, creates hooks. Use after initialization for the store.  @param reduxCustomStoreHooks Can be used to override defaut redux hooks, imported from "react-redux" package. Not needed for Zustand. |
+
+##### hooks
+
+| Symbol | Description |
+|--------|---------------|
+| useClient | Returns memoized object with query and mutate functions. Memoization dependency is the store.  Consider using `createClient` util if you use globally imported stores. |
 | useQuery | Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). |
 | useMutation | Subscribes to provided mutation state and provides mutate function. |
 | useSelectEntityById | useSelector + selectEntityById. |
@@ -70,7 +71,7 @@
 
 | Symbol | Description |
 |--------|---------------|
-| reducer | Reducer of the cache, should be added to redux/zustand store. |
+| initializeForRedux | Initializes cache for Redux, returning reducer, actions and utils. |
 
 ##### actions
 
@@ -89,10 +90,13 @@
 | Symbol | Description |
 |--------|---------------|
 | createClient | Creates client by providing the store. Can be used when the store is a singleton for direct client import. |
-| setCustomStoreHooks | Can be used to override defaut hooks, imported from "react-redux" package. |
 
 
 ### Zustand
+
+| Symbol | Description |
+|--------|---------------|
+| initializeForZustand | Initializes cache for Zustand, returning actions and utils. |
 
 ##### actions
 
@@ -110,6 +114,5 @@
 
 | Symbol | Description |
 |--------|---------------|
-| getInitialState | Generates the initial state. |
 | createClient | Creates client by providing the store. Can be used when the store is a singleton for direct client import. |
 

@@ -6,8 +6,17 @@ import {CachePrivate} from '../typesPrivate'
 import {createStateComparer, defaultGetCacheKey, EMPTY_OBJECT, logDebug} from '../utilsAndConstants'
 import {validateStoreHooks} from './utils'
 
-export const useQuery = <N extends string, T extends Typenames, QP, QR, MP, MR, QK extends keyof (QP & QR)>(
-  cache: Pick<CachePrivate<N, T, QP, QR, MP, MR>, 'config' | 'actions' | 'selectors' | 'extensions'>,
+export const useQuery = <
+  N extends string,
+  SK extends string,
+  T extends Typenames,
+  QP,
+  QR,
+  MP,
+  MR,
+  QK extends keyof (QP & QR),
+>(
+  cache: Pick<CachePrivate<N, SK, T, QP, QR, MP, MR>, 'config' | 'actions' | 'selectors' | 'extensions'>,
   useQueryOptions: UseQueryOptions<T, QK, QP, QR>,
 ) => {
   type P = QK extends keyof (QP | QR) ? QP[QK] : never

@@ -18,15 +18,16 @@ import type {
 import {applyEntityChanges} from './utilsAndConstants'
 
 /**
- * Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.
+ * Function to provide generic Typenames if normalization is needed.
  * Returns object with createCache function with provided typenames.
  * @example
- * `const cache = withTypenames<MyTypenames>().createCache({...})`
+ * const cache = withTypenames<MyTypenames>().createCache({...})
  */
 export declare const withTypenames: <WT extends Typenames = Typenames>() => {
-  /** Creates reducer, actions and hooks for managing queries and mutations. */
+  /** Creates cache with selectors, utils and full config with all default values set, that should be used for further initialization for specific stores and UI libs. */
   createCache: <
-    N extends string,
+    N extends string = string,
+    SK extends string = string,
     T extends Typenames = WT,
     QP = unknown,
     QR = unknown,
@@ -34,16 +35,16 @@ export declare const withTypenames: <WT extends Typenames = Typenames>() => {
     MR = unknown,
   >(
     partialConfig: OptionalPartial<
-      Omit<CacheConfig<N, T, QP, QR, MP, MR>, 'globals'>,
-      'options' | 'queries' | 'mutations' | 'cacheStateKey'
+      Omit<CacheConfig<N, SK, T, QP, QR, MP, MR>, 'globals'>,
+      'options' | 'queries' | 'mutations'
     > & {
-      globals?: OptionalPartial<CacheConfig<N, T, QP, QR, MP, MR>['globals'], 'queries'>
+      globals?: OptionalPartial<CacheConfig<N, SK, T, QP, QR, MP, MR>['globals'], 'queries'>
     },
   ) => {
-    /** Keeps config, passed while creating the cache, with default values set. */
-    config: CacheConfig<N, T, QP, QR, MP, MR>
+    /** Keeps config, passed while creating the cache, with all default values set. */
+    config: CacheConfig<N, SK, T, QP, QR, MP, MR>
     selectors: {
-      /** Selects cache state from root state. Depends on `cacheStateKey`. */
+      /** Selects cache state from the root state. Depends on `cacheStateKey`. */
       selectCacheState: (state: any) => CacheState<T, QP, QR, MP, MR>
       /** Selects query state. */
       selectQueryState: <QK extends keyof QP | keyof QR>(
@@ -136,13 +137,21 @@ export declare const withTypenames: <WT extends Typenames = Typenames>() => {
         entities: Parameters<typeof applyEntityChanges<T>>[0],
         changes: Parameters<typeof applyEntityChanges<T>>[1],
       ) => EntitiesMap<T> | undefined
+      /** Generates the initial root state using `cacheStateKey`. Not needed for Redux — it automatically generates it when creating the store by calling the root reducer. */
+      getInitialState: () => SK extends '' | '.'
+        ? CacheState<T, QP, QR, MP, MR>
+        : {[key in SK]: CacheState<T, QP, QR, MP, MR>}
     }
   }
 }
 
-/** Creates reducer, actions and hooks for managing queries and mutations. */
+/**
+ * Creates cache that handles all logic for fetching and caching queiries and mutations for immutable stores.
+ * Returns selectors and utils. Should be additionally initialized for the store (Redux or Zustand) and optionally for the UI lib (React).
+ * */
 export declare const createCache: <
-  N extends string,
+  N extends string = string,
+  SK extends string = string,
   T extends Typenames = Typenames,
   QP = unknown,
   QR = unknown,
@@ -156,20 +165,16 @@ export declare const createCache: <
     mutations: Partial<{
       [MK in keyof (MP & MR)]: MK extends keyof MP & keyof MR ? MutationInfo<T, MP[MK], MR[MK]> : never
     }>
-    cacheStateKey: string
     options: Partial<CacheOptions>
   }> &
-    Omit<
-      Omit<CacheConfig<N, T, QP, QR, MP, MR>, 'globals'>,
-      'queries' | 'mutations' | 'cacheStateKey' | 'options'
-    > & {
+    Omit<Omit<CacheConfig<N, SK, T, QP, QR, MP, MR>, 'globals'>, 'queries' | 'mutations' | 'options'> & {
       globals?: OptionalPartial<Globals<T>, 'queries'> | undefined
     },
 ) => {
-  /** Keeps config, passed while creating the cache, with default values set. */
-  config: CacheConfig<N, T, QP, QR, MP, MR>
+  /** Keeps config, passed while creating the cache, with all default values set. */
+  config: CacheConfig<N, SK, T, QP, QR, MP, MR>
   selectors: {
-    /** Selects cache state from root state. Depends on `cacheStateKey`. */
+    /** Selects cache state from the root state. Depends on `cacheStateKey`. */
     selectCacheState: (state: any) => CacheState<T, QP, QR, MP, MR>
     /** Selects query state. */
     selectQueryState: <QK_1 extends keyof QP | keyof QR>(
@@ -265,5 +270,9 @@ export declare const createCache: <
       entities: EntitiesMap<T> & Mutable,
       changes: EntityChanges<T>,
     ) => EntitiesMap<T> | undefined
+    /** Generates the initial root state using `cacheStateKey`. Not needed for Redux — it automatically generates it when creating the store by calling the root reducer. */
+    getInitialState: () => SK extends '' | '.'
+      ? CacheState<T, QP, QR, MP, MR>
+      : {[key in SK]: CacheState<T, QP, QR, MP, MR>}
   }
 }

@@ -1,32 +1,34 @@
 'use strict'
 Object.defineProperty(exports, '__esModule', {value: true})
 exports.initializeForZustand = void 0
-const createClient_1 = require('./createClient')
-const utilsAndConstants_1 = require('./utilsAndConstants')
+const createClient_1 = require('../createClient')
+const utilsAndConstants_1 = require('../utilsAndConstants')
 const initializeForZustand = (cache, store) => {
+  var _a, _b
+  var _c
   const privateCache = cache
   const {
-    config: {cacheStateKey},
+    config: {
+      options: {logsEnabled},
+    },
     reducer,
     actions,
     selectors: {selectCacheState},
+    utils: {getRootState},
   } = privateCache
-  const getStateToMerge = (0, utilsAndConstants_1.isRootState)(cacheStateKey)
-    ? (state) => state
-    : (state) => ({[cacheStateKey]: state})
   const dispatch = (action) => {
     const state = reducer(selectCacheState(store.getState()), action)
-    store.setState(getStateToMerge(state))
-  }
-  if (privateCache.storeHooks !== undefined) {
-    ;(0, utilsAndConstants_1.logWarn)('initializeForZustand', 'Cache seems to be already initialized')
+    store.setState(getRootState(state))
   }
   const innerStore = {dispatch, getState: store.getState}
-  privateCache.storeHooks = {
-    useStore: () => innerStore,
-    useSelector: store,
-    useExternalStore: () => store,
+  ;(_a = privateCache.extensions) !== null && _a !== void 0 ? _a : (privateCache.extensions = {})
+  if (privateCache.extensions.zustand !== undefined) {
+    ;(0, utilsAndConstants_1.logWarn)('initializeForZustand', 'Already initialized for Zustand')
   }
+  ;(_b = (_c = privateCache.extensions).zustand) !== null && _b !== void 0 ? _b : (_c.zustand = {})
+  privateCache.extensions.zustand.innerStore = innerStore
+  privateCache.extensions.zustand.externalStore = store
+  logsEnabled && (0, utilsAndConstants_1.logDebug)('initializeForZustand', 'Initialized for Zustand')
   const {
     clearCache,
     clearMutationState,
@@ -43,10 +45,8 @@ const initializeForZustand = (cache, store) => {
     }
     return result
   }, {})
-  const getInitialState = () => {
-    const {reducer} = cache
-    const state = reducer(undefined, utilsAndConstants_1.EMPTY_OBJECT)
-    return getStateToMerge(state)
+  const createClient = () => {
+    return (0, createClient_1.createClient)(privateCache, innerStore, store)
   }
   return {
     actions: {
@@ -59,8 +59,7 @@ const initializeForZustand = (cache, store) => {
       clearCache,
     },
     utils: {
-      getInitialState,
-      createClient: (store) => (0, createClient_1.createClient)(privateCache, innerStore, store),
+      createClient,
     },
   }
 }

@@ -43,7 +43,7 @@ import type {
   UseSelector,
   ZustandStoreLike,
 } from './types'
-import {CachePrivate, InnerStore} from './typesPrivate'
+import {CacheExtensions, CachePrivate, CacheToPrivate, InnerStore, StoreHooksPrivate} from './typesPrivate'
 import {
   applyEntityChanges,
   createStateComparer,
@@ -57,16 +57,17 @@ import {
 } from './utilsAndConstants'
 
 /**
- * Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.
+ * Function to provide generic Typenames if normalization is needed.
  * Returns object with createCache function with provided typenames.
  * @example
- * `const cache = withTypenames<MyTypenames>().createCache({...})`
+ * const cache = withTypenames<MyTypenames>().createCache({...})
  */
 export const withTypenames = <WT extends Typenames = Typenames>() => {
   return {
-    /** Creates reducer, actions and hooks for managing queries and mutations. */
+    /** Creates cache with selectors, utils and full config with all default values set, that should be used for further initialization for specific stores and UI libs. */
     createCache: <
-      N extends string,
+      N extends string = string,
+      SK extends string = string,
       T extends Typenames = WT,
       QP = unknown,
       QR = unknown,
@@ -74,19 +75,21 @@ export const withTypenames = <WT extends Typenames = Typenames>() => {
       MR = unknown,
     >(
       partialConfig: OptionalPartial<
-        Omit<CacheConfig<N, T, QP, QR, MP, MR>, 'globals'>,
-        'options' | 'queries' | 'mutations' | 'cacheStateKey'
+        Omit<CacheConfig<N, SK, T, QP, QR, MP, MR>, 'globals'>,
+        'options' | 'queries' | 'mutations'
       > & {
-        globals?: OptionalPartial<CacheConfig<N, T, QP, QR, MP, MR>['globals'], 'queries'>
+        globals?: OptionalPartial<CacheConfig<N, SK, T, QP, QR, MP, MR>['globals'], 'queries'>
       },
     ) => {
-      type TypedConfig = CacheConfig<N, T, QP, QR, MP, MR>
+      type TypedConfig = CacheConfig<N, SK, T, QP, QR, MP, MR>
+      type RootState = SK extends '.' | ''
+        ? CacheState<T, QP, QR, MP, MR>
+        : {[key in SK]: CacheState<T, QP, QR, MP, MR>}
 
       const abortControllers = new WeakMap<InnerStore, Record<Key, AbortController>>()
 
       // Provide all optional fields
 
-      partialConfig.cacheStateKey ??= partialConfig.name
       partialConfig.options ??= {} as CacheOptions
       partialConfig.options.mutableCollections ??= false
       partialConfig.options.logsEnabled ??= false
@@ -156,13 +159,28 @@ export const withTypenames = <WT extends Typenames = Typenames>() => {
         config.options,
       )
 
-      // doc-header createCache result
+      // Utils
+
+      // @ts-expect-error TODO fix types
+      const getRootState: (cacheState: CacheState<T, QP, QR, MP, MR>) => RootState = isRootState(
+        cacheStateKey,
+      )
+        ? (state) => state
+        : (state) => ({[cacheStateKey]: state})
+
+      const getInitialState = () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const state = reducer(undefined, EMPTY_OBJECT as any)
+        return getRootState(state)
+      }
+
       const cache = {
-        /** Keeps config, passed while creating the cache, with default values set. */
+        // doc-ignore
+        /** Keeps config, passed while creating the cache, with all default values set. */
         config: config as TypedConfig,
         // doc-header
         selectors: {
-          /** Selects cache state from root state. Depends on `cacheStateKey`. */
+          /** Selects cache state from the root state. Depends on `cacheStateKey`. */
           selectCacheState,
           /** Selects query state. */
           selectQueryState,
@@ -207,15 +225,18 @@ export const withTypenames = <WT extends Typenames = Typenames>() => {
           ) => {
             return applyEntityChanges<T>(entities, changes, config.options)
           },
+          /** Generates the initial root state using `cacheStateKey`. Not needed for Redux — it automatically generates it when creating the store by calling the root reducer. */
+          getInitialState,
         },
       }
 
       // Set private fields
 
-      const privateCache = cache as CachePrivate<N, T, QP, QR, MP, MR>
+      const privateCache = cache as CachePrivate<N, SK, T, QP, QR, MP, MR>
       privateCache.reducer = reducer
       privateCache.actions = actions
       privateCache.abortControllers = abortControllers
+      privateCache.utils.getRootState = getRootState
 
       return cache
     },
@@ -235,5 +256,8 @@ const setDefaultComparer = <T extends Typenames, P, R>(
 }
 
 // doc-ignore
-/** Creates reducer, actions and hooks for managing queries and mutations. */
+/**
+ * Creates cache that handles all logic for fetching and caching queiries and mutations for immutable stores.
+ * Returns selectors and utils. Should be additionally initialized for the store (Redux or Zustand) and optionally for the UI lib (React).
+ * */
 export const createCache = withTypenames().createCache

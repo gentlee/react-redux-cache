@@ -144,21 +144,16 @@ const basePath = path.join(process.cwd(), 'src')
 const markdown = [
   ['createCache.ts'],
   ['utilsAndConstants.ts'],
-  ['react', 'createHooks.ts'],
-  ['redux.ts'],
-  ['zustand.ts'],
+  ['react', 'initializeForReact.ts'],
+  ['redux', 'initializeForRedux.ts'],
+  ['zustand', 'initializeForZustand.ts'],
 ]
   .map((pathArray) => {
-    // Use {folder - filename} as title
-    let title = pathArray
-      .map((x) =>
-        x
-          .split('.')[0] // Remove extension
-          .split(/(?=[A-Z])/) // Split by capitalized letters
-          .join(' ')
-          .toLowerCase(),
-      )
-      .join(' – ')
+    let title = pathArray[0]
+      .split('.')[0] // Remove extension
+      .split(/(?=[A-Z])/) // Split by capitalized letters
+      .join(' ')
+      .toLowerCase()
 
     // Capitalize
     title = title[0].toUpperCase() + title.slice(1)

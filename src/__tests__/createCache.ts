@@ -4,8 +4,9 @@ import {createStore} from 'redux'
 import {withTypenames} from '../createCache'
 import {initializeForRedux} from '../redux'
 import {getUsers, removeUser} from '../testing/api/mocks'
+import {testCaches} from '../testing/redux/cache'
 import {advanceApiTimeout, advanceHalfApiTimeout, apiTimeout} from '../testing/utils'
-import {CacheConfig, QueryStateComparer, Typenames} from '../types'
+import {QueryStateComparer, Typenames} from '../types'
 import {CacheToPrivate} from '../typesPrivate'
 import {FetchPolicy} from '../utilsAndConstants'
 
@@ -79,6 +80,8 @@ test('createCache returns correct result', () => {
     reducer: expect.any(Function),
     utils: {
       applyEntityChanges: expect.any(Function),
+      getInitialState: expect.any(Function),
+      getRootState: expect.any(Function),
     },
   } satisfies typeof cache)
 
@@ -89,6 +92,44 @@ test('createCache returns correct result', () => {
       {},
     ),
   ).toStrictEqual({
+    entities: {},
+    queries: {
+      getUser: {},
+      getUsers: {},
+    },
+    mutations: {},
+  })
+})
+
+describe.each(testCaches)('%s', (_, cache) => {
+  test('getInitialState with default state key', () => {
+    const getInitialState = cache.utils.getInitialState
+
+    expect(getInitialState()).toStrictEqual({
+      [cache.config.cacheStateKey]: {
+        entities: {},
+        queries: {
+          getFullUser: {},
+          getUser: {},
+          getUserExpires: {},
+          getUserTtl: {},
+          getUserWithResultComparer: {},
+          getUserCustomCacheKey: {},
+          getUsers: {},
+          queryWithError: {},
+        },
+        mutations: {},
+      },
+    })
+  })
+})
+
+test('getInitialState with root state key', () => {
+  const {
+    utils: {getInitialState},
+  } = createTestingCache('cache', '.')
+
+  expect(getInitialState()).toStrictEqual({
     entities: {},
     queries: {
       getUser: {},
@@ -189,15 +230,15 @@ const updateUser = async (id: number) => {
   }
 }
 
-const createTestingCache = <N extends string>(
+const createTestingCache = <N extends string, SK extends string>(
   name: N,
-  cacheStateKey?: CacheConfig<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateKey'],
+  cacheStateKey?: SK,
   onError?: () => void,
   selectorComparer?: QueryStateComparer<Typenames, unknown, unknown>,
 ) => {
   const cache = withTypenames<{users: {id: number}}>().createCache({
     name,
-    cacheStateKey,
+    cacheStateKey: cacheStateKey ?? name,
     options: {
       logsEnabled: false,
       additionalValidation: true,

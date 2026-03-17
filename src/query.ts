@@ -1,9 +1,10 @@
-import {CachePrivate, InnerStore} from './typesPrivate'
 import type {AnyStore, Key, QueryResult, Typenames} from './types'
+import {CachePrivate, InnerStore} from './typesPrivate'
 import {logDebug, noop} from './utilsAndConstants'
 
 export const query = async <
   N extends string,
+  SK extends string,
   T extends Typenames,
   QP,
   QR,
@@ -14,7 +15,7 @@ export const query = async <
   logTag: string,
   innerStore: InnerStore,
   externalStore: AnyStore,
-  cache: Pick<CachePrivate<N, T, QP, QR, MP, MR>, 'config' | 'actions' | 'selectors'>,
+  cache: Pick<CachePrivate<N, SK, T, QP, QR, MP, MR>, 'config' | 'actions' | 'selectors'>,
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never,

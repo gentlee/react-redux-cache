@@ -5,7 +5,7 @@ import {CacheExtensions} from '../../typesPrivate'
 import {initializeForZustand} from '../../zustand'
 
 test('initializeForZustand correct result, double init warns', () => {
-  const cache = createTestCache(false)
+  const cache = createTestCache(false, '123')
 
   // Zustand
 
@@ -41,7 +41,6 @@ test('initializeForZustand correct result, double init warns', () => {
       },
       utils: {
         createClient: expect.any(Function),
-        getInitialState: expect.any(Function),
       },
     } satisfies ReturnType<typeof initializeForZustand>)
   })

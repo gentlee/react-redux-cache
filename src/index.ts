@@ -6,7 +6,7 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noo
 // Backlog
 
 // ! high (1.0.0-rc.0)
-// better init and imports for react/redux/zustand
+// type for external store state
 
 // ! medium
 // remove empty states by query key

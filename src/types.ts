@@ -54,25 +54,26 @@ export type UseSelector = <S = unknown, R = unknown>(
 /** Record of typename and its corresponding entity type */
 export type Typenames = Record<string, object>
 
-export type Cache<N extends string, T extends Typenames, QP, QR, MP, MR> = ReturnType<
-  typeof createCache<N, T, QP, QR, MP, MR>
+export type Cache<N extends string, SK extends string, T extends Typenames, QP, QR, MP, MR> = ReturnType<
+  typeof createCache<N, SK, T, QP, QR, MP, MR>
 >
 
 export type CacheConfig<
   N extends string = string,
+  SK extends string | undefined = undefined,
   T extends Typenames = Typenames,
   QP = unknown,
   QR = unknown,
   MP = unknown,
   MR = unknown,
 > = {
-  /** Used as prefix for actions and as default `cacheStateKey`. */
+  /** Used for logging and as prefix for actions. */
   name: N
   /**
-   * Key of the cache state in the original store state. Empty string or '.' are considered as root. Default equals to name.
+   * Key of the cache state in the original store state. Empty string or "." are considered as root.
    * @warning Deep nesting is not supported - only root or first level.
    */
-  cacheStateKey: string
+  cacheStateKey: SK
   /** Cache options. */
   options: CacheOptions
   /** Default options for queries and mutations. */

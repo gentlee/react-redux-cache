@@ -3,7 +3,6 @@ import React, {Key, useRef} from 'react'
 import {Provider} from 'react-redux'
 import {createStore} from 'redux'
 
-import {initializeForReact} from '../react/initializeForReact'
 import {getUser, getUsers} from '../testing/api/mocks'
 import {assertEventLog, clearEventLog, generateTestEntitiesMap, logEvent} from '../testing/api/utils'
 import {createTestCache, testCaches} from '../testing/redux/cache'

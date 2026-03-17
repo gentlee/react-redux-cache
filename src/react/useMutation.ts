@@ -8,6 +8,7 @@ import {validateStoreHooks} from './utils'
 
 export const useMutation = <
   N extends string,
+  SK extends string,
   T extends Typenames,
   QP,
   QR,
@@ -16,7 +17,7 @@ export const useMutation = <
   MK extends keyof (MP & MR),
 >(
   cache: Pick<
-    CachePrivate<N, T, QP, QR, MP, MR>,
+    CachePrivate<N, SK, T, QP, QR, MP, MR>,
     'abortControllers' | 'actions' | 'selectors' | 'config' | 'extensions'
   >,
   options: Omit<MutateOptions<T, MP, MR, MK>, 'params'>,

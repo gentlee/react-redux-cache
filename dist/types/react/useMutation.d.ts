@@ -1,8 +1,9 @@
-import {CachePrivate} from '../private-types'
 import {MutateOptions, MutationState, Typenames} from '../types'
+import {CachePrivate} from '../typesPrivate'
 
 export declare const useMutation: <
   N extends string,
+  SK extends string,
   T extends Typenames,
   QP,
   QR,
@@ -11,8 +12,8 @@ export declare const useMutation: <
   MK extends keyof (MP & MR),
 >(
   cache: Pick<
-    CachePrivate<N, T, QP, QR, MP, MR>,
-    'abortControllers' | 'actions' | 'selectors' | 'storeHooks' | 'config'
+    CachePrivate<N, SK, T, QP, QR, MP, MR>,
+    'abortControllers' | 'actions' | 'selectors' | 'config' | 'extensions'
   >,
   options: Omit<MutateOptions<T, MP, MR, MK>, 'params'>,
 ) => readonly [

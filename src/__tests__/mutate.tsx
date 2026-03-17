@@ -2,7 +2,6 @@ import {act, render as renderImpl} from '@testing-library/react'
 import React from 'react'
 import {Provider} from 'react-redux'
 
-import {initializeForReact} from '../react/initializeForReact'
 import {
   assertEventLog,
   generateTestBank,

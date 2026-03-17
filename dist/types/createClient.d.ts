@@ -1,8 +1,11 @@
-import {CachePrivate, InnerStore} from './private-types'
 import type {AnyStore, MutateOptions, MutationResult, QueryOptions, QueryResult, Typenames} from './types'
+import {CachePrivate, InnerStore} from './typesPrivate'
 
-export declare const createClient: <N extends string, T extends Typenames, QP, QR, MP, MR>(
-  cache: Pick<CachePrivate<N, T, QP, QR, MP, MR>, 'abortControllers' | 'config' | 'selectors' | 'actions'>,
+export declare const createClient: <N extends string, SK extends string, T extends Typenames, QP, QR, MP, MR>(
+  cache: Pick<
+    CachePrivate<N, SK, T, QP, QR, MP, MR>,
+    'abortControllers' | 'config' | 'selectors' | 'actions'
+  >,
   innerStore: InnerStore,
   externalStore: AnyStore,
 ) => {

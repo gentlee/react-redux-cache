@@ -9,7 +9,8 @@
 
 # RRC
 
-### Supports both `Redux` and `Zustand` (check /example)
+### Supported stores: `Redux` and `Zustand` (check /example)
+### Supported UI libs: `React`
 
 **Powerful**, **performant** yet **lightweight** data fetching and caching library for immutable stores that supports **normalization** unlike `React Query` and `RTK-Query`, while having similar but not over-engineered, simple interface. Covered with tests, fully typed and written on Typescript.
 
@@ -17,22 +18,22 @@ Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with
 
 |Principle|Description|
 |--|--|
-|Full access to the store|You choose the store (redux / zustand) and have full access to state, reducer, actions, hooks, selectors and utils, used by this library, and can create your own.|
+|Full access to the store|You choose the store (Redux / Zustand) and embed the cache into it, having full access to its state, actions, hooks, selectors and utils.|
 |Supports all kinds of queries / mutations|REST, GraphQL, databases - any async operations can be cached.|
 |Fully typed|Written on TypeScript, everything is checked by compiler.|
 |Not overengineered|Simplicity is the main goal.|
 |Performance|Every function is heavily optimized. Immer is not used ([RTK performance issue](https://github.com/reduxjs/redux-toolkit/issues/4793)). Supports mutable collections (O(n) > O(1)).|
 |Reliability|High test coverage, zero issue policy.|
-|Lightweight|`npx minified-size dist/esm/*.js`<br/>minified: 19.1 kB<br/>gzipped: 8.29 kB<br/>brotlied: 7.41 kB
+|Lightweight|Supports tree shaking. `npx minified-size dist/esm/*.js`<br/>minified: 15.3 kB<br/>gzipped: 6.75 kB<br/>brotlied: 5.98 kB|
 
 |Feature|Description|
 |--|--|
 |De-duplication of queries / mutations|Similar parallel queries are combined into one, mutations - aborted.|
-|Time to live & Invalidation|Choose how long query result can be used before expired, or clear / invalidate it manually.|
+|Time to live & Invalidation & Clear|Choose how long query result can be used before expired and refetched, or invalidate / clear it manually.|
 |Deep comparison|Rendering is much heavier than deep comparison of incoming data, so it is enabled by default to prevent excess renders.|
-|Infinite pagination|Easily implemented - one or two direction.|
-|Error handling|No need to use try / catch, errors are returned by fuctions and / or can be handled globally from single place.|
-|Fetch policies|Decide if data is full enough or need to be fetched.|
+|Infinite pagination|Easily implemented.|
+|Error handling|No need to use try / catch, errors are returned from functions, passed to callbacks and / or can be handled from single global callback.|
+|Fetch policies|Decide if data is full and fresh enough or need to be fetched.|
 |Normalization|Consistent state accross the app - better UX, minimum loading states and lower traffic consumption.|
 |Minimal state|Default values such as `undefined` or default query states are removed from the state tree.|
 |BETA: Mutable collections|Optimizes state merges from O(n) to O(1) by using mutable collections. Separate entities, query and mutation states are still immutable.|
@@ -134,84 +135,54 @@ Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with
     
 ### Table of contents
 
- - [Installation](https://github.com/gentlee/react-redux-cache#Installation)
- - [Initialization](https://github.com/gentlee/react-redux-cache#Initialization)
-   - [cache.ts](https://github.com/gentlee/react-redux-cache#cachets) 
-   - [store.ts](https://github.com/gentlee/react-redux-cache#storets) 
-   - [api.ts](https://github.com/gentlee/react-redux-cache#apits) 
- - [Usage](https://github.com/gentlee/react-redux-cache#usage)
- - [Advanced](https://github.com/gentlee/react-redux-cache#advanced)
-   - [Mutable collections](https://github.com/gentlee/react-redux-cache#mutable-collections)
-   - [Error handling](https://github.com/gentlee/react-redux-cache#error-handling)
-   - [Invalidation](https://github.com/gentlee/react-redux-cache#invalidation)
-   - [Extended & custom fetch policy](https://github.com/gentlee/react-redux-cache#extended--custom-fetch-policy)
-   - [Infinite scroll pagination](https://github.com/gentlee/react-redux-cache#infinite-scroll-pagination)
-   - [redux-persist](https://github.com/gentlee/react-redux-cache#redux-persist)
- - [FAQ](https://github.com/gentlee/react-redux-cache#faq)
-   - [What is a query cache key?](https://github.com/gentlee/react-redux-cache#what-is-a-query-cache-key)
-   - [How race conditions are handled?](https://github.com/gentlee/react-redux-cache#how-race-conditions-are-handled)
+ - [Installation](https://github.com/gentlee/rrc#Installation)
+ - [Initialization](https://github.com/gentlee/rrc#Initialization)
+   - [Queries and mutations](https://github.com/gentlee/rrc#queries-and-mutations)
+
+   - [store.ts](https://github.com/gentlee/rrc#storets) 
+ - [Usage](https://github.com/gentlee/rrc#usage)
+ - [Advanced](https://github.com/gentlee/rrc#advanced)
+   - [Mutable collections](https://github.com/gentlee/rrc#mutable-collections)
+   - [Error handling](https://github.com/gentlee/rrc#error-handling)
+   - [Invalidation](https://github.com/gentlee/rrc#invalidation)
+   - [Extended & custom fetch policy](https://github.com/gentlee/rrc#extended--custom-fetch-policy)
+   - [Infinite scroll pagination](https://github.com/gentlee/rrc#infinite-scroll-pagination)
+   - [redux-persist](https://github.com/gentlee/rrc#redux-persist)
+ - [FAQ](https://github.com/gentlee/rrc#faq)
+   - [What is a query cache key?](https://github.com/gentlee/rrc#what-is-a-query-cache-key)
+   - [How race conditions are handled?](https://github.com/gentlee/rrc#how-race-conditions-are-handled)
 
 ### Installation
-`react` is a peer dependency.
-
-`react-redux` and `fast-deep-equal` are optional peer dependencies:
-  - `react-redux` required when `storeHooks` is not provided when creating cache. Not needed for Zustand.
-  - `fast-deep-equal` required if `deepComparisonEnabled` cache option is enabled (default is true).
+ 
+`react`, `react-redux` and `fast-deep-equal` are optional peer dependencies:
+  - `react` required if `initializeForReact` is used.
+  - `react-redux` required if `reduxCustomStoreHooks` is not provided while initilizing Redux cache for React. Not needed for Zustand.
+  - `fast-deep-equal` required if `deepComparisonEnabled` cache option is enabled (default is true). Option fallbacks to `false` if not installed.
 
 ```sh
-# required
-npm i react-redux-cache react
+# Basic with deep comparison (e.g. Zustand)
+npm i rrc fast-deep-equal
 
-# without react-redux
-npm i react-redux-cache react fast-deep-equal
+# React + Redux without custom hooks
+npm i rrc react react-redux fast-deep-equal
 
-# all required and optional peers
-npm i react-redux-cache react react-redux fast-deep-equal
+# React + Redux with custom hooks
+npm i rrc react fast-deep-equal
 ```
-
 ### Initialization
-The only function that needs to be imported is either `withTypenames`, which is needed for normalization, or directly `createCache` if it is not needed. `createCache` creates fully typed reducer, hooks, actions, selectors and utils to be used in the app. You can create as many caches as needed, but keep in mind that normalization is not shared between them.
-All queries and mutations should be passed while initializing the cache for proper typing.
 
-#### cache.ts
+#### Queries & mutations
 
-> Zustand requires additional option - `storeHooks`.
+Functions that return `result` should be used for querues and mutations when creating cache if you don't need normalization:
 
 ```typescript
-// Mapping of all typenames to their entity types, which is needed for proper normalization typing.
-// Not needed if normalization is not used.
-export type CacheTypenames = {
-  users: User, // here `users` entities will have type `User`
-  banks: Bank,
-}
+// Example of query without normalization, with selecting access token from the store.
 
-// `withTypenames` is only needed to provide proper Typenames for normalization - limitation of Typescript.
-// `createCache` can be imported directly without `withTypenames`.
-export const {
-  cache,
-  reducer,
-  hooks: {useClient, useMutation, useQuery},
-} = withTypenames<CacheTypenames>().createCache({
-  name: 'cache', // Used as prefix for actions and in default cacheStateKey for selecting cache state from the store.
-  queries: {
-    getUsers: { query: getUsers },
-    getUser: {
-      query: getUser,
-      // For each query `secondsToLive` option can be set, which is used to set expiration date of a cached result when query response is received.
-      // After expiration query result is considered invalidated and will be refetched on the next useQuery mount.
-      // Can also be set globally in `globals`.
-      secondsToLive: 5 * 60 // Here cached result is valid for 5 minutes.
-    },
-  },
-  mutations: {
-    updateUser: { mutation: updateUser },
-    removeUser: { mutation: removeUser },
-  },
-
-  // Required for Zustand. Just an empty object can be passed during initialization, and hooks can be set later (see `store.ts` section).
-  // Can be also used for Redux if working with multiple stores.
-  storeHooks: {},
-})
+export const getBank = (async (id, {getState}) => {
+  const token = tokenSelector(getState())
+  const result: Bank = ...
+  return {result}
+}) satisfies Query<string>
 ```
 
 For normalization two things are required:
@@ -227,19 +198,83 @@ type EntityChanges<T extends Typenames> = {
 }
 ```
 
-#### store.ts
+For normalization `normalizr` package is used in this example, but any other tool can be used if query result is of proper type.
+Perfect implementation is when the backend already returns normalized data.
+
+```typescript
+// Example of query with normalization
+
+// 1. Result can be get by any way - fetch, axios etc, even with database connection. There is no limitation here.
+// 2. `satisfies` keyword is used here for proper typing of params and returned value.
+export const getUser = (async (id) => {
+  const response = await ...
+
+  return normalize(response, getUserSchema)
+}) satisfies NormalizedQuery<CacheTypenames, number>
+
+// Example of mutation with normalization.
+
+export const removeUser = (async (id, _, abortSignal) => {
+  await ...
+  return {
+    remove: { users: [id] },
+  }
+}) satisfies NormalizedQuery<CacheTypenames, number>
+```
+
+#### Cache initialization
+
+First function that needs to be called is either `withTypenames`, which is needed for normalization, or directly `createCache` if it is not needed. `createCache` creates cache object, containing fully typed selectors and utils to be used in the app. You can create as many caches as needed, but keep in mind that normalization is not shared between them.
+All queries and mutations should be passed while initializing the cache for proper typing.
+
+```typescript
+// Mapping of all typenames to their entity types, which is needed for proper normalization typing.
+// Not needed if normalization is not used.
+export type CacheTypenames = {
+  users: User, // here `users` entities will have type `User`
+  banks: Bank,
+}
+
+// `withTypenames` is only needed to provide proper Typenames for normalization.
+// `createCache` can be imported directly without `withTypenames`.
+export const cache = withTypenames<CacheTypenames>().createCache({
+  name: 'test', // Used for logging and as prefix for actions.
+  cacheStateKey: 'cache', // Used to find cache state in the root state. Pass '.' or '' if cache state is the root.
+  queries: {
+    getUsers: { query: getUsers },
+    getUser: {
+      query: getUser,
+      // For each query `secondsToLive` option can be set, which is used to set expiration date of a cached result when query response is received.
+      // After expiration query result is considered invalidated and will be refetched on the next useQuery mount.
+      // Can also be set globally in `globals`.
+      secondsToLive: 5 * 60 // Here cached result is valid for 5 minutes.
+    },
+  },
+  mutations: {
+    updateUser: { mutation: updateUser },
+    removeUser: { mutation: removeUser },
+  },
+})
+```
+
+#### 2. Store initialization (Redux or Zustand)
+Cache need to be initialized for `Redux` or `Zustand` with `initializeForRedux` or `initializeForZustand`, that also return reducer, actions and utils.
 
 Redux:
 ```typescript
 const {actions, reducer} = initializeForRedux(cache)
 
-// Create store as usual, passing the new cache reducer under the name of the cache.
-// If some other redux structure is needed, provide custom cacheStateSelector when creating cache.
+// Create store as usual, passing the new cache reducer under the cache state key.
 const store = configureStore({
   reducer: {
-    [cache.name]: reducer,
+    [cache.config.cacheStateKey]: reducer,
     ...
   }
+})
+
+// If cache state key is '.' or '', then reducer is considered as root.
+const store = configureStore({
+  reducer
 })
 ```
 
@@ -254,37 +289,11 @@ const useStore = create((set, get) => initialState)
 const {actions} = initializeForZustand(cache, useStore)
 ```
 
-#### api.ts
-For normalization `normalizr` package is used in this example, but any other tool can be used if query result is of proper type.
-Perfect implementation is when the backend already returns normalized data.
+#### 3. UI lib initialization (only React supported currently)
+Hooks for `React` can be created with `initializeForReact`.
+
 ```typescript
-
-// Example of query with normalization (recommended)
-
-// 1. Result can be get by any way - fetch, axios etc, even with database connection. There is no limitation here.
-// 2. `satisfies` keyword is used here for proper typing of params and returned value.
-export const getUser = (async (id) => {
-  const response = await ...
-
-  return normalize(response, getUserSchema)
-}) satisfies NormalizedQuery<CacheTypenames, number>
-
-// Example of query without normalization (not recommended), with selecting access token from the store.
-
-export const getBank = (async (id, {getState}) => {
-  const token = tokenSelector(getState())
-  const result: Bank = ...
-  return {result} // result is bank object, no entities passed.
-}) satisfies Query<string>
-
-// Example of mutation with normalization.
-
-export const removeUser = (async (id, _, abortSignal) => {
-  await ...
-  return {
-    remove: { users: [id] },
-  }
-}) satisfies NormalizedQuery<CacheTypenames, number>
+const {hooks: {useQuery, useMutation}} = initializeForReact(cache)
 ```
 
 ### Usage
@@ -326,7 +335,7 @@ export const UserScreen = () => {
 
 For huge collections (> 1000 items, see benchmark) immutable approach may be a bottleneck - every merge of entity, query or mutation state is O(n). There is an option `mutableCollections` that makes it O(1) by using mutable approach when working with collections, while still keeping separate entities, query and mutation states immutable.
 
-[Benchmark](https://github.com/gentlee/react-redux-cache/blob/main/scripts/benchmark.mjs) results of adding item to collection depending on collection size, in microseconds (Macbook M1, less is better):
+[Benchmark](https://github.com/gentlee/rrc/blob/main/scripts/benchmark.mjs) results of adding item to collection depending on collection size, in microseconds (Macbook M1, less is better):
     
 | Collection size | 0 | 1000 | 10000 | 100000 | 1000000 |
 |-|-|-|-|-|-|

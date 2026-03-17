@@ -1,26 +1,14 @@
 import {useMemo} from 'react'
 
 import {createClient} from '../createClient'
-import {Cache, Key, ReduxStoreLike, Typenames, UseSelector} from '../types'
-import {CacheExtensions, CacheToPrivate, StoreHooksPrivate} from '../typesPrivate'
 import {logDebug, logWarn} from '../utilsAndConstants'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
 
-export type StoreHooks = {
-  useStore: () => ReduxStoreLike
-  useSelector: UseSelector
-}
-
-/**
- * Initialized cache to be used with React, creates hooks. Use after initialization for the store.
- * @param reduxCustomStoreHooks Can be used to override defaut redux hooks, imported from "react-redux" package. Not needed for Zustand.
- */
-export const initializeForReact = <N extends string, SK extends string, T extends Typenames, QP, QR, MP, MR>(
-  cache: Cache<N, SK, T, QP, QR, MP, MR>,
-  reduxCustomStoreHooks?: StoreHooks,
-) => {
-  const privateCache = cache as CacheToPrivate<typeof cache>
+export const initializeForReact = (cache, reduxCustomStoreHooks) => {
+  var _a, _b, _c
+  var _d
+  const privateCache = cache
   const {
     config: {
       options,
@@ -28,25 +16,20 @@ export const initializeForReact = <N extends string, SK extends string, T extend
     },
     selectors: {selectEntitiesByTypename, selectEntityById},
   } = privateCache
-
-  // Set store hooks
-
-  privateCache.extensions ??= {}
+  ;(_a = privateCache.extensions) !== null && _a !== void 0 ? _a : (privateCache.extensions = {})
   if (privateCache.extensions.react !== undefined) {
     logWarn('initializeForReact', 'Already initialized for React')
   } else {
-    privateCache.extensions.react ??= {} as CacheExtensions['react']
+    ;(_b = (_d = privateCache.extensions).react) !== null && _b !== void 0 ? _b : (_d.react = {})
   }
-  const reactExtension = privateCache.extensions.react!
-
-  reactExtension.storeHooks ??= {} as StoreHooksPrivate
+  const reactExtension = privateCache.extensions.react
+  ;(_c = reactExtension.storeHooks) !== null && _c !== void 0 ? _c : (reactExtension.storeHooks = {})
   if (reduxCustomStoreHooks !== undefined) {
     if (privateCache.extensions.zustand) {
       throw new Error(
         `[initializeForReact] Redux custom hooks can't be provided while cache is already initialized for Zustand`,
       )
     }
-
     reactExtension.storeHooks.useStore = reduxCustomStoreHooks.useStore
     reactExtension.storeHooks.useSelector = reduxCustomStoreHooks.useSelector
     reactExtension.storeHooks.useExternalStore = reduxCustomStoreHooks.useStore
@@ -58,29 +41,21 @@ export const initializeForReact = <N extends string, SK extends string, T extend
     reactExtension.storeHooks.useExternalStore = () => externalStore
     logsEnabled && logDebug('initializeForReact', 'Initialized with Zustand store hooks')
   } else {
-    // Try/catch just for bunders like metro to consider this as optional dependency
     try {
       const useStore = require('react-redux').useStore
       const useSelector = require('react-redux').useSelector
       reactExtension.storeHooks.useStore = useStore
       reactExtension.storeHooks.useSelector = useSelector
       reactExtension.storeHooks.useExternalStore = useStore
-    } catch {
+    } catch (_e) {
       delete privateCache.extensions.react
       throw new Error("Custom store hooks haven't beed provided, and react-redux package wasn't found")
     }
     logsEnabled && logDebug('initializeForReact', 'Initialized with react-redux global hooks')
   }
-
   const storeHooks = reactExtension.storeHooks
-
   return {
-    // doc-header
     hooks: {
-      /**
-       * Returns memoized object with query and mutate functions. Memoization dependency is the store.
-       * Consider using `createClient` util if you use globally imported stores.
-       */
       useClient: () => {
         const innerStore = storeHooks.useStore()
         const externalStore = storeHooks.useExternalStore()
@@ -89,28 +64,19 @@ export const initializeForReact = <N extends string, SK extends string, T extend
           [externalStore, innerStore],
         )
       },
-      /** Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). */
-      useQuery: <QK extends keyof (QP & QR)>(
-        options: Parameters<typeof useQuery<N, SK, T, QP, QR, MP, MR, QK>>[1],
-      ) => useQuery(privateCache, options),
-      /** Subscribes to provided mutation state and provides mutate function. */
-      useMutation: <MK extends keyof (MP & MR)>(
-        options: Parameters<typeof useMutation<N, SK, T, QP, QR, MP, MR, MK>>[1],
-      ) => useMutation(privateCache, options),
-      /** useSelector + selectEntityById. */
-      useSelectEntityById: <TN extends keyof T>(
-        id: Key | null | undefined,
-        typename: TN,
-      ): T[TN] | undefined => {
-        return storeHooks.useSelector((state: unknown) => selectEntityById(state, id, typename))
+      useQuery: (options) => useQuery(privateCache, options),
+      useMutation: (options) => useMutation(privateCache, options),
+      useSelectEntityById: (id, typename) => {
+        return storeHooks.useSelector((state) => selectEntityById(state, id, typename))
       },
-      /**
-       * useSelector + selectEntitiesByTypename. Also subscribes to collection's change key if `mutableCollections` enabled.
-       * @warning Subscribing to collections should be avoided.
-       * */
-      useEntitiesByTypename: <TN extends keyof T>(typename: TN) => {
+      useEntitiesByTypename: (typename) => {
         if (options.mutableCollections) {
-          storeHooks.useSelector((state) => selectEntitiesByTypename(state, typename)?._changeKey)
+          storeHooks.useSelector((state) => {
+            var _a
+            return (_a = selectEntitiesByTypename(state, typename)) === null || _a === void 0
+              ? void 0
+              : _a._changeKey
+          })
         }
         return storeHooks.useSelector((state) => selectEntitiesByTypename(state, typename))
       },

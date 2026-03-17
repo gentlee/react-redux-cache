@@ -1,8 +1,9 @@
-import {CachePrivate, InnerStore} from './private-types'
 import type {AnyStore, Key, QueryResult, Typenames} from './types'
+import {CachePrivate, InnerStore} from './typesPrivate'
 
 export declare const query: <
   N extends string,
+  SK extends string,
   T extends Typenames,
   QP,
   QR,
@@ -13,7 +14,7 @@ export declare const query: <
   logTag: string,
   innerStore: InnerStore,
   externalStore: AnyStore,
-  cache: Pick<CachePrivate<N, T, QP, QR, MP, MR>, 'config' | 'actions' | 'selectors'>,
+  cache: Pick<CachePrivate<N, SK, T, QP, QR, MP, MR>, 'config' | 'actions' | 'selectors'>,
   queryKey: QK,
   cacheKey: Key,
   params: QK extends keyof (QP | QR) ? QP[QK] : never,

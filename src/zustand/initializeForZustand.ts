@@ -1,29 +1,35 @@
 import {Actions} from '../createActions'
 import {createClient as createClientImpl} from '../createClient'
-import {Cache, CacheState, Typenames, ZustandStoreLike} from '../types'
+import {Cache, Typenames, ZustandStoreLike} from '../types'
 import {CacheExtensions, CachePrivate} from '../typesPrivate'
-import {EMPTY_OBJECT, isRootState, logDebug, logWarn} from '../utilsAndConstants'
+import {logDebug, logWarn} from '../utilsAndConstants'
 
-export const initializeForZustand = <N extends string, T extends Typenames, QP, QR, MP, MR, S = unknown>(
-  cache: Cache<N, T, QP, QR, MP, MR>,
+/** Initializes cache for Zustand, returning actions and utils. */
+export const initializeForZustand = <
+  N extends string,
+  SK extends string,
+  T extends Typenames,
+  QP,
+  QR,
+  MP,
+  MR,
+  S = unknown,
+>(
+  cache: Cache<N, SK, T, QP, QR, MP, MR>,
   store: ZustandStoreLike<S>,
 ) => {
   type TypedActions = Actions<N, T, QP, QR, MP, MR>
 
-  const privateCache = cache as CachePrivate<N, T, QP, QR, MP, MR>
+  const privateCache = cache as CachePrivate<N, SK, T, QP, QR, MP, MR>
   const {
     config: {
-      cacheStateKey,
       options: {logsEnabled},
     },
     reducer,
     actions,
     selectors: {selectCacheState},
+    utils: {getRootState},
   } = privateCache
-
-  const getStateToMerge: (cacheState: CacheState<T, QP, QR, MP, MR>) => S = isRootState(cacheStateKey)
-    ? (state) => state as S
-    : (state: CacheState<T, QP, QR, MP, MR>) => ({[cacheStateKey]: state}) as S
 
   const dispatch = (action: Actions<N, T, QP, QR, MP, MR>[keyof Actions]) => {
     const state = reducer(
@@ -31,7 +37,7 @@ export const initializeForZustand = <N extends string, T extends Typenames, QP, 
       // @ts-expect-error TODO fix types
       action,
     )
-    store.setState(getStateToMerge(state))
+    store.setState(getRootState(state) as S)
   }
 
   const innerStore = {dispatch, getState: store.getState}
@@ -70,12 +76,6 @@ export const initializeForZustand = <N extends string, T extends Typenames, QP, 
 
   // Utils
 
-  const getInitialState = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const state = reducer(undefined, EMPTY_OBJECT as any)
-    return getStateToMerge(state)
-  }
-
   const createClient = () => {
     return createClientImpl(privateCache, innerStore, store)
   }
@@ -101,8 +101,6 @@ export const initializeForZustand = <N extends string, T extends Typenames, QP, 
     } satisfies Record<keyof TypedActions, unknown>,
     // doc-header
     utils: {
-      /** Generates the initial state. */
-      getInitialState,
       /** Creates client by providing the store. Can be used when the store is a singleton for direct client import. */
       createClient,
     },

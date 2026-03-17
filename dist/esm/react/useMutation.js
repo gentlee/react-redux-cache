@@ -32,21 +32,23 @@ var __awaiter =
 import {useMemo} from 'react'
 
 import {mutate as mutateImpl} from '../mutate'
-import {EMPTY_OBJECT, logDebug, validateStoreHooks} from '../utilsAndConstants'
+import {EMPTY_OBJECT, logDebug} from '../utilsAndConstants'
+import {validateStoreHooks} from './utils'
 
 export const useMutation = (cache, options) => {
   var _a
   const {
     config,
-    storeHooks,
     abortControllers,
     selectors: {selectMutationState},
     actions: {updateMutationStateAndEntities},
+    extensions,
   } = cache
   const {mutation: mutationKey, onCompleted, onSuccess, onError} = options
-  validateStoreHooks(storeHooks)
-  const innerStore = storeHooks.useStore()
-  const externalStore = storeHooks.useExternalStore()
+  validateStoreHooks(extensions)
+  const {useStore, useExternalStore, useSelector} = extensions.react.storeHooks
+  const innerStore = useStore()
+  const externalStore = useExternalStore()
   const [mutationStateSelector, mutate, abort] = useMemo(() => {
     const mutationStateSelectorFromUseMutation = (state) => selectMutationState(state, mutationKey)
     const mutateFromUseMutation = (params) =>
@@ -77,7 +79,7 @@ export const useMutation = (cache, options) => {
     return [mutationStateSelectorFromUseMutation, mutateFromUseMutation, abortFromUseMutation]
   }, [mutationKey, innerStore, externalStore])
   const mutationState =
-    (_a = storeHooks.useSelector(mutationStateSelector)) !== null && _a !== void 0 ? _a : EMPTY_OBJECT
+    (_a = useSelector(mutationStateSelector)) !== null && _a !== void 0 ? _a : EMPTY_OBJECT
   config.options.logsEnabled && logDebug('useMutation', {options, mutationState})
   return [mutate, mutationState, abort]
 }
