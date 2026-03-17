@@ -12,7 +12,23 @@
       "require": "./dist/cjs/index.js",
       "import": "./dist/esm/index.js",
       "types": "./dist/types/index.d.ts"
-    }
+    },
+    "./react": {
+      "require": "./dist/cjs/react.js",
+      "import": "./dist/esm/react.js",
+      "types": "./dist/types/react.d.ts"
+    },
+    "./redux": {
+      "require": "./dist/cjs/redux.js",
+      "import": "./dist/esm/redux.js",
+      "types": "./dist/types/redux.d.ts"
+    },
+    "./zustand": {
+      "require": "./dist/cjs/zustand.js",
+      "import": "./dist/esm/zustand.js",
+      "types": "./dist/types/zustand.d.ts"
+    },
+    "./*": null
   },
   "sideEffects": false,
   "scripts": {
