@@ -138,8 +138,9 @@ Can be considered as `ApolloClient` for protocols other than `GraphQL`, but with
  - [Installation](https://github.com/gentlee/rrc#Installation)
  - [Initialization](https://github.com/gentlee/rrc#Initialization)
    - [Queries and mutations](https://github.com/gentlee/rrc#queries-and-mutations)
-
-   - [store.ts](https://github.com/gentlee/rrc#storets) 
+   - [Cache](https://github.com/gentlee/rrc#cache) 
+   - [Store](https://github.com/gentlee/rrc#store) 
+   - [UI lib](https://github.com/gentlee/rrc#ui-lib) 
  - [Usage](https://github.com/gentlee/rrc#usage)
  - [Advanced](https://github.com/gentlee/rrc#advanced)
    - [Mutable collections](https://github.com/gentlee/rrc#mutable-collections)
@@ -222,7 +223,7 @@ export const removeUser = (async (id, _, abortSignal) => {
 }) satisfies NormalizedQuery<CacheTypenames, number>
 ```
 
-#### Cache initialization
+#### Cache
 
 First function that needs to be called is either `withTypenames`, which is needed for normalization, or directly `createCache` if it is not needed. `createCache` creates cache object, containing fully typed selectors and utils to be used in the app. You can create as many caches as needed, but keep in mind that normalization is not shared between them.
 All queries and mutations should be passed while initializing the cache for proper typing.
@@ -257,7 +258,7 @@ export const cache = withTypenames<CacheTypenames>().createCache({
 })
 ```
 
-#### 2. Store initialization (Redux or Zustand)
+#### Store
 Cache need to be initialized for `Redux` or `Zustand` with `initializeForRedux` or `initializeForZustand`, that also return reducer, actions and utils.
 
 Redux:
@@ -281,7 +282,7 @@ const store = configureStore({
 Zustand:
 ```typescript
 
-const initialState = getInitialState()
+const initialState = cache.utils.getInitialState()
 
 const useStore = create((set, get) => initialState)
 
@@ -289,11 +290,17 @@ const useStore = create((set, get) => initialState)
 const {actions} = initializeForZustand(cache, useStore)
 ```
 
-#### 3. UI lib initialization (only React supported currently)
-Hooks for `React` can be created with `initializeForReact`.
+#### UI lib
+Only React is supported right now. Hooks for `React` can be created with `initializeForReact`.
 
 ```typescript
-const {hooks: {useQuery, useMutation}} = initializeForReact(cache)
+const {
+  hooks: {
+    useQuery,
+    useMutation,
+    useSelectEntityById
+  }
+} = initializeForReact(cache)
 ```
 
 ### Usage
