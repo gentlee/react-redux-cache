@@ -4,7 +4,7 @@ import {initializeForRedux} from 'rrc/redux'
 
 import {getUser, getUsers, removeUser, updateUser} from '../backend/not-normalized/mocks'
 
-export const cacheNotNormalized = createCache({
+const cache = createCache({
   name: 'notNormalized',
   cacheStateKey: 'notNormalized',
   globals: {
@@ -46,16 +46,12 @@ export const cacheNotNormalized = createCache({
   },
 })
 
-export const reduxNotNormalized = initializeForRedux(cacheNotNormalized)
+export const notNormalized = {
+  ...cache,
+  ...initializeForRedux(cache),
+  ...initializeForReact(cache),
+}
 
 const {
   actions: {invalidateQuery},
-} = reduxNotNormalized
-
-export const reactNotNormalized = initializeForReact(cacheNotNormalized)
-
-export const notNormalized = {
-  ...cacheNotNormalized,
-  ...reduxNotNormalized,
-  ...reactNotNormalized,
-}
+} = notNormalized

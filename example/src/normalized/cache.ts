@@ -5,7 +5,7 @@ import {initializeForRedux} from 'rrc/redux'
 import {getUser, getUsers, removeUser, updateUser} from '../backend/normalized/mocks'
 import {Typenames} from '../backend/normalized/types'
 
-const cacheNormalized = withTypenames<Typenames>().createCache({
+const cache = withTypenames<Typenames>().createCache({
   name: 'normalized',
   cacheStateKey: 'normalized',
   globals: {
@@ -44,12 +44,8 @@ const cacheNormalized = withTypenames<Typenames>().createCache({
   },
 })
 
-const reduxNormalized = initializeForRedux(cacheNormalized)
-
-const reactNormalized = initializeForReact(cacheNormalized)
-
 export const normalized = {
-  ...cacheNormalized,
-  ...reduxNormalized,
-  ...reactNormalized,
+  ...cache,
+  ...initializeForRedux(cache),
+  ...initializeForReact(cache),
 }
