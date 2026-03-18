@@ -4,6 +4,8 @@ import {Provider} from 'react-redux'
 import {BrowserRouter, Route, Routes} from 'react-router-dom'
 import {PersistGate} from 'redux-persist/integration/react'
 
+import {UserScreen as UserScreenMutableNormalized} from '../mutable-normalized/UserScreen'
+import {UsersScreen as UsersScreenMutableNormalized} from '../mutable-normalized/UsersScreen'
 import {UserScreen} from '../normalized/UserScreen'
 import {UsersScreen} from '../normalized/UsersScreen'
 import {UserScreenZustand} from '../normalized-zustand/UserScreen'
@@ -30,8 +32,8 @@ export const App = ({
         <Route path="/" element={<RootScreen />} />
         <Route path="/users" element={<UsersScreen />} />
         <Route path="/user/:id" element={<UserScreen />} />
-        <Route path="/mutable/users" element={<UsersScreen />} />
-        <Route path="/mutable/user/:id" element={<UserScreen />} />
+        <Route path="/mutable/users" element={<UsersScreenMutableNormalized />} />
+        <Route path="/mutable/user/:id" element={<UserScreenMutableNormalized />} />
         <Route path="/not-normalized/users" element={<UsersScreenNotNormalized />} />
         <Route path="/not-normalized/user/:id" element={<UserScreenNotNormalized />} />
         <Route path="/not-normalized-optimized/users" element={<UsersScreenNotNormalizedOptimized />} />

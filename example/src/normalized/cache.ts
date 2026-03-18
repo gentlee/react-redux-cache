@@ -1,21 +1,13 @@
-import {withTypenames} from 'react-redux-cache'
+import {withTypenames} from 'rrc'
+import {initializeForReact} from 'rrc/react'
+import {initializeForRedux} from 'rrc/redux'
 
-import {getUser, getUsers, removeUser, updateUser} from './api/mocks'
-import {Bank, User} from './api/types'
+import {getUser, getUsers, removeUser, updateUser} from '../backend/normalized/mocks'
+import {Typenames} from '../backend/normalized/types'
 
-export type Typenames = {
-  users: User
-  banks: Bank
-}
-
-export const {
-  cache,
-  reducer,
-  selectors: {selectEntitiesByTypename},
-  actions: {updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges},
-  hooks: {useClient, useMutation, useQuery, useSelectEntityById},
-} = withTypenames<Typenames>().createCache({
-  name: 'cache',
+const cacheNormalized = withTypenames<Typenames>().createCache({
+  name: 'normalized',
+  cacheStateKey: 'normalized',
   globals: {
     queries: {
       secondsToLive: 10 * 60,
@@ -51,3 +43,13 @@ export const {
     },
   },
 })
+
+const reduxNormalized = initializeForRedux(cacheNormalized)
+
+const reactNormalized = initializeForReact(cacheNormalized)
+
+export const normalized = {
+  ...cacheNormalized,
+  ...reduxNormalized,
+  ...reactNormalized,
+}

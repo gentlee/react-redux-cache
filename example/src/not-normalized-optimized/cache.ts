@@ -1,9 +1,12 @@
-import {createCache, defaultGetCacheKey} from 'react-redux-cache'
+import {createCache, defaultGetCacheKey, ReduxStoreLike} from 'rrc'
+import {initializeForReact} from 'rrc/react'
+import {initializeForRedux} from 'rrc/redux'
 
-import {getUser, getUsers, removeUser, updateUser} from '../not-normalized/api/mocks'
+import {getUser, getUsers, removeUser, updateUser} from '../backend/not-normalized/mocks'
 
-export const cacheNotNormalizedOptimized = createCache({
+const cacheNotNormalizedOptimized = createCache({
   name: 'cacheNotNormalized',
+  cacheStateKey: 'cacheNotNormalized',
   globals: {
     queries: {
       secondsToLive: 10 * 60,
@@ -13,11 +16,11 @@ export const cacheNotNormalizedOptimized = createCache({
     getUsers: {
       query: getUsers,
       getCacheKey: () => 'feed',
-      mergeResults: (oldResult, {result: newResult}, _, store, {updateQueryStateAndEntities}) => {
+      mergeResults: (oldResult, {result: newResult}, _, store) => {
         // we set getUser query results to prevent them from loading when UserScreen is opened for the first time
         const updateGetUserResults = () => {
           newResult.items.forEach((user) => {
-            store.dispatch(
+            ;(store as ReduxStoreLike).dispatch(
               updateQueryStateAndEntities('getUser', defaultGetCacheKey(user.id), {
                 result: user,
                 params: user.id,
@@ -53,3 +56,17 @@ export const cacheNotNormalizedOptimized = createCache({
     },
   },
 })
+
+const reduxNotNormalizedOptimized = initializeForRedux(cacheNotNormalizedOptimized)
+
+const {
+  actions: {updateQueryStateAndEntities},
+} = reduxNotNormalizedOptimized
+
+const reactNotNormalizedOptimized = initializeForReact(cacheNotNormalizedOptimized)
+
+export const notNormalizedOptimized = {
+  ...cacheNotNormalizedOptimized,
+  ...reduxNotNormalizedOptimized,
+  ...reactNotNormalizedOptimized,
+}

@@ -1,7 +1,11 @@
 import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
 
-import {useMutation, useQuery, useSelectEntityById} from './cache'
+import {normalized} from './cache'
+
+const {
+  hooks: {useSelectEntityById, useQuery, useMutation},
+} = normalized
 
 export const UserScreen = () => {
   const {id: userIdParam} = useParams()
@@ -23,7 +27,7 @@ export const UserScreen = () => {
     mutation: 'updateUser',
   })
 
-  console.debug('[UserScreen]', {
+  console.debug('[Normalized/UserScreen]', {
     loading,
     error,
     user,

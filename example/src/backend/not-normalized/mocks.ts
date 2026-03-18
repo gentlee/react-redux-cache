@@ -1,6 +1,6 @@
-import {Mutation, Query} from 'react-redux-cache'
+import {Mutation, Query} from 'rrc'
 
-import {apiTimeout} from '../../normalized/api/utils'
+import {apiTimeout} from '../normalized/utils'
 import {User} from './types'
 import {generateUser} from './utils'
 

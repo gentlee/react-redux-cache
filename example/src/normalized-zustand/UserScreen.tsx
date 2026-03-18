@@ -23,7 +23,7 @@ export const UserScreenZustand = () => {
     mutation: 'updateUser',
   })
 
-  console.debug('[UserScreenZustand]', {
+  console.debug('[Zustand/UserScreen]', {
     loading,
     error,
     user,

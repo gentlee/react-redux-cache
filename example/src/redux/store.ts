@@ -4,11 +4,12 @@ import reduxLogger from 'redux-logger'
 import {persistReducer, persistStore} from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
-import {cache, reducer} from '../normalized/cache'
-import {cacheNotNormalized} from '../not-normalized/cache'
+import {mutableNormalized} from '../mutable-normalized/cache'
+import {normalized} from '../normalized/cache'
+import {notNormalized} from '../not-normalized/cache'
 
 export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean) => {
-  const addPersistence = <T>(key: string, reducer: T) => {
+  const addPersistenceIfNeeded = <T>(key: string, reducer: T) => {
     if (!persistEnabled) {
       return reducer
     }
@@ -32,10 +33,14 @@ export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean
 
   const store = createStore(
     combineReducers({
-      [cache.name]: addPersistence(cache.name, reducer),
-      [cacheNotNormalized.cache.name]: addPersistence(
-        cacheNotNormalized.cache.name,
-        cacheNotNormalized.reducer,
+      [normalized.config.cacheStateKey]: addPersistenceIfNeeded(normalized.config.name, normalized.reducer),
+      [notNormalized.config.cacheStateKey]: addPersistenceIfNeeded(
+        notNormalized.config.name,
+        notNormalized.reducer,
+      ),
+      [mutableNormalized.config.cacheStateKey]: addPersistenceIfNeeded(
+        mutableNormalized.config.name,
+        mutableNormalized.reducer,
       ),
     }),
     loggerEnabled ? applyMiddleware(reduxLogger) : undefined,
@@ -54,5 +59,3 @@ export type AppStore = ReturnType<typeof createReduxStore>['store']
 export const useAppStore = useStore as () => AppStore
 
 export const useAppDispatch = useDispatch as () => AppStore['dispatch']
-
-export type ReduxState = ReturnType<typeof reducer>

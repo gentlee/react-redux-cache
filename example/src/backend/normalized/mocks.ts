@@ -1,7 +1,6 @@
-import {NormalizedMutation, NormalizedQuery} from 'react-redux-cache'
+import {NormalizedMutation, NormalizedQuery} from 'rrc'
 
-import {Typenames} from '../cache'
-import {Bank, User} from './types'
+import {Bank, Typenames, User} from './types'
 import {apiTimeout, generateBank, generateUser} from './utils'
 
 export const getUser = (async (id: number) => {

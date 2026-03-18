@@ -1,28 +1,19 @@
-import {withTypenames} from 'react-redux-cache'
+import {withTypenames} from 'rrc'
+import {initializeForReact} from 'rrc/react'
+import {initializeForZustand} from 'rrc/zustand'
+import {create} from 'zustand'
 
-import {getUser, getUsers, removeUser, updateUser} from '../normalized/api/mocks'
-import {Bank, User} from '../normalized/api/types'
+import {getUser, getUsers, removeUser, updateUser} from '../backend/normalized/mocks'
+import {Typenames} from '../backend/normalized/types'
 
-export type Typenames = {
-  users: User
-  banks: Bank
-}
-
-export const {
-  cache,
-  reducer,
-  selectors: {selectEntitiesByTypename},
-  actions: {updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges},
-  hooks: {useClient, useMutation, useQuery, useSelectEntityById},
-  utils: {getInitialState},
-} = withTypenames<Typenames>().createCache({
+const cache = withTypenames<Typenames>().createCache({
   name: 'cache',
+  cacheStateKey: '.',
   globals: {
     queries: {
       secondsToLive: 10 * 60,
     },
   },
-  storeHooks: {},
   queries: {
     getUsers: {
       query: getUsers,
@@ -53,3 +44,20 @@ export const {
     },
   },
 })
+
+export const {
+  selectors: {selectEntitiesByTypename},
+  utils: {getInitialState},
+} = cache
+
+const initialState = getInitialState()
+
+export const useStore = create(() => initialState)
+
+export const {
+  actions: {updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges},
+} = initializeForZustand(cache, useStore)
+
+export const {
+  hooks: {useClient, useMutation, useQuery, useSelectEntityById},
+} = initializeForReact(cache)

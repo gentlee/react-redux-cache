@@ -1,3 +1,8 @@
+export type Typenames = {
+  users: User
+  banks: Bank
+}
+
 export type User = {
   id: number
   bankId: string

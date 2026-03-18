@@ -1,9 +1,12 @@
-import {createCache} from 'react-redux-cache'
+import {createCache, ReduxStoreLike} from 'rrc'
+import {initializeForReact} from 'rrc/react'
+import {initializeForRedux} from 'rrc/redux'
 
-import {getUser, getUsers, removeUser, updateUser} from './api/mocks'
+import {getUser, getUsers, removeUser, updateUser} from '../backend/not-normalized/mocks'
 
 export const cacheNotNormalized = createCache({
-  name: 'cacheNotNormalized',
+  name: 'notNormalized',
+  cacheStateKey: 'notNormalized',
   globals: {
     queries: {
       secondsToLive: 5 * 60,
@@ -33,8 +36,8 @@ export const cacheNotNormalized = createCache({
   mutations: {
     updateUser: {
       mutation: updateUser,
-      onSuccess(_, __, {dispatch}, {invalidateQuery}) {
-        dispatch(invalidateQuery([{query: 'getUsers'}]))
+      onSuccess(_, __, store) {
+        ;(store as ReduxStoreLike).dispatch(invalidateQuery([{query: 'getUsers'}]))
       },
     },
     removeUser: {
@@ -42,3 +45,17 @@ export const cacheNotNormalized = createCache({
     },
   },
 })
+
+export const reduxNotNormalized = initializeForRedux(cacheNotNormalized)
+
+const {
+  actions: {invalidateQuery},
+} = reduxNotNormalized
+
+export const reactNotNormalized = initializeForReact(cacheNotNormalized)
+
+export const notNormalized = {
+  ...cacheNotNormalized,
+  ...reduxNotNormalized,
+  ...reactNotNormalized,
+}

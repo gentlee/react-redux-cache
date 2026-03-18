@@ -1,7 +1,12 @@
 import {useSelector} from 'react-redux'
 import {Link} from 'react-router-dom'
 
-import {selectEntitiesByTypename, useQuery} from './cache'
+import {normalized} from './cache'
+
+const {
+  selectors: {selectEntitiesByTypename},
+  hooks: {useQuery},
+} = normalized
 
 export const UsersScreen = () => {
   const [{result: usersResult, loading, error, params}, fetchUsers] = useQuery({
@@ -16,7 +21,7 @@ export const UsersScreen = () => {
 
   const usersMap = useSelector((state) => selectEntitiesByTypename(state, 'users'))
 
-  console.debug('[UsersScreen]', {
+  console.debug('[Normalized/UsersScreen]', {
     usersResult,
     loading,
     error,

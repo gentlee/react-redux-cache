@@ -1,6 +1,6 @@
-import {EntitiesMap} from 'react-redux-cache'
+import {EntitiesMap} from 'rrc'
 
-import {Typenames} from '../cache'
+import {Typenames} from '../../normalized/cache'
 import {Bank, User} from './types'
 
 export const API_TIMEOUT = 1000

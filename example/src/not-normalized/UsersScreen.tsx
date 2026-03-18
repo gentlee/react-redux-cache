@@ -1,13 +1,13 @@
 import {Link} from 'react-router-dom'
 
-import {User} from './api/types'
-import {cacheNotNormalized} from './cache'
+import {User} from '../backend/not-normalized/types'
+import {notNormalized} from './cache'
+
+const {
+  hooks: {useQuery},
+} = notNormalized
 
 export const UsersScreen = () => {
-  const {
-    hooks: {useQuery},
-  } = cacheNotNormalized
-
   const [{result: usersResult, loading, error, params}, fetchUsers] = useQuery({
     query: 'getUsers',
     params: {

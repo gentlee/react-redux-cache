@@ -1,6 +1,10 @@
 import {Link} from 'react-router-dom'
 
-import {useEntitiesByTypename, useQuery} from './cache'
+import {mutableNormalized} from './cache'
+
+const {
+  hooks: {useQuery, useEntitiesByTypename},
+} = mutableNormalized
 
 export const UsersScreen = () => {
   const [{result: usersResult, loading, error, params}, fetchUsers] = useQuery({
@@ -15,7 +19,7 @@ export const UsersScreen = () => {
 
   const usersMap = useEntitiesByTypename('users')
 
-  console.debug('[UsersScreen]', {
+  console.debug('[MutableNormalized/UsersScreen]', {
     usersResult,
     loading,
     error,

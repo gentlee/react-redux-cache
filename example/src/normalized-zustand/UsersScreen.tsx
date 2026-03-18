@@ -1,7 +1,6 @@
 import {Link} from 'react-router-dom'
 
-import {selectEntitiesByTypename, useQuery} from './cache'
-import {useStore} from './store'
+import {selectEntitiesByTypename, useQuery, useStore} from './cache'
 
 const selectUsers = (state: unknown) => selectEntitiesByTypename(state, 'users')
 
@@ -18,7 +17,7 @@ export const UsersScreenZustand = () => {
 
   const usersMap = useStore(selectUsers)
 
-  console.debug('[UsersScreenZustand]', {
+  console.debug('[Zustand/UsersScreen]', {
     usersResult,
     loading,
     error,

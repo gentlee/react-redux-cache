@@ -1,4 +1,4 @@
-import {Bank} from '../../normalized/api/types'
+import {Bank} from '../normalized/types'
 
 export type User = {
   id: number

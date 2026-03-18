@@ -1,4 +1,4 @@
-import {generateBank} from '../../normalized/api/utils'
+import {generateBank} from '../normalized/utils'
 import {User} from './types'
 
 export const generateUser = (id: number, full = true, nameSuffix = ''): User => {

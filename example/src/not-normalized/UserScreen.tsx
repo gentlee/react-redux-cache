@@ -1,13 +1,13 @@
 import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
 
-import {cacheNotNormalized} from './cache'
+import {notNormalized} from './cache'
+
+const {
+  hooks: {useQuery, useMutation},
+} = notNormalized
 
 export const UserScreen = () => {
-  const {
-    hooks: {useQuery, useMutation},
-  } = cacheNotNormalized
-
   const {id: userIdParam} = useParams()
   const [skip, setSkip] = useState(false)
 
