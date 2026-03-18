@@ -3,7 +3,7 @@ import {Link, useParams} from 'react-router-dom'
 import {defaultGetCacheKey} from 'rrc'
 
 import {useAppStore} from '../redux/store'
-import {cacheNotNormalizedOptimized, notNormalizedOptimized} from './cache'
+import {notNormalizedOptimized} from './cache'
 
 const {
   actions: {updateQueryStateAndEntities},

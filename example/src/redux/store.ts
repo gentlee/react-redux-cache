@@ -7,6 +7,7 @@ import storage from 'redux-persist/lib/storage'
 import {mutableNormalized} from '../mutable-normalized/cache'
 import {normalized} from '../normalized/cache'
 import {notNormalized} from '../not-normalized/cache'
+import {notNormalizedOptimized} from '../not-normalized-optimized/cache'
 
 export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean) => {
   const addPersistenceIfNeeded = <T>(key: string, reducer: T) => {
@@ -37,6 +38,10 @@ export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean
       [notNormalized.config.cacheStateKey]: addPersistenceIfNeeded(
         notNormalized.config.name,
         notNormalized.reducer,
+      ),
+      [notNormalizedOptimized.config.cacheStateKey]: addPersistenceIfNeeded(
+        notNormalizedOptimized.config.name,
+        notNormalizedOptimized.reducer,
       ),
       [mutableNormalized.config.cacheStateKey]: addPersistenceIfNeeded(
         mutableNormalized.config.name,

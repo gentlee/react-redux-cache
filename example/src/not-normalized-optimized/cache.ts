@@ -5,8 +5,8 @@ import {initializeForRedux} from 'rrc/redux'
 import {getUser, getUsers, removeUser, updateUser} from '../backend/not-normalized/mocks'
 
 const cacheNotNormalizedOptimized = createCache({
-  name: 'cacheNotNormalized',
-  cacheStateKey: 'cacheNotNormalized',
+  name: 'cacheNotNormalizedOptimized',
+  cacheStateKey: 'cacheNotNormalizedOptimized',
   globals: {
     queries: {
       secondsToLive: 10 * 60,
