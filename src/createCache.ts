@@ -124,8 +124,8 @@ export const withTypenames = <WT extends Typenames = Typenames>() => {
       // Selectors
 
       const cacheStateKey = config.cacheStateKey
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const selectCacheState: (state: any) => CacheState<T, QP, QR, MP, MR> = isRootState(cacheStateKey)
+      // @ts-expect-error TODO fix types
+      const selectCacheState: (state: unknown) => CacheState<T, QP, QR, MP, MR> = isRootState(cacheStateKey)
         ? (state: CacheState<T, QP, QR, MP, MR>) => state
         : (state: {[cacheStateKey]: CacheState<T, QP, QR, MP, MR>}) => state[cacheStateKey]
 

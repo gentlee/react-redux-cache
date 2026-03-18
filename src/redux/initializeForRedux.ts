@@ -1,6 +1,46 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {createClient} from '../createClient'
-import {Cache, ReduxStoreLike, Typenames} from '../types'
-import {CachePrivate} from '../typesPrivate'
+import type {
+  AnyStore,
+  Cache,
+  CacheClient,
+  CacheConfig,
+  CacheOptions,
+  CacheState,
+  Dict,
+  EntitiesMap,
+  EntityChanges,
+  EntityIds,
+  Globals,
+  Key,
+  Mutable,
+  MutateOptions,
+  Mutation,
+  MutationInfo,
+  MutationResponse,
+  MutationResult,
+  MutationState,
+  NormalizedMutation,
+  NormalizedMutationResponse,
+  NormalizedQuery,
+  NormalizedQueryResponse,
+  OptionalPartial,
+  PartialEntitiesMap,
+  Query,
+  QueryInfo,
+  QueryOptions,
+  QueryResponse,
+  QueryResult,
+  QueryState,
+  QueryStateComparer,
+  ReduxStoreLike,
+  Typenames,
+  UseQueryOptions,
+  UseSelector,
+  ZustandStoreLike,
+} from '../types'
+import {CacheExtensions, CachePrivate, CacheToPrivate, InnerStore, StoreHooksPrivate} from '../typesPrivate'
 
 /** Initializes cache for Redux, returning reducer, actions and utils. */
 export const initializeForRedux = <N extends string, SK extends string, T extends Typenames, QP, QR, MP, MR>(

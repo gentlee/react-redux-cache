@@ -45,7 +45,7 @@ export declare const withTypenames: <WT extends Typenames = Typenames>() => {
     config: CacheConfig<N, SK, T, QP, QR, MP, MR>
     selectors: {
       /** Selects cache state from the root state. Depends on `cacheStateKey`. */
-      selectCacheState: (state: any) => CacheState<T, QP, QR, MP, MR>
+      selectCacheState: (state: unknown) => CacheState<T, QP, QR, MP, MR>
       /** Selects query state. */
       selectQueryState: <QK extends keyof QP | keyof QR>(
         state: unknown,
@@ -175,7 +175,7 @@ export declare const createCache: <
   config: CacheConfig<N, SK, T, QP, QR, MP, MR>
   selectors: {
     /** Selects cache state from the root state. Depends on `cacheStateKey`. */
-    selectCacheState: (state: any) => CacheState<T, QP, QR, MP, MR>
+    selectCacheState: (state: unknown) => CacheState<T, QP, QR, MP, MR>
     /** Selects query state. */
     selectQueryState: <QK_1 extends keyof QP | keyof QR>(
       state: unknown,

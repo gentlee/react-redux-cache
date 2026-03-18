@@ -1,8 +1,48 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {useMemo} from 'react'
 
 import {createClient} from '../createClient'
-import {Cache, Key, ReduxStoreLike, Typenames, UseSelector} from '../types'
-import {CacheExtensions, CacheToPrivate, StoreHooksPrivate} from '../typesPrivate'
+import type {
+  AnyStore,
+  Cache,
+  CacheClient,
+  CacheConfig,
+  CacheOptions,
+  CacheState,
+  Dict,
+  EntitiesMap,
+  EntityChanges,
+  EntityIds,
+  Globals,
+  Key,
+  Mutable,
+  MutateOptions,
+  Mutation,
+  MutationInfo,
+  MutationResponse,
+  MutationResult,
+  MutationState,
+  NormalizedMutation,
+  NormalizedMutationResponse,
+  NormalizedQuery,
+  NormalizedQueryResponse,
+  OptionalPartial,
+  PartialEntitiesMap,
+  Query,
+  QueryInfo,
+  QueryOptions,
+  QueryResponse,
+  QueryResult,
+  QueryState,
+  QueryStateComparer,
+  ReduxStoreLike,
+  Typenames,
+  UseQueryOptions,
+  UseSelector,
+  ZustandStoreLike,
+} from '../types'
+import {CacheExtensions, CachePrivate, CacheToPrivate, InnerStore, StoreHooksPrivate} from '../typesPrivate'
 import {logDebug, logWarn} from '../utilsAndConstants'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'

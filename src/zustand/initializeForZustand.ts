@@ -1,7 +1,47 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {Actions} from '../createActions'
 import {createClient as createClientImpl} from '../createClient'
-import {Cache, Typenames, ZustandStoreLike} from '../types'
-import {CacheExtensions, CachePrivate} from '../typesPrivate'
+import type {
+  AnyStore,
+  Cache,
+  CacheClient,
+  CacheConfig,
+  CacheOptions,
+  CacheState,
+  Dict,
+  EntitiesMap,
+  EntityChanges,
+  EntityIds,
+  Globals,
+  Key,
+  Mutable,
+  MutateOptions,
+  Mutation,
+  MutationInfo,
+  MutationResponse,
+  MutationResult,
+  MutationState,
+  NormalizedMutation,
+  NormalizedMutationResponse,
+  NormalizedQuery,
+  NormalizedQueryResponse,
+  OptionalPartial,
+  PartialEntitiesMap,
+  Query,
+  QueryInfo,
+  QueryOptions,
+  QueryResponse,
+  QueryResult,
+  QueryState,
+  QueryStateComparer,
+  ReduxStoreLike,
+  Typenames,
+  UseQueryOptions,
+  UseSelector,
+  ZustandStoreLike,
+} from '../types'
+import {CacheExtensions, CachePrivate, CacheToPrivate, InnerStore, StoreHooksPrivate} from '../typesPrivate'
 import {logDebug, logWarn} from '../utilsAndConstants'
 
 /** Initializes cache for Zustand, returning actions and utils. */

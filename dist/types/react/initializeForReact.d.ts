@@ -1,4 +1,16 @@
-import {Cache, Key, ReduxStoreLike, Typenames, UseSelector} from '../types'
+import type {
+  Cache,
+  Key,
+  MutateOptions,
+  MutationResult,
+  MutationState,
+  QueryOptions,
+  QueryResult,
+  QueryState,
+  ReduxStoreLike,
+  Typenames,
+  UseSelector,
+} from '../types'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
 
@@ -30,18 +42,18 @@ export declare const initializeForReact: <
      */
     useClient: () => {
       query: <QK extends keyof QP | keyof QR>(
-        options: import('../types').QueryOptions<T, QP, QR, QK>,
-      ) => Promise<import('../types').QueryResult<QK extends keyof QP & keyof QR ? QR[QK] : never>>
+        options: QueryOptions<T, QP, QR, QK>,
+      ) => Promise<QueryResult<QK extends keyof QP & keyof QR ? QR[QK] : never>>
       mutate: <MK extends keyof MP | keyof MR>(
-        options: import('../types').MutateOptions<T, MP, MR, MK>,
-      ) => Promise<import('../types').MutationResult<MK extends keyof MP & keyof MR ? MR[MK] : never>>
+        options: MutateOptions<T, MP, MR, MK>,
+      ) => Promise<MutationResult<MK extends keyof MP & keyof MR ? MR[MK] : never>>
     }
     /** Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). */
     useQuery: <QK extends keyof (QP & QR)>(
       options: Parameters<typeof useQuery<N, SK, T, QP, QR, MP, MR, QK>>[1],
     ) => readonly [
       Omit<
-        import('../types').QueryState<
+        QueryState<
           T,
           QK extends keyof QP & keyof QR ? QP[QK] : never,
           QK extends keyof QP & keyof QR ? QR[QK] : never
@@ -49,11 +61,9 @@ export declare const initializeForReact: <
         'expiresAt'
       >,
       (
-        options?:
-          | Partial<Pick<import('../types').QueryOptions<T, QP, QR, QK>, 'params' | 'onlyIfExpired'>>
-          | undefined,
+        options?: Partial<Pick<QueryOptions<T, QP, QR, QK>, 'params' | 'onlyIfExpired'>> | undefined,
       ) => Promise<
-        import('../types').QueryResult<
+        QueryResult<
           QK extends infer T_1
             ? T_1 extends QK
               ? T_1 extends keyof QP & keyof QR
@@ -71,7 +81,7 @@ export declare const initializeForReact: <
       (
         params: MK extends keyof MP & keyof MR ? MP[MK] : never,
       ) => Promise<
-        import('../types').MutationResult<
+        MutationResult<
           MK extends infer T_1
             ? T_1 extends MK
               ? T_1 extends keyof MP & keyof MR
@@ -81,7 +91,7 @@ export declare const initializeForReact: <
             : never
         >
       >,
-      import('../types').MutationState<
+      MutationState<
         T,
         MK extends keyof MP & keyof MR ? MP[MK] : never,
         MK extends keyof MP & keyof MR ? MP[MK] : never
