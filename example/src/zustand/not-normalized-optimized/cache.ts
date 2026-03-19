@@ -1,9 +1,9 @@
-import {createCache, defaultGetCacheKey, Mutation, ZustandStoreLike} from 'rrc'
+import {createCache, defaultGetCacheKey, Mutation} from 'rrc'
 import {initializeForReact} from 'rrc/react'
 import {initializeForZustand} from 'rrc/zustand'
 import {create} from 'zustand'
 
-import {getUser, getUsers, removeUser, updateUser} from '../backend/not-normalized/mocks'
+import {getUser, getUsers, removeUser, updateUser} from '../../backend/not-normalized/mocks'
 
 const cache = createCache({
   name: 'zustand-not-normalized',
@@ -48,24 +48,20 @@ const cache = createCache({
   },
   mutations: {
     updateUser: {
-      mutation: (async (user) => {
-        const response = await updateUser(user)
-        const {
-          result: updatedUser,
-          result: {id},
-        } = response
-
-        // Updating getUser and getUsers results after successfull mutation.
-        // Refetch instead can be used, but this will cause additional requests.
-        // Normalization approach does that automatically.
+      mutation: updateUser,
+      // Updating getUser and getUsers results after successfull mutation.
+      // Refetch instead can be used, but this will cause additional requests.
+      // Normalization approach does that automatically.
+      onSuccess: (response) => {
+        const {result: updatedUser} = response
 
         // Update getUser result
-        updateQueryStateAndEntities('getUser', defaultGetCacheKey(id), response)
+        updateQueryStateAndEntities('getUser', defaultGetCacheKey(updatedUser.id), response)
 
         // Update getUsers result
         const getUsersState = selectQueryState(useStore.getState(), 'getUsers', 'feed')
         if (getUsersState) {
-          const userIndex = getUsersState.result?.items.findIndex((x) => x.id === id)
+          const userIndex = getUsersState.result?.items.findIndex((x) => x.id === updatedUser.id)
           if (getUsersState.result && userIndex != null && userIndex != -1) {
             const newUsersResult = {
               ...getUsersState.result,
@@ -75,9 +71,7 @@ const cache = createCache({
             updateQueryStateAndEntities('getUsers', 'feed', {result: newUsersResult})
           }
         }
-
-        return response
-      }) satisfies Mutation<Parameters<typeof updateUser>[0]>,
+      },
     },
     removeUser: {
       mutation: removeUser,

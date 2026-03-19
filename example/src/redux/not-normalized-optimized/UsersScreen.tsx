@@ -1,6 +1,6 @@
 import {Link} from 'react-router-dom'
 
-import {User} from '../backend/not-normalized/types'
+import {User} from '../../backend/not-normalized/types'
 import {notNormalizedOptimized} from './cache'
 
 const {

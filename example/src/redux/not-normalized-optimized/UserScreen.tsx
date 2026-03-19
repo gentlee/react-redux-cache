@@ -1,19 +1,24 @@
 import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
+import {defaultGetCacheKey} from 'rrc'
 
-import {notNormalized} from './cache'
+import {useAppStore} from '../store'
+import {notNormalizedOptimized} from './cache'
 
 const {
+  actions: {updateQueryStateAndEntities},
+  selectors: {selectQueryState},
   hooks: {useQuery, useMutation},
-} = notNormalized
+} = notNormalizedOptimized
 
 export const UserScreen = () => {
+  const {dispatch, getState} = useAppStore()
   const {id: userIdParam} = useParams()
   const [skip, setSkip] = useState(false)
 
   const userId = +userIdParam!
 
-  const [{result: user, loading, error}, refetchUser] = useQuery({
+  const [{result: user, loading, error}] = useQuery({
     query: 'getUser',
     params: userId,
     skipFetch: skip || isNaN(userId),
@@ -23,7 +28,7 @@ export const UserScreen = () => {
     mutation: 'updateUser',
   })
 
-  console.debug('[NotNormalized/UserScreen]', {
+  console.debug('[NotNormalizedOptimized/UserScreen]', {
     result: user,
     loading,
     error,
@@ -45,19 +50,15 @@ export const UserScreen = () => {
       return
     }
 
-    const {result} = await updateUser({
+    await updateUser({
       id: user.id,
       name: user.name + ' *',
     })
-
-    if (result) {
-      refetchUser()
-    }
   }
 
   return (
     <div className="screen">
-      <Link id={'users-link'} className={'link'} to={'/not-normalized/users'}>
+      <Link id={'users-link'} className={'link'} to={'/not-normalized-optimized/users'}>
         {'Users'}
       </Link>
       {!!user && (
@@ -65,11 +66,11 @@ export const UserScreen = () => {
           updatingUser ? 'ing' : 'e'
         } user name`}</button>
       )}
-      <Link id="next-user" className="link" to={'/not-normalized/user/' + String(userId + 1)}>
+      <Link id="next-user" className="link" to={'/not-normalized-optimized/user/' + String(userId + 1)}>
         Next user
       </Link>
       {userId > 0 && (
-        <Link id="next-user" className="link" to={'/not-normalized/user/' + String(userId - 1)}>
+        <Link id="next-user" className="link" to={'/not-normalized-optimized/user/' + String(userId - 1)}>
           Previous user
         </Link>
       )}

@@ -3,8 +3,8 @@ import {initializeForReact} from 'rrc/react'
 import {initializeForZustand} from 'rrc/zustand'
 import {create} from 'zustand'
 
-import {getUser, getUsers, removeUser, updateUser} from '../backend/normalized/mocks'
-import {Typenames} from '../backend/normalized/types'
+import {getUser, getUsers, removeUser, updateUser} from '../../backend/normalized/mocks'
+import {Typenames} from '../../backend/normalized/types'
 
 const cache = withTypenames<Typenames>().createCache({
   name: 'zustand-normalized',

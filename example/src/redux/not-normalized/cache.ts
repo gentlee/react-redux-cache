@@ -1,16 +1,15 @@
-import {withTypenames} from 'rrc'
+import {createCache, ReduxStoreLike} from 'rrc'
 import {initializeForReact} from 'rrc/react'
 import {initializeForRedux} from 'rrc/redux'
 
-import {getUser, getUsers, removeUser, updateUser} from '../backend/normalized/mocks'
-import {Typenames} from '../backend/normalized/types'
+import {getUser, getUsers, removeUser, updateUser} from '../../backend/not-normalized/mocks'
 
-const cache = withTypenames<Typenames>().createCache({
-  name: 'normalized',
-  cacheStateKey: 'normalized',
+const cache = createCache({
+  name: 'notNormalized',
+  cacheStateKey: 'notNormalized',
   globals: {
     queries: {
-      secondsToLive: 10 * 60,
+      secondsToLive: 5 * 60,
     },
   },
   queries: {
@@ -37,6 +36,9 @@ const cache = withTypenames<Typenames>().createCache({
   mutations: {
     updateUser: {
       mutation: updateUser,
+      onSuccess(_, __, store) {
+        ;(store as ReduxStoreLike).dispatch(invalidateQuery([{query: 'getUsers'}]))
+      },
     },
     removeUser: {
       mutation: removeUser,
@@ -44,8 +46,12 @@ const cache = withTypenames<Typenames>().createCache({
   },
 })
 
-export const normalized = {
+export const notNormalized = {
   ...cache,
   ...initializeForRedux(cache),
   ...initializeForReact(cache),
 }
+
+const {
+  actions: {invalidateQuery},
+} = notNormalized

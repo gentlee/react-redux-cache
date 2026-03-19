@@ -2,15 +2,12 @@ import {withTypenames} from 'rrc'
 import {initializeForReact} from 'rrc/react'
 import {initializeForRedux} from 'rrc/redux'
 
-import {getUser, getUsers, removeUser, updateUser} from '../backend/normalized/mocks'
-import {Typenames} from '../backend/normalized/types'
+import {getUser, getUsers, removeUser, updateUser} from '../../backend/normalized/mocks'
+import {Typenames} from '../../backend/normalized/types'
 
 const cache = withTypenames<Typenames>().createCache({
-  name: 'mutableNormalized',
-  cacheStateKey: 'mutableNormalized',
-  options: {
-    mutableCollections: true,
-  },
+  name: 'normalized',
+  cacheStateKey: 'normalized',
   globals: {
     queries: {
       secondsToLive: 10 * 60,
@@ -47,7 +44,7 @@ const cache = withTypenames<Typenames>().createCache({
   },
 })
 
-export const mutableNormalized = {
+export const normalized = {
   ...cache,
   ...initializeForRedux(cache),
   ...initializeForReact(cache),

@@ -1,35 +1,35 @@
 import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
 
-import {zustandNotNormalizedOptimized} from './cache'
+import {notNormalized} from './cache'
 
 const {
-  hooks: {useMutation, useQuery},
-} = zustandNotNormalizedOptimized
+  hooks: {useQuery, useMutation},
+} = notNormalized
 
-export const UserScreenZustandNotNormalizedOptimized = () => {
+export const UserScreen = () => {
   const {id: userIdParam} = useParams()
 
   const [skip, setSkip] = useState(false)
 
   const userId = +userIdParam!
 
-  const [{result: user, loading, error}] = useQuery({
+  const [{result: user, loading, error}, refetchUser] = useQuery({
     query: 'getUser',
     params: userId,
-    skipFetch: skip || !userId || isNaN(userId),
+    skipFetch: skip || isNaN(userId),
   })
 
   const [updateUser, {loading: updatingUser}] = useMutation({
     mutation: 'updateUser',
   })
 
-  console.debug('[ZustandNotNormalizedOptimized/UserScreen]', {
+  console.debug('[NotNormalized/UserScreen]', {
+    result: user,
     loading,
     error,
     user,
     userId,
-    userIdParam,
     skip,
   })
 
@@ -46,34 +46,31 @@ export const UserScreenZustandNotNormalizedOptimized = () => {
       return
     }
 
-    await updateUser({
+    const {result} = await updateUser({
       id: user.id,
       name: user.name + ' *',
     })
+
+    if (result) {
+      refetchUser()
+    }
   }
 
   return (
     <div className="screen">
-      <Link id={'users-link'} className={'link'} to={'/zustand-not-normalized-optimized/users'}>
+      <Link id={'users-link'} className={'link'} to={'/not-normalized/users'}>
         {'Users'}
       </Link>
-      <button
-        id="update-user"
-        onClick={onUpdateUserNameClick}
-      >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
-      <Link
-        id="next-user"
-        className="link"
-        to={'/zustand-not-normalized-optimized/user/' + String(userId + 1)}
-      >
+      {!!user && (
+        <button id="update-user" onClick={onUpdateUserNameClick}>{`Updat${
+          updatingUser ? 'ing' : 'e'
+        } user name`}</button>
+      )}
+      <Link id="next-user" className="link" to={'/not-normalized/user/' + String(userId + 1)}>
         Next user
       </Link>
       {userId > 0 && (
-        <Link
-          id="next-user"
-          className="link"
-          to={'/zustand-not-normalized-optimized/user/' + String(userId - 1)}
-        >
+        <Link id="next-user" className="link" to={'/not-normalized/user/' + String(userId - 1)}>
           Previous user
         </Link>
       )}
