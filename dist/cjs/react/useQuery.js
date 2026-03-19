@@ -72,13 +72,13 @@ const useQuery = (cache, useQueryOptions) => {
         ? selectorComparer
         : (0, utilsAndConstants_1.createStateComparer)(selectorComparer)
   const cacheKey = getCacheKey(params)
-  const performFetch = (0, react_1.useCallback)(
+  const query = (0, react_1.useCallback)(
     (options) =>
       __awaiter(void 0, void 0, void 0, function* () {
         const paramsPassed = options && 'params' in options
         const {secondsToLive, mergeResults, onCompleted, onSuccess, onError} = useQueryOptions
         return yield (0, query_1.query)(
-          'useQuery.fetch',
+          'useQuery.query',
           innerStore,
           externalStore,
           cache,
@@ -119,11 +119,11 @@ const useQuery = (cache, useQueryOptions) => {
         })
       return
     }
-    performFetch()
+    query()
   }, [cacheKey, skipFetch])
   logsEnabled &&
     (0, utilsAndConstants_1.logDebug)('useQuery', {cacheKey, options: useQueryOptions, queryState})
-  return [queryState, performFetch]
+  return [queryState, query]
 }
 exports.useQuery = useQuery
 const defaultStateComparer = (0, utilsAndConstants_1.createStateComparer)([

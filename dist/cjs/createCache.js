@@ -35,20 +35,19 @@ const withTypenames = () => {
       ;(_k = partialConfig.mutations) !== null && _k !== void 0 ? _k : (partialConfig.mutations = {})
       ;(_l = partialConfig.queries) !== null && _l !== void 0 ? _l : (partialConfig.queries = {})
       const config = partialConfig
-      if (config.options.deepComparisonEnabled && !utilsAndConstants_1.optionalUtils.deepEqual) {
+      const {globals, cacheStateKey, queries, options} = config
+      const isRootState = cacheStateKey === '.' || cacheStateKey === ''
+      if (options.deepComparisonEnabled && !utilsAndConstants_1.optionalUtils.deepEqual) {
         ;(0, utilsAndConstants_1.logWarn)(
           'createCache',
           'optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true',
         )
       }
-      setDefaultComparer(config.globals.queries)
-      for (const queryKey in partialConfig.queries) {
-        setDefaultComparer(partialConfig.queries[queryKey])
+      setDefaultComparer(globals.queries)
+      for (const queryKey in queries) {
+        setDefaultComparer(queries[queryKey])
       }
-      const cacheStateKey = config.cacheStateKey
-      const selectCacheState = (0, utilsAndConstants_1.isRootState)(cacheStateKey)
-        ? (state) => state
-        : (state) => state[cacheStateKey]
+      const selectCacheState = isRootState ? (state) => state : (state) => state[cacheStateKey]
       const selectors = (0, createSelectors_1.createSelectors)(selectCacheState)
       const {
         selectQueryState,
@@ -67,10 +66,8 @@ const withTypenames = () => {
         selectEntitiesByTypename,
       } = selectors
       const actions = (0, createActions_1.createActions)(config.name)
-      const reducer = (0, createReducer_1.createReducer)(actions, Object.keys(config.queries), config.options)
-      const getRootState = (0, utilsAndConstants_1.isRootState)(cacheStateKey)
-        ? (state) => state
-        : (state) => ({[cacheStateKey]: state})
+      const reducer = (0, createReducer_1.createReducer)(actions, Object.keys(queries), options)
+      const getRootState = isRootState ? (state) => state : (state) => ({[cacheStateKey]: state})
       const getInitialState = () => {
         const state = reducer(undefined, utilsAndConstants_1.EMPTY_OBJECT)
         return getRootState(state)
@@ -96,7 +93,7 @@ const withTypenames = () => {
         },
         utils: {
           applyEntityChanges: (entities, changes) => {
-            return (0, utilsAndConstants_1.applyEntityChanges)(entities, changes, config.options)
+            return (0, utilsAndConstants_1.applyEntityChanges)(entities, changes, options)
           },
           getInitialState,
         },

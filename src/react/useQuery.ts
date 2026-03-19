@@ -57,13 +57,13 @@ export const useQuery = <
   // @ts-expect-error fix types later
   const cacheKey = getCacheKey(params)
 
-  /** Fetch query with the new parameters, or refetch with the same if parameters not provided. */
-  const performFetch = useCallback(
+  /** Run query with the new parameters, or refetch with the same if parameters not provided. */
+  const query = useCallback(
     async (options?: Partial<Pick<QueryOptions<T, QP, QR, QK>, 'params' | 'onlyIfExpired'>>) => {
       const paramsPassed = options && 'params' in options
       const {secondsToLive, mergeResults, onCompleted, onSuccess, onError} = useQueryOptions
       return await queryImpl(
-        'useQuery.fetch',
+        'useQuery.query',
         innerStore,
         externalStore,
         cache,
@@ -117,13 +117,13 @@ export const useQuery = <
       return
     }
 
-    performFetch()
+    query()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheKey, skipFetch])
 
   logsEnabled && logDebug('useQuery', {cacheKey, options: useQueryOptions, queryState})
 
-  return [queryState as Omit<QueryState<T, P, R>, 'expiresAt'>, performFetch] as const
+  return [queryState as Omit<QueryState<T, P, R>, 'expiresAt'>, query] as const
 }
 
 const defaultStateComparer = createStateComparer(['result', 'loading', 'params', 'error'])

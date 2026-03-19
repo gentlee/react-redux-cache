@@ -12,7 +12,7 @@
 ### Supported stores: `Redux` and `Zustand` (check /example)
 ### Supported UI libs: `React`
 
-**Powerful**, **performant** yet **lightweight** data fetching and caching library for immutable stores that supports **normalization** unlike `React Query` and `RTK-Query`, while having similar but not over-engineered, simple interface, with full control over underlying store. Covered with tests, fully typed and written on Typescript.
+**Powerful**, **performant** yet **lightweight** data fetching and caching library for immutable stores that supports **normalization** unlike `TanStack Query` and `RTK-Query`, while having similar but not over-engineered, simple interface, with full control over underlying store. Covered with tests, fully typed and written on Typescript.
 
 |Principle|Description|
 |--|--|
@@ -22,7 +22,7 @@
 |Not overengineered|Simplicity is the main goal.|
 |Performance|Every function is heavily optimized. Immer is not used ([RTK performance issue](https://github.com/reduxjs/redux-toolkit/issues/4793)). Supports mutable collections (O(n) > O(1)).|
 |Reliability|High test coverage, zero issue policy.|
-|Lightweight|Supports tree shaking. `npx minified-size dist/esm/*.js`<br/>minified: 15.3 kB<br/>gzipped: 6.76 kB<br/>brotlied: 5.98 kB|
+|Lightweight|Supports tree shaking. `npx minified-size dist/esm/*.js`<br/>minified: 15.3 kB<br/>gzipped: 6.75 kB<br/>brotlied: 5.98 kB|
 
 |Feature|Description|
 |--|--|
@@ -170,7 +170,12 @@ npm i rrc react fast-deep-equal
 ```
 ### Initialization
 
-#### Queries & mutations
+Initialization is done in three steps:
+1. Create cache by providing initial config with all queries and mutations.
+2. Initialize with the store (Zustand or Redux).
+3. [Optional] Initialize with UI lib (React).
+
+#### 1.1 Queries & mutations
 
 Functions that return `result` should be used for querues and mutations when creating cache if you don't need normalization:
 
@@ -221,7 +226,7 @@ export const removeUser = (async (id, _, abortSignal) => {
 }) satisfies NormalizedQuery<CacheTypenames, number>
 ```
 
-#### Cache
+#### 1.2 Cache
 
 First function that needs to be called is either `withTypenames`, which is needed for normalization, or directly `createCache` if it is not needed. `createCache` creates cache object, containing fully typed selectors and utils to be used in the app. You can create as many caches as needed, but keep in mind that normalization is not shared between them.
 All queries and mutations should be passed while initializing the cache for proper typing.
@@ -256,12 +261,12 @@ export const cache = withTypenames<CacheTypenames>().createCache({
 })
 ```
 
-#### Store
+#### 2. Store
 Cache need to be initialized for `Redux` or `Zustand` with `initializeForRedux` or `initializeForZustand`, that also return reducer, actions and utils.
 
 Redux:
 ```typescript
-const {actions, reducer} = initializeForRedux(cache)
+const {actions, asyncActions, reducer} = initializeForRedux(cache)
 
 // Create store as usual, passing the new cache reducer under the cache state key.
 const store = configureStore({
@@ -288,7 +293,7 @@ const useStore = create((set, get) => initialState)
 const {actions} = initializeForZustand(cache, useStore)
 ```
 
-#### UI lib
+#### 3. UI lib
 Only React is supported right now. Hooks for `React` can be created with `initializeForReact`.
 
 ```typescript
@@ -296,14 +301,15 @@ const {
   hooks: {
     useQuery,
     useMutation,
-    useSelectEntityById
+    useSelectEntityById,
+    useEntitiesByTypename,
   }
 } = initializeForReact(cache)
 ```
 
 ### Usage
 
-Please check `example/` folder (`npm run example` to run). There are examples for both Redux and Zustand.
+Please check `example/` folder (`npm run example` to run). There are examples for both Redux and Zustand, with and without normalization.
 
 #### UserScreen.tsx
 ```typescript

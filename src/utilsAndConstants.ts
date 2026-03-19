@@ -225,5 +225,3 @@ export const incrementChangeKey = (mutable: Mutable) => {
     mutable._changeKey += 1
   }
 }
-
-export const isRootState = (cacheStateKey: string) => cacheStateKey === '.' || cacheStateKey === ''

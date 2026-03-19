@@ -51,7 +51,6 @@ import {
   EMPTY_OBJECT,
   FetchPolicy,
   IS_DEV,
-  isRootState,
   logWarn,
   optionalUtils,
 } from './utilsAndConstants'
@@ -103,10 +102,13 @@ export const withTypenames = <WT extends Typenames = Typenames>() => {
       partialConfig.queries ??= {} as TypedConfig['queries']
 
       const config = partialConfig as TypedConfig
+      const {globals, cacheStateKey, queries, options} = config
+
+      const isRootState = cacheStateKey === '.' || cacheStateKey === ''
 
       // Validate options
 
-      if (config.options.deepComparisonEnabled && !optionalUtils.deepEqual) {
+      if (options.deepComparisonEnabled && !optionalUtils.deepEqual) {
         logWarn(
           'createCache',
           'optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true',
@@ -115,17 +117,16 @@ export const withTypenames = <WT extends Typenames = Typenames>() => {
 
       // State comparers
 
-      setDefaultComparer(config.globals.queries)
-      for (const queryKey in partialConfig.queries) {
+      setDefaultComparer(globals.queries)
+      for (const queryKey in queries) {
         // @ts-expect-error TODO fix types
-        setDefaultComparer(partialConfig.queries[queryKey as keyof TypedConfig['queries']])
+        setDefaultComparer(queries[queryKey as keyof TypedConfig['queries']])
       }
 
       // Selectors
 
-      const cacheStateKey = config.cacheStateKey
       // @ts-expect-error TODO fix types
-      const selectCacheState: (state: unknown) => CacheState<T, QP, QR, MP, MR> = isRootState(cacheStateKey)
+      const selectCacheState: (state: unknown) => CacheState<T, QP, QR, MP, MR> = isRootState
         ? (state: CacheState<T, QP, QR, MP, MR>) => state
         : (state: {[cacheStateKey]: CacheState<T, QP, QR, MP, MR>}) => state[cacheStateKey]
 
@@ -155,16 +156,14 @@ export const withTypenames = <WT extends Typenames = Typenames>() => {
 
       const reducer = createReducer<N, T, QP, QR, MP, MR>(
         actions,
-        Object.keys(config.queries) as (keyof (QP | QR))[],
-        config.options,
+        Object.keys(queries) as (keyof (QP | QR))[],
+        options,
       )
 
       // Utils
 
       // @ts-expect-error TODO fix types
-      const getRootState: (cacheState: CacheState<T, QP, QR, MP, MR>) => RootState = isRootState(
-        cacheStateKey,
-      )
+      const getRootState: (cacheState: CacheState<T, QP, QR, MP, MR>) => RootState = isRootState
         ? (state) => state
         : (state) => ({[cacheStateKey]: state})
 
@@ -177,7 +176,7 @@ export const withTypenames = <WT extends Typenames = Typenames>() => {
       const cache = {
         // doc-ignore
         /** Keeps config, passed while creating the cache, with all default values set. */
-        config: config as TypedConfig,
+        config,
         // doc-header
         selectors: {
           /** Selects cache state from the root state. Depends on `cacheStateKey`. */
@@ -223,7 +222,7 @@ export const withTypenames = <WT extends Typenames = Typenames>() => {
             entities: Parameters<typeof applyEntityChanges<T>>[0],
             changes: Parameters<typeof applyEntityChanges<T>>[1],
           ) => {
-            return applyEntityChanges<T>(entities, changes, config.options)
+            return applyEntityChanges<T>(entities, changes, options)
           },
           /** Generates the initial root state using `cacheStateKey`. Not needed for Redux — it automatically generates it when creating the store by calling the root reducer. */
           getInitialState,

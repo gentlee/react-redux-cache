@@ -60,5 +60,3 @@ export declare const FetchPolicy: {
 }
 
 export declare const incrementChangeKey: (mutable: Mutable) => void
-
-export declare const isRootState: (cacheStateKey: string) => cacheStateKey is '.' | ''

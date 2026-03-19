@@ -165,7 +165,7 @@ export declare const initializeForRedux: <
   }
   /**
    * Asynchronous logic. No `redux-thunk` needed - just pass the store from `useStore`.
-   * Also consider using `bindAsyncActions` util or `useClient` from React. */
+   * Also consider using `bindAsyncActions` util or `useClient` from React initialization. */
   asyncActions: {
     /**
      * Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.

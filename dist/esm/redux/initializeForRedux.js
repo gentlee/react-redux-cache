@@ -36,7 +36,7 @@ export const initializeForRedux = (cache) => {
           (_a = queries[queryKey].getCacheKey) !== null && _a !== void 0 ? _a : defaultGetCacheKey
         const cacheKey = getCacheKey(params)
         return queryImpl(
-          'query',
+          'asyncActions.query',
           store,
           store,
           privateCache,
@@ -54,7 +54,7 @@ export const initializeForRedux = (cache) => {
       },
       mutate: (store, options) => {
         return mutateImpl(
-          'mutate',
+          'asyncActions.mutate',
           store,
           store,
           privateCache,

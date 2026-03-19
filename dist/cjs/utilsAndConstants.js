@@ -1,7 +1,6 @@
 'use strict'
 Object.defineProperty(exports, '__esModule', {value: true})
-exports.isRootState =
-  exports.incrementChangeKey =
+exports.incrementChangeKey =
   exports.FetchPolicy =
   exports.createStateComparer =
   exports.isEmptyObject =
@@ -222,5 +221,3 @@ const incrementChangeKey = (mutable) => {
   }
 }
 exports.incrementChangeKey = incrementChangeKey
-const isRootState = (cacheStateKey) => cacheStateKey === '.' || cacheStateKey === ''
-exports.isRootState = isRootState
