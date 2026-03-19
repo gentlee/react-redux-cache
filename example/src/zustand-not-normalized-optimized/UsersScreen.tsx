@@ -1,11 +1,13 @@
 import {Link} from 'react-router-dom'
 
-import {selectEntitiesByTypename, useQuery, useStore} from './cache'
+import {useStore, zustandNotNormalizedOptimized} from './cache'
 
-const selectUsers = (state: unknown) => selectEntitiesByTypename(state, 'users')
+const {
+  hooks: {useQuery},
+} = zustandNotNormalizedOptimized
 
-export const UsersScreenZustand = () => {
-  const [{result: usersResult, loading, error, params}, fetchUsers] = useQuery({
+export const UsersScreenZustandNotNormalizedOptimized = () => {
+  const [{result: users, loading, error, params}, fetchUsers] = useQuery({
     query: 'getUsers',
     params: {
       page: 1,
@@ -15,15 +17,13 @@ export const UsersScreenZustand = () => {
   const refreshing = loading && params?.page === 1
   const loadingNextPage = loading && !refreshing
 
-  const usersMap = useStore(selectUsers)
-
-  console.debug('[Zustand/UsersScreen]', {
-    usersResult,
+  console.debug('[ZustandNormalized/UsersScreen]', {
+    users,
     loading,
     error,
   })
 
-  if (loading && !usersResult) {
+  if (loading && !users) {
     return (
       <div className="screen">
         <div className="spinner" />
@@ -37,17 +37,18 @@ export const UsersScreenZustand = () => {
         Home
       </Link>
       <p>
-        getUsers result: '<span id="result">{JSON.stringify(usersResult)}</span>
-      </p>
-      <p>
-        denormalized:{' '}
-        <span id="denormalized">{JSON.stringify(usersResult?.items.map((id) => usersMap![id]))}</span>
+        getUsers result: '<span id="result">{JSON.stringify(users)}</span>
       </p>
       {refreshing && <div className="spinner" />}
-      {usersResult?.items.map((userId: number) => {
+      {users?.items.map((user) => {
         return (
-          <Link id={'user-link-' + userId} key={userId} className={'link'} to={'/zustand/user/' + userId}>
-            {usersMap![userId].name}
+          <Link
+            id={'user-link-' + user.id}
+            key={user.id}
+            className={'link'}
+            to={'/zustand-not-normalized-optimized/user/' + user.id}
+          >
+            {user.name}
           </Link>
         )
       })}
@@ -57,7 +58,7 @@ export const UsersScreenZustand = () => {
         <button
           id="load-next-page"
           onClick={() => {
-            const lastLoadedPage = usersResult?.page ?? 0
+            const lastLoadedPage = users?.page ?? 0
             fetchUsers({
               params: {page: lastLoadedPage + 1},
             })

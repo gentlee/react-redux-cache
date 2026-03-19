@@ -8,13 +8,15 @@ import {UserScreen as UserScreenMutableNormalized} from '../mutable-normalized/U
 import {UsersScreen as UsersScreenMutableNormalized} from '../mutable-normalized/UsersScreen'
 import {UserScreen} from '../normalized/UserScreen'
 import {UsersScreen} from '../normalized/UsersScreen'
-import {UserScreenZustand} from '../normalized-zustand/UserScreen'
-import {UsersScreenZustand} from '../normalized-zustand/UsersScreen'
 import {UserScreen as UserScreenNotNormalized} from '../not-normalized/UserScreen'
 import {UsersScreen as UsersScreenNotNormalized} from '../not-normalized/UsersScreen'
 import {UserScreen as UserScreenNotNormalizedOptimized} from '../not-normalized-optimized/UserScreen'
 import {UsersScreen as UsersScreenNotNormalizedOptimized} from '../not-normalized-optimized/UsersScreen'
 import {createReduxStore} from '../redux/store'
+import {UserScreenZustandNormalized} from '../zustand-normalized/UserScreen'
+import {UsersScreenZustandNormalized} from '../zustand-normalized/UsersScreen'
+import {UserScreenZustandNotNormalizedOptimized} from '../zustand-not-normalized-optimized/UserScreen'
+import {UsersScreenZustandNotNormalizedOptimized} from '../zustand-not-normalized-optimized/UsersScreen'
 import {RootScreen} from './RootScreen'
 
 export const App = ({
@@ -38,8 +40,16 @@ export const App = ({
         <Route path="/not-normalized/user/:id" element={<UserScreenNotNormalized />} />
         <Route path="/not-normalized-optimized/users" element={<UsersScreenNotNormalizedOptimized />} />
         <Route path="/not-normalized-optimized/user/:id" element={<UserScreenNotNormalizedOptimized />} />
-        <Route path="/zustand/users" element={<UsersScreenZustand />} />
-        <Route path="/zustand/user/:id" element={<UserScreenZustand />} />
+        <Route path="/zustand-normalized/users" element={<UsersScreenZustandNormalized />} />
+        <Route path="/zustand-normalized/user/:id" element={<UserScreenZustandNormalized />} />
+        <Route
+          path="/zustand-not-normalized-optimized/users"
+          element={<UsersScreenZustandNotNormalizedOptimized />}
+        />
+        <Route
+          path="/zustand-not-normalized-optimized/user/:id"
+          element={<UserScreenZustandNotNormalizedOptimized />}
+        />
       </Routes>
     </BrowserRouter>
   )

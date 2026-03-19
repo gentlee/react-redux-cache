@@ -1,12 +1,13 @@
-import {createCache, defaultGetCacheKey, Mutation, ReduxStoreLike} from 'rrc'
+import {createCache, defaultGetCacheKey, Mutation, ZustandStoreLike} from 'rrc'
 import {initializeForReact} from 'rrc/react'
-import {initializeForRedux} from 'rrc/redux'
+import {initializeForZustand} from 'rrc/zustand'
+import {create} from 'zustand'
 
 import {getUser, getUsers, removeUser, updateUser} from '../backend/not-normalized/mocks'
 
 const cache = createCache({
-  name: 'cacheNotNormalizedOptimized',
-  cacheStateKey: 'cacheNotNormalizedOptimized',
+  name: 'zustand-not-normalized',
+  cacheStateKey: '.',
   globals: {
     queries: {
       secondsToLive: 10 * 60,
@@ -16,16 +17,14 @@ const cache = createCache({
     getUsers: {
       query: getUsers,
       getCacheKey: () => 'feed',
-      mergeResults: (oldResult, {result: newResult}, _, store) => {
+      mergeResults: (oldResult, {result: newResult}, _) => {
         // Setting getUser query results to prevent them from loading when UserScreen is opened for the first time
         const updateGetUserResults = () => {
           newResult.items.forEach((user) => {
-            ;(store as ReduxStoreLike).dispatch(
-              updateQueryStateAndEntities('getUser', defaultGetCacheKey(user.id), {
-                result: user,
-                params: user.id,
-              }),
-            )
+            updateQueryStateAndEntities('getUser', defaultGetCacheKey(user.id), {
+              result: user,
+              params: user.id,
+            })
           })
         }
 
@@ -49,9 +48,7 @@ const cache = createCache({
   },
   mutations: {
     updateUser: {
-      mutation: (async (user, store) => {
-        store = store as ReduxStoreLike
-
+      mutation: (async (user) => {
         const response = await updateUser(user)
         const {
           result: updatedUser,
@@ -63,10 +60,10 @@ const cache = createCache({
         // Normalization approach does that automatically.
 
         // Update getUser result
-        store.dispatch(updateQueryStateAndEntities('getUser', defaultGetCacheKey(id), response))
+        updateQueryStateAndEntities('getUser', defaultGetCacheKey(id), response)
 
         // Update getUsers result
-        const getUsersState = selectQueryState(store.getState(), 'getUsers', 'feed')
+        const getUsersState = selectQueryState(useStore.getState(), 'getUsers', 'feed')
         if (getUsersState) {
           const userIndex = getUsersState.result?.items.findIndex((x) => x.id === id)
           if (getUsersState.result && userIndex != null && userIndex != -1) {
@@ -75,7 +72,7 @@ const cache = createCache({
               items: [...getUsersState.result.items],
             }
             newUsersResult.items.splice(userIndex, 1, updatedUser)
-            store.dispatch(updateQueryStateAndEntities('getUsers', 'feed', {result: newUsersResult}))
+            updateQueryStateAndEntities('getUsers', 'feed', {result: newUsersResult})
           }
         }
 
@@ -88,13 +85,29 @@ const cache = createCache({
   },
 })
 
-export const notNormalizedOptimized = {
+export const {
+  selectors: {selectEntitiesByTypename},
+  utils: {getInitialState},
+} = cache
+
+const initialState = getInitialState()
+
+export const useStore = create(() => initialState)
+
+const originalSetState = useStore.setState
+useStore.setState = (...args) => {
+  console.debug('@zustand-not-normalized-optimized/setState', args)
+  // @ts-expect-error TODO fix types
+  originalSetState(...args)
+}
+
+export const zustandNotNormalizedOptimized = {
   ...cache,
-  ...initializeForRedux(cache),
+  ...initializeForZustand(cache, useStore),
   ...initializeForReact(cache),
 }
 
 const {
-  actions: {updateQueryStateAndEntities},
   selectors: {selectQueryState},
-} = notNormalizedOptimized
+  actions: {updateQueryStateAndEntities},
+} = zustandNotNormalizedOptimized

@@ -1,9 +1,13 @@
 import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
 
-import {useMutation, useQuery, useSelectEntityById} from './cache'
+import {zustandNormalized} from './cache'
 
-export const UserScreenZustand = () => {
+const {
+  hooks: {useMutation, useQuery, useSelectEntityById},
+} = zustandNormalized
+
+export const UserScreenZustandNormalized = () => {
   const {id: userIdParam} = useParams()
 
   const [skip, setSkip] = useState(false)
@@ -23,7 +27,7 @@ export const UserScreenZustand = () => {
     mutation: 'updateUser',
   })
 
-  console.debug('[Zustand/UserScreen]', {
+  console.debug('[ZustandNormalized/UserScreen]', {
     loading,
     error,
     user,
@@ -43,7 +47,7 @@ export const UserScreenZustand = () => {
 
   return (
     <div className="screen">
-      <Link id={'users-link'} className={'link'} to={'/zustand/users'}>
+      <Link id={'users-link'} className={'link'} to={'/zustand-normalized/users'}>
         {'Users'}
       </Link>
       <button
@@ -56,11 +60,11 @@ export const UserScreenZustand = () => {
             })
         }}
       >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
-      <Link id="next-user" className="link" to={'/zustand/user/' + String(userId + 1)}>
+      <Link id="next-user" className="link" to={'/zustand-normalized/user/' + String(userId + 1)}>
         Next user
       </Link>
       {userId > 0 && (
-        <Link id="next-user" className="link" to={'/zustand/user/' + String(userId - 1)}>
+        <Link id="next-user" className="link" to={'/zustand-normalized/user/' + String(userId - 1)}>
           Previous user
         </Link>
       )}

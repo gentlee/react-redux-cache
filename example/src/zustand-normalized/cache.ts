@@ -7,7 +7,7 @@ import {getUser, getUsers, removeUser, updateUser} from '../backend/normalized/m
 import {Typenames} from '../backend/normalized/types'
 
 const cache = withTypenames<Typenames>().createCache({
-  name: 'cache',
+  name: 'zustand-normalized',
   cacheStateKey: '.',
   globals: {
     queries: {
@@ -54,10 +54,15 @@ const initialState = getInitialState()
 
 export const useStore = create(() => initialState)
 
-export const {
-  actions: {updateQueryStateAndEntities, updateMutationStateAndEntities, mergeEntityChanges},
-} = initializeForZustand(cache, useStore)
+const originalSetState = useStore.setState
+useStore.setState = (...args) => {
+  console.debug('@zustand-normalized/setState', args)
+  // @ts-expect-error TODO fix types
+  originalSetState(...args)
+}
 
-export const {
-  hooks: {useClient, useMutation, useQuery, useSelectEntityById},
-} = initializeForReact(cache)
+export const zustandNormalized = {
+  ...cache,
+  ...initializeForZustand(cache, useStore),
+  ...initializeForReact(cache),
+}

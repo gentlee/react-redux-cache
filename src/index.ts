@@ -7,6 +7,7 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noo
 
 // ! high (1.0.0-rc.0)
 // type for external store state
+// check query result deep equality
 
 // ! medium
 // remove empty states by query key

@@ -15,8 +15,11 @@ export const RootScreen = () => {
       <Link className={'link'} to={'/not-normalized-optimized/users'}>
         Redux: Not normalized, optimized (better state updates)
       </Link>
-      <Link className={'link'} to={'/zustand/users'}>
+      <Link className={'link'} to={'/zustand-normalized/users'}>
         Zustand: Normalized
+      </Link>
+      <Link className={'link'} to={'/zustand-not-normalized-optimized/users'}>
+        Zustand: Not Normalized, optimized
       </Link>
     </div>
   )
