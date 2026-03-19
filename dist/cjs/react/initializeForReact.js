@@ -2,7 +2,7 @@
 Object.defineProperty(exports, '__esModule', {value: true})
 exports.initializeForReact = void 0
 const react_1 = require('react')
-const createClient_1 = require('../createClient')
+const bindAsyncActions_1 = require('../bindAsyncActions')
 const utilsAndConstants_1 = require('../utilsAndConstants')
 const useMutation_1 = require('./useMutation')
 const useQuery_1 = require('./useQuery')
@@ -64,7 +64,7 @@ const initializeForReact = (cache, reduxCustomStoreHooks) => {
         const innerStore = storeHooks.useStore()
         const externalStore = storeHooks.useExternalStore()
         return (0, react_1.useMemo)(
-          () => (0, createClient_1.createClient)(privateCache, innerStore, externalStore),
+          () => (0, bindAsyncActions_1.bindAsyncActions)(privateCache, innerStore, externalStore),
           [externalStore, innerStore],
         )
       },

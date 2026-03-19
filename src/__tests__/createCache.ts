@@ -185,23 +185,24 @@ test('same cache works with the new store, previous async operations are ignored
   const cache = createTestingCache('cache', '')
   const {
     reducer,
-    utils: {createClient},
+    utils: {bindAsyncActions},
+    asyncActions,
   } = initializeForRedux(cache)
 
   const store1 = createStore(reducer)
   const initialState1 = Object.freeze(store1.getState())
   {
-    const client = createClient(store1)
+    const {query, mutate} = bindAsyncActions(store1)
 
-    client.query({query: 'getUser', params: 0})
-    client.query({query: 'getUsers', params: {page: 1}})
-    client.mutate({mutation: 'updateUser', params: 2})
+    query({query: 'getUser', params: 0})
+    query({query: 'getUsers', params: {page: 1}})
+    mutate({mutation: 'updateUser', params: 2})
 
     await act(() => advanceHalfApiTimeout())
 
-    client.query({query: 'getUser', params: 1})
-    client.query({query: 'getUsers', params: {page: 2}})
-    client.mutate({mutation: 'removeUser', params: 1})
+    asyncActions.query(store1, {query: 'getUser', params: 1})
+    asyncActions.query(store1, {query: 'getUsers', params: {page: 2}})
+    asyncActions.mutate(store1, {mutation: 'removeUser', params: 1})
   }
 
   const store2 = createStore(reducer)

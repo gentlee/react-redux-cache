@@ -1,23 +1,19 @@
-'use strict'
-Object.defineProperty(exports, '__esModule', {value: true})
-exports.createClient = void 0
-const mutate_1 = require('./mutate')
-const query_1 = require('./query')
-const utilsAndConstants_1 = require('./utilsAndConstants')
-const createClient = (cache, innerStore, externalStore) => {
+import {mutate as mutateImpl} from './mutate'
+import {query as queryImpl} from './query'
+import {defaultGetCacheKey} from './utilsAndConstants'
+
+export const bindAsyncActions = (cache, innerStore, externalStore) => {
   const {
     config: {queries},
   } = cache
-  const client = {
+  return {
     query: (options) => {
       var _a
       const {query: queryKey, params} = options
       const getCacheKey =
-        (_a = queries[queryKey].getCacheKey) !== null && _a !== void 0
-          ? _a
-          : utilsAndConstants_1.defaultGetCacheKey
+        (_a = queries[queryKey].getCacheKey) !== null && _a !== void 0 ? _a : defaultGetCacheKey
       const cacheKey = getCacheKey(params)
-      return (0, query_1.query)(
+      return queryImpl(
         'query',
         innerStore,
         externalStore,
@@ -35,7 +31,7 @@ const createClient = (cache, innerStore, externalStore) => {
       )
     },
     mutate: (options) => {
-      return (0, mutate_1.mutate)(
+      return mutateImpl(
         'mutate',
         innerStore,
         externalStore,
@@ -48,6 +44,4 @@ const createClient = (cache, innerStore, externalStore) => {
       )
     },
   }
-  return client
 }
-exports.createClient = createClient

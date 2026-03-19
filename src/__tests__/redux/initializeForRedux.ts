@@ -23,6 +23,7 @@ test('initializeForRedux correct result, keeps extensions undefined, double init
   expect(result === result2).toBeFalsy()
   ;[result, result2].forEach((r) => {
     expect(r).toStrictEqual({
+      reducer: expect.any(Function),
       actions: {
         clearCache: expect.any(Function),
         clearMutationState: expect.any(Function),
@@ -32,9 +33,12 @@ test('initializeForRedux correct result, keeps extensions undefined, double init
         updateMutationStateAndEntities: expect.any(Function),
         updateQueryStateAndEntities: expect.any(Function),
       },
-      reducer: expect.any(Function),
+      asyncActions: {
+        query: expect.any(Function),
+        mutate: expect.any(Function),
+      },
       utils: {
-        createClient: expect.any(Function),
+        bindAsyncActions: expect.any(Function),
       },
     } satisfies ReturnType<typeof initializeForRedux>)
   })

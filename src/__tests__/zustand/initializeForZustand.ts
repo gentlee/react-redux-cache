@@ -38,9 +38,8 @@ test('initializeForZustand correct result, double init warns', () => {
         mergeEntityChanges: expect.any(Function),
         updateMutationStateAndEntities: expect.any(Function),
         updateQueryStateAndEntities: expect.any(Function),
-      },
-      utils: {
-        createClient: expect.any(Function),
+        query: expect.any(Function),
+        mutate: expect.any(Function),
       },
     } satisfies ReturnType<typeof initializeForZustand>)
   })

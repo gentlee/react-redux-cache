@@ -1,7 +1,7 @@
 'use strict'
 Object.defineProperty(exports, '__esModule', {value: true})
 exports.initializeForZustand = void 0
-const createClient_1 = require('../createClient')
+const bindAsyncActions_1 = require('../bindAsyncActions')
 const utilsAndConstants_1 = require('../utilsAndConstants')
 const initializeForZustand = (cache, store) => {
   var _a, _b
@@ -10,6 +10,7 @@ const initializeForZustand = (cache, store) => {
   const {
     config: {
       options: {logsEnabled},
+      queries,
     },
     reducer,
     actions,
@@ -45,11 +46,11 @@ const initializeForZustand = (cache, store) => {
     }
     return result
   }, {})
-  const createClient = () => {
-    return (0, createClient_1.createClient)(privateCache, innerStore, store)
-  }
+  const {query, mutate} = (0, bindAsyncActions_1.bindAsyncActions)(privateCache, innerStore, store)
   return {
     actions: {
+      query,
+      mutate,
       updateQueryStateAndEntities,
       updateMutationStateAndEntities,
       mergeEntityChanges,
@@ -57,9 +58,6 @@ const initializeForZustand = (cache, store) => {
       clearQueryState,
       clearMutationState,
       clearCache,
-    },
-    utils: {
-      createClient,
     },
   }
 }

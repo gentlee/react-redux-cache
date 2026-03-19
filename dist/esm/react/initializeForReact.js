@@ -1,6 +1,6 @@
 import {useMemo} from 'react'
 
-import {createClient} from '../createClient'
+import {bindAsyncActions} from '../bindAsyncActions'
 import {logDebug, logWarn} from '../utilsAndConstants'
 import {useMutation} from './useMutation'
 import {useQuery} from './useQuery'
@@ -60,7 +60,7 @@ export const initializeForReact = (cache, reduxCustomStoreHooks) => {
         const innerStore = storeHooks.useStore()
         const externalStore = storeHooks.useExternalStore()
         return useMemo(
-          () => createClient(privateCache, innerStore, externalStore),
+          () => bindAsyncActions(privateCache, innerStore, externalStore),
           [externalStore, innerStore],
         )
       },

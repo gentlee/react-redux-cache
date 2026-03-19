@@ -163,9 +163,30 @@ export declare const initializeForRedux: <
       type: `@rrc/${N}/clearCache`
     }
   }
+  /**
+   * Asynchronous logic. No `redux-thunk` needed - just pass the store from `useStore`.
+   * Also consider using `bindAsyncActions` util or `useClient` from React. */
+  asyncActions: {
+    /**
+     * Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.
+     * @param onlyIfExpired When true, cancels fetch if result is not yet expired.
+     * @param skipFetch Fetch is cancelled and current cached result is returned.
+     */
+    query: <QK extends keyof (QP & QR)>(
+      store: ReduxStoreLike,
+      options: QueryOptions<T, QP, QR, QK>,
+    ) => Promise<QueryResult<QK extends keyof QP & keyof QR ? QR[QK] : never>>
+    /**
+     * Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully.
+     */
+    mutate: <MK extends keyof (MP & MR)>(
+      store: ReduxStoreLike,
+      options: MutateOptions<T, MP, MR, MK>,
+    ) => Promise<MutationResult<MK extends keyof MP & keyof MR ? MR[MK] : never>>
+  }
   utils: {
-    /** Creates client by providing the store. Can be used when the store is a singleton for direct client import. */
-    createClient: (store: ReduxStoreLike) => {
+    /** Binds async actions to the store. Can be used when the store is a singleton for direct import. */
+    bindAsyncActions: (store: ReduxStoreLike) => {
       query: <QK extends keyof QP | keyof QR>(
         options: QueryOptions<T, QP, QR, QK>,
       ) => Promise<QueryResult<QK extends keyof QP & keyof QR ? QR[QK] : never>>

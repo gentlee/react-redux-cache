@@ -4,7 +4,7 @@ import type {AnyStore, MutateOptions, MutationResult, QueryOptions, QueryResult,
 import {CachePrivate, InnerStore} from './typesPrivate'
 import {defaultGetCacheKey} from './utilsAndConstants'
 
-export const createClient = <N extends string, SK extends string, T extends Typenames, QP, QR, MP, MR>(
+export const bindAsyncActions = <N extends string, SK extends string, T extends Typenames, QP, QR, MP, MR>(
   cache: Pick<
     CachePrivate<N, SK, T, QP, QR, MP, MR>,
     'abortControllers' | 'config' | 'selectors' | 'actions'
@@ -16,7 +16,7 @@ export const createClient = <N extends string, SK extends string, T extends Type
     config: {queries},
   } = cache
 
-  const client = {
+  return {
     /**
      * Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.
      * @param onlyIfExpired When true, cancels fetch if result is not yet expired.
@@ -69,5 +69,4 @@ export const createClient = <N extends string, SK extends string, T extends Type
       ) as Promise<MutationResult<R>>
     },
   }
-  return client
 }

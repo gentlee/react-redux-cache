@@ -1,7 +1,15 @@
 import type {AnyStore, MutateOptions, MutationResult, QueryOptions, QueryResult, Typenames} from './types'
 import {CachePrivate, InnerStore} from './typesPrivate'
 
-export declare const createClient: <N extends string, SK extends string, T extends Typenames, QP, QR, MP, MR>(
+export declare const bindAsyncActions: <
+  N extends string,
+  SK extends string,
+  T extends Typenames,
+  QP,
+  QR,
+  MP,
+  MR,
+>(
   cache: Pick<
     CachePrivate<N, SK, T, QP, QR, MP, MR>,
     'abortControllers' | 'config' | 'selectors' | 'actions'

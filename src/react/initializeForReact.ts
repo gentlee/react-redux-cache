@@ -2,7 +2,7 @@
 
 import {useMemo} from 'react'
 
-import {createClient} from '../createClient'
+import {bindAsyncActions} from '../bindAsyncActions'
 import type {
   AnyStore,
   Cache,
@@ -118,14 +118,14 @@ export const initializeForReact = <N extends string, SK extends string, T extend
     // doc-header
     hooks: {
       /**
-       * Returns memoized object with query and mutate functions. Memoization dependency is the store.
-       * Consider using `createClient` util if you use globally imported stores.
+       * Returns memoized object with query and mutate functions, binded to the store. Memoization dependency is the store.
+       * @warning Not needed for Zustand, its actions are already binded to the store.
        */
       useClient: () => {
         const innerStore = storeHooks.useStore()
         const externalStore = storeHooks.useExternalStore()
         return useMemo(
-          () => createClient(privateCache, innerStore, externalStore),
+          () => bindAsyncActions(privateCache, innerStore, externalStore),
           [externalStore, innerStore],
         )
       },

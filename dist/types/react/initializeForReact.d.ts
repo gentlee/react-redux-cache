@@ -37,8 +37,8 @@ export declare const initializeForReact: <
 ) => {
   hooks: {
     /**
-     * Returns memoized object with query and mutate functions. Memoization dependency is the store.
-     * Consider using `createClient` util if you use globally imported stores.
+     * Returns memoized object with query and mutate functions, binded to the store. Memoization dependency is the store.
+     * @warning Not needed for Zustand, its actions are already binded to the store.
      */
     useClient: () => {
       query: <QK extends keyof QP | keyof QR>(

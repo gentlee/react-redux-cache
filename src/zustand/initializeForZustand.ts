@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import {bindAsyncActions} from '../bindAsyncActions'
 import {Actions} from '../createActions'
-import {createClient as createClientImpl} from '../createClient'
+import {mutate as mutateImpl} from '../mutate'
+import {query as queryImpl} from '../query'
 import type {
   AnyStore,
   Cache,
@@ -42,7 +44,7 @@ import type {
   ZustandStoreLike,
 } from '../types'
 import {CacheExtensions, CachePrivate, CacheToPrivate, InnerStore, StoreHooksPrivate} from '../typesPrivate'
-import {logDebug, logWarn} from '../utilsAndConstants'
+import {defaultGetCacheKey, logDebug, logWarn} from '../utilsAndConstants'
 
 /** Initializes cache for Zustand, returning actions and utils. */
 export const initializeForZustand = <
@@ -64,6 +66,7 @@ export const initializeForZustand = <
   const {
     config: {
       options: {logsEnabled},
+      queries,
     },
     reducer,
     actions,
@@ -114,15 +117,19 @@ export const initializeForZustand = <
     {} as {[key in keyof TypedActions]: (...args: Parameters<TypedActions[key]>) => void},
   )
 
-  // Utils
-
-  const createClient = () => {
-    return createClientImpl(privateCache, innerStore, store)
-  }
+  const {query, mutate} = bindAsyncActions(privateCache, innerStore, store)
 
   return {
     // doc-header
     actions: {
+      /**
+       * Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.
+       * @param onlyIfExpired When true, cancels fetch if result is not yet expired.
+       * @param skipFetch Fetch is cancelled and current cached result is returned.
+       */
+      query,
+      /** Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully. */
+      mutate,
       /** Updates query state, and optionally merges entity changes in a single action. */
       updateQueryStateAndEntities,
       /** Updates mutation state, and optionally merges entity changes in a single action. */
@@ -138,11 +145,9 @@ export const initializeForZustand = <
       clearMutationState,
       /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. */
       clearCache,
-    } satisfies Record<keyof TypedActions, unknown>,
-    // doc-header
-    utils: {
-      /** Creates client by providing the store. Can be used when the store is a singleton for direct client import. */
-      createClient,
+    } satisfies Record<keyof TypedActions, unknown> & {
+      query: unknown
+      mutate: unknown
     },
   }
 }

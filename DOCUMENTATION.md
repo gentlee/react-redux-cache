@@ -5,7 +5,7 @@
 | withTypenames | Function to provide generic Typenames if normalization is needed.  Returns object with createCache function with provided typenames.  @example  const cache = withTypenames<MyTypenames>().createCache({...}) |
 | createCache | Creates cache with selectors, utils and full config with all default values set, that should be used for further initialization for specific stores and UI libs. |
 
-##### selectors
+##### Selectors
 
 | Symbol | Description |
 |--------|---------------|
@@ -25,7 +25,7 @@
 | selectEntities | Selects all entities. |
 | selectEntitiesByTypename | Selects all entities of provided typename. |
 
-##### utils
+##### Utils
 
 | Symbol | Description |
 |--------|---------------|
@@ -56,11 +56,11 @@
 |--------|---------------|
 | initializeForReact | Initialized cache to be used with React, creates hooks. Use after initialization for the store.  @param reduxCustomStoreHooks Can be used to override defaut redux hooks, imported from "react-redux" package. Not needed for Zustand. |
 
-##### hooks
+##### Hooks
 
 | Symbol | Description |
 |--------|---------------|
-| useClient | Returns memoized object with query and mutate functions. Memoization dependency is the store.  Consider using `createClient` util if you use globally imported stores. |
+| useClient | Returns memoized object with query and mutate functions, binded to the store. Memoization dependency is the store.  @warning Not needed for Zustand, its actions are already binded to the store. |
 | useQuery | Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). |
 | useMutation | Subscribes to provided mutation state and provides mutate function. |
 | useSelectEntityById | useSelector + selectEntityById. |
@@ -73,7 +73,7 @@
 |--------|---------------|
 | initializeForRedux | Initializes cache for Redux, returning reducer, actions and utils. |
 
-##### actions
+##### Actions
 
 | Symbol | Description |
 |--------|---------------|
@@ -85,11 +85,18 @@
 | clearMutationState | Clears states for provided mutation keys. |
 | clearCache | Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. |
 
-##### utils
+##### Async actions
 
 | Symbol | Description |
 |--------|---------------|
-| createClient | Creates client by providing the store. Can be used when the store is a singleton for direct client import. |
+| query | Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.  @param onlyIfExpired When true, cancels fetch if result is not yet expired.  @param skipFetch Fetch is cancelled and current cached result is returned. |
+| mutate | Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully. |
+
+##### Utils
+
+| Symbol | Description |
+|--------|---------------|
+| bindAsyncActions | Binds async actions to the store. Can be used when the store is a singleton for direct import. |
 
 
 ### Zustand
@@ -98,10 +105,12 @@
 |--------|---------------|
 | initializeForZustand | Initializes cache for Zustand, returning actions and utils. |
 
-##### actions
+##### Actions
 
 | Symbol | Description |
 |--------|---------------|
+| query | Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.  @param onlyIfExpired When true, cancels fetch if result is not yet expired.  @param skipFetch Fetch is cancelled and current cached result is returned. |
+| mutate | Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully. |
 | updateQueryStateAndEntities | Updates query state, and optionally merges entity changes in a single action. |
 | updateMutationStateAndEntities | Updates mutation state, and optionally merges entity changes in a single action. |
 | mergeEntityChanges | Merges EntityChanges to the state. |
@@ -109,10 +118,4 @@
 | clearQueryState | Clears states for provided query keys and cache keys.  If cache key for query key is not provided, the whole state for query key is cleared. |
 | clearMutationState | Clears states for provided mutation keys. |
 | clearCache | Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. |
-
-##### utils
-
-| Symbol | Description |
-|--------|---------------|
-| createClient | Creates client by providing the store. Can be used when the store is a singleton for direct client import. |
 

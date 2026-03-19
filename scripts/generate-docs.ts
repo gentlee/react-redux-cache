@@ -89,7 +89,7 @@ function extractDocumentation(filePath: string): string {
         currentSymbol = symbolMatch[3]
         if (nextLineIsHeader) {
           currentEntry = {
-            header: currentSymbol,
+            header: formatHeader(currentSymbol!),
             comments: [],
           }
           nextLineIsHeader = false
@@ -149,21 +149,30 @@ const markdown = [
   ['zustand', 'initializeForZustand.ts'],
 ]
   .map((pathArray) => {
-    let title = pathArray[0]
-      .split('.')[0] // Remove extension
-      .split(/(?=[A-Z])/) // Split by capitalized letters
-      .join(' ')
-      .toLowerCase()
-
-    // Capitalize
-    title = title[0].toUpperCase() + title.slice(1)
+    const header = formatHeader(
+      pathArray[0].split('.')[0], // Remove extension
+    )
 
     const fileMarkdown = extractDocumentation(path.join(basePath, ...pathArray))
 
-    return `### ${title}\n\n${fileMarkdown}`
+    return `### ${header}\n\n${fileMarkdown}`
   })
   .join('\n')
 
 fs.writeFileSync('DOCUMENTATION.md', markdown)
 
 console.log('Documentation generated!')
+
+// Utils
+
+function formatHeader(header: string) {
+  header = header
+    .split(/(?=[A-Z])/) // Split by capitalized letters
+    .join(' ')
+    .toLowerCase()
+
+  // Capitalize
+  header = header[0].toUpperCase() + header.slice(1)
+
+  return header
+}

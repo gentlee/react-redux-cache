@@ -1,4 +1,4 @@
-import {createClient as createClientImpl} from '../createClient'
+import {bindAsyncActions} from '../bindAsyncActions'
 import {logDebug, logWarn} from '../utilsAndConstants'
 
 export const initializeForZustand = (cache, store) => {
@@ -8,6 +8,7 @@ export const initializeForZustand = (cache, store) => {
   const {
     config: {
       options: {logsEnabled},
+      queries,
     },
     reducer,
     actions,
@@ -43,11 +44,11 @@ export const initializeForZustand = (cache, store) => {
     }
     return result
   }, {})
-  const createClient = () => {
-    return createClientImpl(privateCache, innerStore, store)
-  }
+  const {query, mutate} = bindAsyncActions(privateCache, innerStore, store)
   return {
     actions: {
+      query,
+      mutate,
       updateQueryStateAndEntities,
       updateMutationStateAndEntities,
       mergeEntityChanges,
@@ -55,9 +56,6 @@ export const initializeForZustand = (cache, store) => {
       clearQueryState,
       clearMutationState,
       clearCache,
-    },
-    utils: {
-      createClient,
     },
   }
 }

@@ -28,6 +28,18 @@ export declare const initializeForZustand: <
   store: ZustandStoreLike<S>,
 ) => {
   actions: {
+    /**
+     * Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.
+     * @param onlyIfExpired When true, cancels fetch if result is not yet expired.
+     * @param skipFetch Fetch is cancelled and current cached result is returned.
+     */
+    query: <QK extends keyof QP | keyof QR>(
+      options: QueryOptions<T, QP, QR, QK>,
+    ) => Promise<QueryResult<QK extends keyof QP & keyof QR ? QR[QK] : never>>
+    /** Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully. */
+    mutate: <MK extends keyof MP | keyof MR>(
+      options: MutateOptions<T, MP, MR, MK>,
+    ) => Promise<MutationResult<MK extends keyof MP & keyof MR ? MR[MK] : never>>
     /** Updates query state, and optionally merges entity changes in a single action. */
     updateQueryStateAndEntities: (
       queryKey: keyof QP & keyof QR,
@@ -63,16 +75,5 @@ export declare const initializeForZustand: <
     clearMutationState: (mutationKeys: (keyof MP & keyof MR)[]) => void
     /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. */
     clearCache: (stateToKeep?: Partial<CacheState<T, QP, QR, MP, MR>> | undefined) => void
-  }
-  utils: {
-    /** Creates client by providing the store. Can be used when the store is a singleton for direct client import. */
-    createClient: () => {
-      query: <QK extends keyof QP | keyof QR>(
-        options: QueryOptions<T, QP, QR, QK>,
-      ) => Promise<QueryResult<QK extends keyof QP & keyof QR ? QR[QK] : never>>
-      mutate: <MK extends keyof MP | keyof MR>(
-        options: MutateOptions<T, MP, MR, MK>,
-      ) => Promise<MutationResult<MK extends keyof MP & keyof MR ? MR[MK] : never>>
-    }
   }
 }
