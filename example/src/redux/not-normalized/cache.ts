@@ -36,13 +36,13 @@ const cache = createCache({
   mutations: {
     updateUser: {
       mutation: updateUser,
-      onSuccess(response, __, store) {
+      onSuccess(_, {id}, store) {
         store = store as ReduxStoreLike
 
         store.dispatch(invalidateQuery([{query: 'getUsers'}]))
 
         // Refetching user
-        query(store, {query: 'getUser', params: response.result.id})
+        query(store, {query: 'getUser', params: id})
       },
     },
     removeUser: {
