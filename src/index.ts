@@ -13,6 +13,7 @@ export {createStateComparer, defaultGetCacheKey, FetchPolicy, isEmptyObject, noo
 // remove empty states by query key
 // enable / disable deep comparison for separate actions
 // override deep comparison for entities & states
+// override merge of entities & states
 // optimistic response
 // onCancel & onAbort
 // remove empty entities and queries from state
