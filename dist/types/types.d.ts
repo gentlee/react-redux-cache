@@ -192,13 +192,13 @@ export type QueryInfo<T extends Typenames = Typenames, P = unknown, R = unknown>
   onCompleted?: (
     response: NormalizedQueryResponse<T, R> | undefined,
     error: unknown | undefined,
-    params: P | undefined,
+    params: P,
     store: AnyStore,
   ) => void
   /** Called after fetch finished successfully. */
-  onSuccess?: (response: NormalizedQueryResponse<T, R>, params: P | undefined, store: AnyStore) => void
+  onSuccess?: (response: NormalizedQueryResponse<T, R>, params: P, store: AnyStore) => void
   /** Called after fetch finished with error. Should return true if error was handled and does not require global onError handling. */
-  onError?: (error: unknown, params: P | undefined, store: AnyStore) => boolean | void | null | undefined
+  onError?: (error: unknown, params: P, store: AnyStore) => boolean | void | null | undefined
   /** Either comparer function, or array of keys to subscribe by useQuery's useSelector. Default compares params, result, loading, error. */
   selectorComparer?: QueryStateComparer<T, P, R> | (keyof QueryState)[]
 }

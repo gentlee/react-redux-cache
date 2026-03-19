@@ -25,53 +25,53 @@ export declare const mutate: <
     | ((
         response: import('./types').NormalizedQueryResponse<T, MR[keyof MP & keyof MR & string]> | undefined,
         error: unknown | undefined,
-        params: MP[keyof MP & keyof MR & string] | undefined,
+        params: MP[keyof MP & keyof MR & string],
         store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, MR[keyof MP & keyof MR & number]> | undefined,
         error: unknown | undefined,
-        params: MP[keyof MP & keyof MR & number] | undefined,
+        params: MP[keyof MP & keyof MR & number],
         store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, MR[keyof MP & keyof MR & symbol]> | undefined,
         error: unknown | undefined,
-        params: MP[keyof MP & keyof MR & symbol] | undefined,
+        params: MP[keyof MP & keyof MR & symbol],
         store: AnyStore,
       ) => void)
     | undefined,
   onSuccess?:
     | ((
         response: import('./types').NormalizedQueryResponse<T, MR[keyof MP & keyof MR & string]>,
-        params: MP[keyof MP & keyof MR & string] | undefined,
+        params: MP[keyof MP & keyof MR & string],
         store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, MR[keyof MP & keyof MR & number]>,
-        params: MP[keyof MP & keyof MR & number] | undefined,
+        params: MP[keyof MP & keyof MR & number],
         store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, MR[keyof MP & keyof MR & symbol]>,
-        params: MP[keyof MP & keyof MR & symbol] | undefined,
+        params: MP[keyof MP & keyof MR & symbol],
         store: AnyStore,
       ) => void)
     | undefined,
   onError?:
     | ((
         error: unknown,
-        params: MP[keyof MP & keyof MR & string] | undefined,
+        params: MP[keyof MP & keyof MR & string],
         store: AnyStore,
       ) => boolean | void | null | undefined)
     | ((
         error: unknown,
-        params: MP[keyof MP & keyof MR & number] | undefined,
+        params: MP[keyof MP & keyof MR & number],
         store: AnyStore,
       ) => boolean | void | null | undefined)
     | ((
         error: unknown,
-        params: MP[keyof MP & keyof MR & symbol] | undefined,
+        params: MP[keyof MP & keyof MR & symbol],
         store: AnyStore,
       ) => boolean | void | null | undefined)
     | undefined,

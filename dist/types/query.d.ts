@@ -45,53 +45,53 @@ export declare const query: <
     | ((
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & string]> | undefined,
         error: unknown | undefined,
-        params: QP[keyof QP & keyof QR & string] | undefined,
+        params: QP[keyof QP & keyof QR & string],
         store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & number]> | undefined,
         error: unknown | undefined,
-        params: QP[keyof QP & keyof QR & number] | undefined,
+        params: QP[keyof QP & keyof QR & number],
         store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & symbol]> | undefined,
         error: unknown | undefined,
-        params: QP[keyof QP & keyof QR & symbol] | undefined,
+        params: QP[keyof QP & keyof QR & symbol],
         store: AnyStore,
       ) => void)
     | undefined,
   onSuccess?:
     | ((
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & string]>,
-        params: QP[keyof QP & keyof QR & string] | undefined,
+        params: QP[keyof QP & keyof QR & string],
         store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & number]>,
-        params: QP[keyof QP & keyof QR & number] | undefined,
+        params: QP[keyof QP & keyof QR & number],
         store: AnyStore,
       ) => void)
     | ((
         response: import('./types').NormalizedQueryResponse<T, QR[keyof QP & keyof QR & symbol]>,
-        params: QP[keyof QP & keyof QR & symbol] | undefined,
+        params: QP[keyof QP & keyof QR & symbol],
         store: AnyStore,
       ) => void)
     | undefined,
   onError?:
     | ((
         error: unknown,
-        params: QP[keyof QP & keyof QR & string] | undefined,
+        params: QP[keyof QP & keyof QR & string],
         store: AnyStore,
       ) => boolean | void | null | undefined)
     | ((
         error: unknown,
-        params: QP[keyof QP & keyof QR & number] | undefined,
+        params: QP[keyof QP & keyof QR & number],
         store: AnyStore,
       ) => boolean | void | null | undefined)
     | ((
         error: unknown,
-        params: QP[keyof QP & keyof QR & symbol] | undefined,
+        params: QP[keyof QP & keyof QR & symbol],
         store: AnyStore,
       ) => boolean | void | null | undefined)
     | undefined,

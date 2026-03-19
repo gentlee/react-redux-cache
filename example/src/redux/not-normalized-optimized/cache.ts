@@ -1,4 +1,4 @@
-import {createCache, defaultGetCacheKey, Mutation, ReduxStoreLike} from 'rrc'
+import {createCache, defaultGetCacheKey, ReduxStoreLike} from 'rrc'
 import {initializeForReact} from 'rrc/react'
 import {initializeForRedux} from 'rrc/redux'
 

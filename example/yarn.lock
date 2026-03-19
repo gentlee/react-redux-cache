@@ -1422,10 +1422,10 @@ rollup@^4.20.0:
     "@rollup/rollup-win32-x64-msvc" "4.45.0"
     fsevents "~2.3.2"
 
-rrc@0.23.2-rc.0:
-  version "0.23.2-rc.0"
-  resolved "https://registry.yarnpkg.com/rrc/-/rrc-0.23.2-rc.0.tgz#4756a6b45fa7753c1ca76de15c0f29ffb736bdbe"
-  integrity sha512-dTZiU+S2ICa5cQh8y9HrsruYakPRX32+WC+0ZZrfGFC46WpwguOQptAyf2K58ZP177ebZr/o/WiEf4YK6pr/IQ==
+rrc@0.23.3-rc.0:
+  version "0.23.3-rc.0"
+  resolved "https://registry.yarnpkg.com/rrc/-/rrc-0.23.3-rc.0.tgz#1f425466c145f868ff29f434a6e10fb377d10b4e"
+  integrity sha512-+RU75XE+vKZoHy7gZdzhOlbHX7mp4Vr9sjhALg7nUlFCU1pkBVNQ+AUIDCpK5VfBqnCnlDroWkRCg9kYtp84Cg==
 
 run-parallel@^1.1.9:
   version "1.2.0"

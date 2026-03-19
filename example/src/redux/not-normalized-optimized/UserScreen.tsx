@@ -1,18 +1,13 @@
 import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
-import {defaultGetCacheKey} from 'rrc'
 
-import {useAppStore} from '../store'
 import {notNormalizedOptimized} from './cache'
 
 const {
-  actions: {updateQueryStateAndEntities},
-  selectors: {selectQueryState},
   hooks: {useQuery, useMutation},
 } = notNormalizedOptimized
 
 export const UserScreen = () => {
-  const {dispatch, getState} = useAppStore()
   const {id: userIdParam} = useParams()
   const [skip, setSkip] = useState(false)
 

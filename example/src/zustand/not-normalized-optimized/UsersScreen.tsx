@@ -1,6 +1,6 @@
 import {Link} from 'react-router-dom'
 
-import {useStore, zustandNotNormalizedOptimized} from './cache'
+import {zustandNotNormalizedOptimized} from './cache'
 
 const {
   hooks: {useQuery},

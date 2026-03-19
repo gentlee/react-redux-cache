@@ -14,7 +14,7 @@ export const UserScreen = () => {
 
   const userId = +userIdParam!
 
-  const [{result: user, loading, error}, refetchUser] = useQuery({
+  const [{result: user, loading, error}] = useQuery({
     query: 'getUser',
     params: userId,
     skipFetch: skip || isNaN(userId),
@@ -46,14 +46,10 @@ export const UserScreen = () => {
       return
     }
 
-    const {result} = await updateUser({
+    await updateUser({
       id: user.id,
       name: user.name + ' *',
     })
-
-    if (result) {
-      refetchUser()
-    }
   }
 
   return (

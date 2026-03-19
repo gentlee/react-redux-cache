@@ -36,8 +36,13 @@ const cache = createCache({
   mutations: {
     updateUser: {
       mutation: updateUser,
-      onSuccess(_, __, store) {
-        ;(store as ReduxStoreLike).dispatch(invalidateQuery([{query: 'getUsers'}]))
+      onSuccess(response, __, store) {
+        store = store as ReduxStoreLike
+
+        store.dispatch(invalidateQuery([{query: 'getUsers'}]))
+
+        // Refetching user
+        query(store, {query: 'getUser', params: response.result.id})
       },
     },
     removeUser: {
@@ -54,4 +59,5 @@ export const notNormalized = {
 
 const {
   actions: {invalidateQuery},
+  asyncActions: {query},
 } = notNormalized

@@ -1,4 +1,4 @@
-import {createCache, defaultGetCacheKey, Mutation} from 'rrc'
+import {createCache, defaultGetCacheKey} from 'rrc'
 import {initializeForReact} from 'rrc/react'
 import {initializeForZustand} from 'rrc/zustand'
 import {create} from 'zustand'
