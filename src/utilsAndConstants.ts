@@ -201,7 +201,7 @@ export const createStateComparer = <T extends Typenames = Typenames, Q = unknown
   }
 }
 
-// doc-header
+// doc-header FetchPolicy
 export const FetchPolicy = {
   /**
    * Only if cache does not exist (result is undefined) or expired. Default.

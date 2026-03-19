@@ -89,7 +89,7 @@ function extractDocumentation(filePath: string): string {
         currentSymbol = symbolMatch[3]
         if (nextLineIsHeader) {
           currentEntry = {
-            header: currentSymbol,
+            header: formatHeader(currentSymbol!),
             comments: [],
           }
           nextLineIsHeader = false
@@ -140,28 +140,39 @@ function extractDocumentation(filePath: string): string {
   return markdown
 }
 
+const basePath = path.join(process.cwd(), 'src')
 const markdown = [
-  path.join(process.cwd(), 'src', 'createCache.ts'),
-  path.join(process.cwd(), 'src', 'utilsAndConstants.ts'),
+  ['createCache.ts'],
+  ['utilsAndConstants.ts'],
+  ['react', 'initializeForReact.ts'],
+  ['redux', 'initializeForRedux.ts'],
+  ['zustand', 'initializeForZustand.ts'],
 ]
-  .map((filePath) => {
-    // Use filename as title
-    let title = path
-      .basename(filePath)
-      .split('.')[0]
-      .split(/(?=[A-Z])/)
-      .join(' ')
-      .toLowerCase()
+  .map((pathArray) => {
+    const header = formatHeader(
+      pathArray[0].split('.')[0], // Remove extension
+    )
 
-    // Capitalize
-    title = title[0].toUpperCase() + title.slice(1)
+    const fileMarkdown = extractDocumentation(path.join(basePath, ...pathArray))
 
-    const fileMarkdown = extractDocumentation(filePath)
-
-    return `### ${title}\n\n${fileMarkdown}`
+    return `### ${header}\n\n${fileMarkdown}`
   })
   .join('\n')
 
 fs.writeFileSync('DOCUMENTATION.md', markdown)
 
 console.log('Documentation generated!')
+
+// Utils
+
+function formatHeader(header: string) {
+  header = header
+    .split(/(?=[A-Z])/) // Split by capitalized letters
+    .join(' ')
+    .toLowerCase()
+
+  // Capitalize
+  header = header[0].toUpperCase() + header.slice(1)
+
+  return header
+}

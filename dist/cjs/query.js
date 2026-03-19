@@ -35,44 +35,50 @@ exports.query = void 0
 const utilsAndConstants_1 = require('./utilsAndConstants')
 const query = (
   logTag,
-  store,
+  innerStore,
+  externalStore,
   cache,
-  actions,
-  selectors,
   queryKey,
   cacheKey,
   params,
-  secondsToLive,
   onlyIfExpired,
   skipFetch,
+  secondsToLive,
   mergeResults,
   onCompleted,
   onSuccess,
   onError,
 ) =>
   __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d
+    var _a, _b, _c
     if (secondsToLive === void 0) {
       secondsToLive =
-        (_a = cache.queries[queryKey].secondsToLive) !== null && _a !== void 0
+        (_a = cache.config.queries[queryKey].secondsToLive) !== null && _a !== void 0
           ? _a
-          : cache.globals.queries.secondsToLive
+          : cache.config.globals.queries.secondsToLive
     }
     if (mergeResults === void 0) {
-      mergeResults = cache.queries[queryKey].mergeResults
+      mergeResults = cache.config.queries[queryKey].mergeResults
     }
     if (onCompleted === void 0) {
-      onCompleted = cache.queries[queryKey].onCompleted
+      onCompleted = cache.config.queries[queryKey].onCompleted
     }
     if (onSuccess === void 0) {
-      onSuccess = cache.queries[queryKey].onSuccess
+      onSuccess = cache.config.queries[queryKey].onSuccess
     }
     if (onError === void 0) {
-      onError = cache.queries[queryKey].onError
+      onError = cache.config.queries[queryKey].onError
     }
-    const {selectQueryResult, selectQueryState} = selectors
-    const logsEnabled = cache.options.logsEnabled
-    const queryStateOnStart = selectQueryState(store.getState(), queryKey, cacheKey)
+    const {
+      config: {
+        options: {logsEnabled},
+        queries,
+        globals,
+      },
+      actions,
+      selectors: {selectQueryResult, selectQueryState},
+    } = cache
+    const queryStateOnStart = selectQueryState(innerStore.getState(), queryKey, cacheKey)
     if (skipFetch) {
       return {result: queryStateOnStart.result}
     }
@@ -84,7 +90,7 @@ const query = (
           cacheKey,
         })
       const error = yield queryStateOnStart.loading.then(utilsAndConstants_1.noop).catch(catchAndReturn)
-      const result = selectQueryResult(store.getState(), queryKey, cacheKey)
+      const result = selectQueryResult(innerStore.getState(), queryKey, cacheKey)
       const cancelled = 'loading'
       return error ? {cancelled, result, error} : {cancelled, result}
     }
@@ -104,8 +110,8 @@ const query = (
       return {cancelled: 'not-expired', result: queryStateOnStart.result}
     }
     const {updateQueryStateAndEntities} = actions
-    const fetchPromise = cache.queries[queryKey].query(params, store)
-    store.dispatch(
+    const fetchPromise = queries[queryKey].query(params, externalStore)
+    innerStore.dispatch(
       updateQueryStateAndEntities(queryKey, cacheKey, {
         loading: fetchPromise,
         params,
@@ -123,49 +129,45 @@ const query = (
     try {
       response = yield fetchPromise
     } catch (error) {
-      store.dispatch(
+      innerStore.dispatch(
         updateQueryStateAndEntities(queryKey, cacheKey, {
           error,
           loading: undefined,
         }),
       )
-      if (!(onError === null || onError === void 0 ? void 0 : onError(error, params, store))) {
-        ;(_c = (_b = cache.globals).onError) === null || _c === void 0
+      if (!(onError === null || onError === void 0 ? void 0 : onError(error, params, externalStore))) {
+        ;(_b = globals.onError) === null || _b === void 0
           ? void 0
-          : _c.call(_b, error, queryKey, params, store, actions, selectors)
+          : _b.call(globals, error, queryKey, params, externalStore)
       }
       onCompleted === null || onCompleted === void 0
         ? void 0
-        : onCompleted(undefined, error, params, store, actions, selectors)
-      return {error, result: selectQueryResult(store.getState(), queryKey, cacheKey)}
+        : onCompleted(undefined, error, params, externalStore)
+      return {error, result: selectQueryResult(innerStore.getState(), queryKey, cacheKey)}
     }
     const newState = {
       error: undefined,
       loading: undefined,
       expiresAt:
-        (_d = response.expiresAt) !== null && _d !== void 0
-          ? _d
+        (_c = response.expiresAt) !== null && _c !== void 0
+          ? _c
           : secondsToLive != null
             ? Date.now() + secondsToLive * 1000
             : undefined,
       result: mergeResults
         ? mergeResults(
-            selectQueryResult(store.getState(), queryKey, cacheKey),
+            selectQueryResult(innerStore.getState(), queryKey, cacheKey),
             response,
             params,
-            store,
-            actions,
-            selectors,
+            externalStore,
           )
         : response.result,
     }
-    store.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, newState, response))
-    onSuccess === null || onSuccess === void 0
-      ? void 0
-      : onSuccess(response, params, store, actions, selectors)
+    innerStore.dispatch(updateQueryStateAndEntities(queryKey, cacheKey, newState, response))
+    onSuccess === null || onSuccess === void 0 ? void 0 : onSuccess(response, params, externalStore)
     onCompleted === null || onCompleted === void 0
       ? void 0
-      : onCompleted(response, undefined, params, store, actions, selectors)
+      : onCompleted(response, undefined, params, externalStore)
     return {result: newState === null || newState === void 0 ? void 0 : newState.result}
   })
 exports.query = query

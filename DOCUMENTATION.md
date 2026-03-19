@@ -2,40 +2,14 @@
 
 | Symbol | Description |
 |--------|---------------|
-| withTypenames | Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.  Returns object with createCache function with provided typenames.  @example  `const cache = withTypenames<MyTypenames>().createCache({...})` |
-| createCache | Creates reducer, actions and hooks for managing queries and mutations. |
+| withTypenames | Function to provide generic Typenames if normalization is needed.  Returns object with createCache function with provided typenames.  @example  const cache = withTypenames<MyTypenames>().createCache({...}) |
+| createCache | Creates cache with selectors, utils and full config with all default values set, that should be used for further initialization for specific stores and UI libs. |
 
-##### client
-
-| Symbol | Description |
-|--------|---------------|
-| query | Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.  @param onlyIfExpired When true, cancels fetch if result is not yet expired.  @param skipFetch Fetch is cancelled and current cached result is returned. |
-| mutate | Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully. |
-
-##### createCache result
+##### Selectors
 
 | Symbol | Description |
 |--------|---------------|
-| cache | Keeps all options, passed while creating the cache. |
-| reducer | Reducer of the cache, should be added to redux/zustand store. |
-
-##### actions
-
-| Symbol | Description |
-|--------|---------------|
-| updateQueryStateAndEntities | Updates query state, and optionally merges entity changes in a single action. |
-| updateMutationStateAndEntities | Updates mutation state, and optionally merges entity changes in a single action. |
-| mergeEntityChanges | Merges EntityChanges to the state. |
-| invalidateQuery | Sets expiresAt to Date.now(). |
-| clearQueryState | Clears states for provided query keys and cache keys.  If cache key for query key is not provided, the whole state for query key is cleared. |
-| clearMutationState | Clears states for provided mutation keys. |
-| clearCache | Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. |
-
-##### selectors
-
-| Symbol | Description |
-|--------|---------------|
-| selectCacheState | This is a cacheStateSelector from createCache options, or default one if was not provided. |
+| selectCacheState | Selects cache state from the root state. Depends on `cacheStateKey`. |
 | selectQueryState | Selects query state. |
 | selectQueryResult | Selects query latest result. |
 | selectQueryLoading | Selects query loading state. |
@@ -51,23 +25,12 @@
 | selectEntities | Selects all entities. |
 | selectEntitiesByTypename | Selects all entities of provided typename. |
 
-##### hooks
+##### Utils
 
 | Symbol | Description |
 |--------|---------------|
-| useClient | Returns memoized object with query and mutate functions. Memoization dependency is the store. |
-| useQuery | Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). |
-| useMutation | Subscribes to provided mutation state and provides mutate function. |
-| useSelectEntityById | useSelector + selectEntityById. |
-| useEntitiesByTypename | useSelector + selectEntitiesByTypename. Also subscribes to collection's change key if `mutableCollections` enabled.  @warning Subscribing to collections should be avoided. |
-
-##### utils
-
-| Symbol | Description |
-|--------|---------------|
-| createClient | Creates client by providing the store. Can be used when the store is a singleton - to not use a useClient hook for getting the client, but import it directly. |
-| getInitialState | Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. |
 | applyEntityChanges | Apply changes to the entities map.  Returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes.  Uses deep comparison if `deepComparisonEnabled` option is `true`.  Performs additional checks for intersections if `additionalValidation` option is `true`, and prints warnings if finds any issues. |
+| getInitialState | Generates the initial root state using `cacheStateKey`. Not needed for Redux — it automatically generates it when creating the store by calling the root reducer. |
 
 
 ### Utils and constants
@@ -85,4 +48,74 @@
 |--------|---------------|
 | NoCacheOrExpired | Only if cache does not exist (result is undefined) or expired. Default.  @param expired `true` when `expiresAt` is defined and lower than `Date.now()` |
 | Always | Every fetch trigger. |
+
+
+### React
+
+| Symbol | Description |
+|--------|---------------|
+| initializeForReact | Initialized cache to be used with React, creates hooks. Use after initialization for the store.  @param reduxCustomStoreHooks Can be used to override defaut redux hooks, imported from "react-redux" package. Not needed for Zustand. |
+
+##### Hooks
+
+| Symbol | Description |
+|--------|---------------|
+| useClient | Returns memoized object with query and mutate functions, binded to the store. Memoization dependency is the store.  @warning Not needed for Zustand, its actions are already binded to the store. |
+| useQuery | Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). |
+| useMutation | Subscribes to provided mutation state and provides mutate function. |
+| useSelectEntityById | useSelector + selectEntityById. |
+| useEntitiesByTypename | useSelector + selectEntitiesByTypename. Also subscribes to collection's change key if `mutableCollections` enabled.  @warning Subscribing to collections should be avoided. |
+
+
+### Redux
+
+| Symbol | Description |
+|--------|---------------|
+| initializeForRedux | Initializes cache for Redux, returning reducer, actions and utils. |
+
+##### Actions
+
+| Symbol | Description |
+|--------|---------------|
+| updateQueryStateAndEntities | Updates query state, and optionally merges entity changes in a single action. |
+| updateMutationStateAndEntities | Updates mutation state, and optionally merges entity changes in a single action. |
+| mergeEntityChanges | Merges EntityChanges to the state. |
+| invalidateQuery | Sets expiresAt to Date.now(). |
+| clearQueryState | Clears states for provided query keys and cache keys.  If cache key for query key is not provided, the whole state for query key is cleared. |
+| clearMutationState | Clears states for provided mutation keys. |
+| clearCache | Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. |
+
+##### Async actions
+
+| Symbol | Description |
+|--------|---------------|
+| query | Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.  @param onlyIfExpired When true, cancels fetch if result is not yet expired.  @param skipFetch Fetch is cancelled and current cached result is returned. |
+| mutate | Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully. |
+
+##### Utils
+
+| Symbol | Description |
+|--------|---------------|
+| bindAsyncActions | Binds async actions to the store. Can be used when the store is a singleton for direct import. |
+
+
+### Zustand
+
+| Symbol | Description |
+|--------|---------------|
+| initializeForZustand | Initializes cache for Zustand, returning actions and utils. |
+
+##### Actions
+
+| Symbol | Description |
+|--------|---------------|
+| query | Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.  @param onlyIfExpired When true, cancels fetch if result is not yet expired.  @param skipFetch Fetch is cancelled and current cached result is returned. |
+| mutate | Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully. |
+| updateQueryStateAndEntities | Updates query state, and optionally merges entity changes in a single action. |
+| updateMutationStateAndEntities | Updates mutation state, and optionally merges entity changes in a single action. |
+| mergeEntityChanges | Merges EntityChanges to the state. |
+| invalidateQuery | Sets expiresAt to Date.now(). |
+| clearQueryState | Clears states for provided query keys and cache keys.  If cache key for query key is not provided, the whole state for query key is cleared. |
+| clearMutationState | Clears states for provided mutation keys. |
+| clearCache | Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. |
 

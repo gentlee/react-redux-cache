@@ -1,67 +1,92 @@
 import {act} from '@testing-library/react'
-import {useSelector, useStore} from 'react-redux'
 import {createStore} from 'redux'
 
 import {withTypenames} from '../createCache'
+import {initializeForRedux} from '../redux'
 import {getUsers, removeUser} from '../testing/api/mocks'
+import {testCaches} from '../testing/redux/cache'
 import {advanceApiTimeout, advanceHalfApiTimeout, apiTimeout} from '../testing/utils'
-import {Cache, QueryStateComparer, Typenames} from '../types'
+import {QueryStateComparer, Typenames} from '../types'
+import {CacheToPrivate} from '../typesPrivate'
 import {FetchPolicy} from '../utilsAndConstants'
-
-const overridenHooks = {
-  useStore: jest.fn(),
-  useSelector: jest.fn(),
-}
 
 test('createCache returns correct result', () => {
   const onError = jest.fn()
-  const {cache, actions, hooks, reducer, selectors, utils} = createTestingCache(
-    'cache',
-    true,
-    undefined,
-    onError,
-  )
+  const cache = createTestingCache('cache', undefined, onError)
 
   expect(cache).toStrictEqual({
-    name: 'cache',
-    abortControllers: new WeakMap(),
-    storeHooks: overridenHooks,
-    cacheStateSelector: cache.cacheStateSelector,
-    globals: {
-      onError,
+    config: {
+      name: 'cache',
+      cacheStateKey: 'cache',
+      globals: {
+        onError,
+        queries: {
+          fetchPolicy: FetchPolicy.Always,
+          secondsToLive: 10,
+          skipFetch: false,
+          selectorComparer: undefined,
+        },
+      },
+      options: {
+        logsEnabled: false,
+        additionalValidation: true,
+        deepComparisonEnabled: true,
+        mutableCollections: false,
+      },
       queries: {
-        fetchPolicy: FetchPolicy.Always,
-        secondsToLive: 10,
-        skipFetch: false,
-        selectorComparer: undefined,
+        getUser: {
+          query: getUser,
+        },
+        getUsers: {
+          query: getUsers,
+        },
+      },
+      mutations: {
+        updateUser: {
+          mutation: updateUser,
+        },
+        removeUser: {
+          mutation: removeUser,
+        },
       },
     },
-    options: {
-      logsEnabled: false,
-      additionalValidation: true,
-      deepComparisonEnabled: true,
-      mutableCollections: false,
+    abortControllers: expect.any(WeakMap),
+    actions: {
+      clearCache: expect.any(Function),
+      clearMutationState: expect.any(Function),
+      clearQueryState: expect.any(Function),
+      invalidateQuery: expect.any(Function),
+      mergeEntityChanges: expect.any(Function),
+      updateMutationStateAndEntities: expect.any(Function),
+      updateQueryStateAndEntities: expect.any(Function),
     },
-    queries: {
-      getUser: {
-        query: getUser,
-      },
-      getUsers: {
-        query: getUsers,
-      },
+    selectors: {
+      selectCacheState: expect.any(Function),
+      selectEntities: expect.any(Function),
+      selectEntitiesByTypename: expect.any(Function),
+      selectEntityById: expect.any(Function),
+      selectMutationError: expect.any(Function),
+      selectMutationLoading: expect.any(Function),
+      selectMutationParams: expect.any(Function),
+      selectMutationResult: expect.any(Function),
+      selectMutationState: expect.any(Function),
+      selectQueryError: expect.any(Function),
+      selectQueryExpiresAt: expect.any(Function),
+      selectQueryLoading: expect.any(Function),
+      selectQueryParams: expect.any(Function),
+      selectQueryResult: expect.any(Function),
+      selectQueryState: expect.any(Function),
     },
-    mutations: {
-      updateUser: {
-        mutation: updateUser,
-      },
-      removeUser: {
-        mutation: removeUser,
-      },
+    reducer: expect.any(Function),
+    utils: {
+      applyEntityChanges: expect.any(Function),
+      getInitialState: expect.any(Function),
+      getRootState: expect.any(Function),
     },
-  })
+  } satisfies typeof cache)
 
   expect(
-    reducer(
+    cache.reducer(
       undefined,
       // @ts-expect-error Empty action
       {},
@@ -74,34 +99,44 @@ test('createCache returns correct result', () => {
     },
     mutations: {},
   })
+})
 
-  expect(actions.mergeEntityChanges).toBeDefined()
-  expect(actions.updateMutationStateAndEntities).toBeDefined()
-  expect(actions.updateQueryStateAndEntities).toBeDefined()
-  expect(actions.clearQueryState).toBeDefined()
-  expect(actions.clearMutationState).toBeDefined()
+describe.each(testCaches)('%s', (_, cache) => {
+  test('getInitialState with default state key', () => {
+    const getInitialState = cache.utils.getInitialState
 
-  expect(selectors.selectEntityById).toBeDefined()
-  expect(selectors.selectEntities).toBeDefined()
-  expect(selectors.selectEntitiesByTypename).toBeDefined()
-  expect(selectors.selectQueryState).toBeDefined()
-  expect(selectors.selectQueryResult).toBeDefined()
-  expect(selectors.selectQueryLoading).toBeDefined()
-  expect(selectors.selectQueryError).toBeDefined()
-  expect(selectors.selectQueryParams).toBeDefined()
-  expect(selectors.selectMutationState).toBeDefined()
-  expect(selectors.selectMutationResult).toBeDefined()
-  expect(selectors.selectMutationLoading).toBeDefined()
-  expect(selectors.selectMutationError).toBeDefined()
-  expect(selectors.selectMutationParams).toBeDefined()
+    expect(getInitialState()).toStrictEqual({
+      [cache.config.cacheStateKey]: {
+        entities: {},
+        queries: {
+          getFullUser: {},
+          getUser: {},
+          getUserExpires: {},
+          getUserTtl: {},
+          getUserWithResultComparer: {},
+          getUserCustomCacheKey: {},
+          getUsers: {},
+          queryWithError: {},
+        },
+        mutations: {},
+      },
+    })
+  })
+})
 
-  expect(hooks.useQuery).toBeDefined()
-  expect(hooks.useMutation).toBeDefined()
-  expect(hooks.useClient).toBeDefined()
-  expect(hooks.useSelectEntityById).toBeDefined()
+test('getInitialState with root state key', () => {
+  const {
+    utils: {getInitialState},
+  } = createTestingCache('cache', '.')
 
-  expect(utils.getInitialState).toBeDefined()
-  expect(utils.applyEntityChanges).toBeDefined()
+  expect(getInitialState()).toStrictEqual({
+    entities: {},
+    queries: {
+      getUser: {},
+      getUsers: {},
+    },
+    mutations: {},
+  })
 })
 
 test('supports multiple cache reducers', () => {
@@ -136,60 +171,56 @@ test('supports multiple cache reducers', () => {
   expect(stateAfterSecondCacheAction).toBe(state)
 })
 
-test('custom cacheStateSelector', () => {
+test.each(['', '.'])('root cacheStateKey', (cacheStateKey) => {
   const {
     reducer,
     selectors: {selectEntities},
-  } = createTestingCache('cache', true, (state) => state)
+  } = createTestingCache('cache', cacheStateKey)
   const store = createStore(reducer)
 
-  // cacheStateSelector is used in all selectors
   expect(selectEntities(store.getState())).toBe(store.getState().entities)
 })
 
-test('using react-redux store hooks when not overriden', () => {
-  const {
-    cache: {storeHooks},
-  } = createTestingCache('cache', false)
-
-  expect(storeHooks).toStrictEqual({useStore, useSelector})
-})
-
-test('same cache works with the new store, previous async operations are ignored', async () => {
+test('same cache works with the new store, previous async operations are ignored, state not mutated', async () => {
+  const cache = createTestingCache('cache', '')
   const {
     reducer,
-    utils: {createClient, getInitialState},
-  } = createTestingCache('cache', false, (x) => x)
+    utils: {bindAsyncActions},
+    asyncActions,
+  } = initializeForRedux(cache)
 
+  const store1 = createStore(reducer)
+  const initialState1 = Object.freeze(store1.getState())
   {
-    const store = createStore(reducer)
-    const client = createClient(store)
+    const {query, mutate} = bindAsyncActions(store1)
 
-    client.query({query: 'getUser', params: 0})
-    client.query({query: 'getUsers', params: {page: 1}})
-    client.mutate({mutation: 'updateUser', params: 2})
+    query({query: 'getUser', params: 0})
+    query({query: 'getUsers', params: {page: 1}})
+    mutate({mutation: 'updateUser', params: 2})
 
     await act(() => advanceHalfApiTimeout())
 
-    client.query({query: 'getUser', params: 1})
-    client.query({query: 'getUsers', params: {page: 2}})
-    client.mutate({mutation: 'removeUser', params: 1})
+    asyncActions.query(store1, {query: 'getUser', params: 1})
+    asyncActions.query(store1, {query: 'getUsers', params: {page: 2}})
+    asyncActions.mutate(store1, {mutation: 'removeUser', params: 1})
   }
 
-  const store = createStore(reducer)
+  const store2 = createStore(reducer)
 
   await act(() => advanceApiTimeout())
 
-  expect(store.getState()).toBe(getInitialState())
+  expect(store2.getState()).toBe(initialState1)
 })
 
-// utils & constants
+// Utils & constants
 
 const getUser = async (id: number) => {
   await apiTimeout()
   return {
     result: id,
-    merge: {[id]: {id}},
+    merge: {
+      users: {[id]: {id}},
+    },
   }
 }
 
@@ -200,17 +231,15 @@ const updateUser = async (id: number) => {
   }
 }
 
-const createTestingCache = <N extends string>(
+const createTestingCache = <N extends string, SK extends string>(
   name: N,
-  overrideHooks = true,
-  cacheStateSelector?: Cache<N, Typenames, unknown, unknown, unknown, unknown>['cacheStateSelector'],
+  cacheStateKey?: SK,
   onError?: () => void,
   selectorComparer?: QueryStateComparer<Typenames, unknown, unknown>,
 ) => {
-  return withTypenames<{
-    users: {id: number}
-  }>().createCache({
+  const cache = withTypenames<{users: {id: number}}>().createCache({
     name,
+    cacheStateKey: cacheStateKey ?? name,
     options: {
       logsEnabled: false,
       additionalValidation: true,
@@ -223,7 +252,6 @@ const createTestingCache = <N extends string>(
       },
       onError,
     },
-    storeHooks: overrideHooks ? overridenHooks : undefined,
     queries: {
       getUser: {
         query: getUser,
@@ -240,6 +268,6 @@ const createTestingCache = <N extends string>(
         mutation: removeUser,
       },
     },
-    cacheStateSelector,
   })
+  return cache as CacheToPrivate<typeof cache>
 }

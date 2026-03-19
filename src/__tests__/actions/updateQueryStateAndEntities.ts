@@ -9,7 +9,6 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
   const {
     reducer,
     actions: {updateQueryStateAndEntities},
-    utils: {getInitialState},
   } = cache
 
   test('removes all default query fields, clears default query states', () => {
@@ -65,7 +64,7 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
     )
 
     expect(states.map((x) => x.queries.getUser.a)).toStrictEqual(
-      cache.cache.options.mutableCollections
+      cache.config.options.mutableCollections
         ? [undefined, undefined, undefined, undefined, undefined]
         : [
             undefined,
@@ -90,7 +89,8 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
   })
 
   test('should not change deeply equal params and result', () => {
-    const store = createReduxStore(cache)
+    const store = createReduxStore(cache, false, false)
+    const initialState = store.getState()
 
     const initialParams = {page: 1}
     const initialResult = {items: [1, 2, 3], page: 1}
@@ -115,7 +115,7 @@ describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
 
     expect(store.getState().cache.queries).toStrictEqual(
       withChangeKey(1, {
-        ...getInitialState().queries,
+        ...initialState.cache.queries,
         getUsers: withChangeKey(1, {
           0: {
             params: initialParams,

@@ -61,7 +61,7 @@ describe.each(testCaches)('%s', (_, cache, withChangeKey) => {
     )
 
     expect(states.map((x) => x.mutations.updateUser)).toStrictEqual(
-      cache.cache.options.mutableCollections
+      cache.config.options.mutableCollections
         ? [undefined, undefined, undefined, undefined, undefined]
         : [
             undefined,

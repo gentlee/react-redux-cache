@@ -22,11 +22,11 @@ export const throwErrorAfterTimeout = (message = 'Test error') => {
 }
 
 export const withChangeKey = <M extends Dict<unknown> & Mutable>(
-  cache: {cache: {options: {mutableCollections: boolean}}},
+  cache: {config: {options: {mutableCollections: boolean}}},
   value: number | undefined,
   mutable: M,
 ) => {
-  if (cache.cache.options.mutableCollections && value !== undefined) {
+  if (cache.config.options.mutableCollections && value !== undefined) {
     mutable._changeKey = value
   }
   return mutable

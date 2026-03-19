@@ -17,8 +17,9 @@ import {advanceApiTimeout, advanceHalfApiTimeout} from '../testing/utils'
 describe.each([testCaches[1]])('%s', (_, cache, withChangeKey) => {
   const {
     actions: {mergeEntityChanges},
-    hooks: {useClient},
+    hooks,
   } = cache
+  const {useClient} = hooks!
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let store: ReturnType<typeof createReduxStore<'cache', any, any, any, any, any>>

@@ -1,14 +1,14 @@
 // Disabling this to import unused types to remove import() from generated types.
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {useMemo} from 'react'
 
 import {createActions} from './createActions'
 import {createReducer} from './createReducer'
 import {createSelectors} from './createSelectors'
-import {mutate as mutateImpl} from './mutate'
-import {query as queryImpl} from './query'
 import type {
+  AnyStore,
   Cache,
+  CacheClient,
+  CacheConfig,
   CacheOptions,
   CacheState,
   Dict,
@@ -17,6 +17,7 @@ import type {
   EntityIds,
   Globals,
   Key,
+  Mutable,
   MutateOptions,
   Mutation,
   MutationInfo,
@@ -36,12 +37,13 @@ import type {
   QueryResult,
   QueryState,
   QueryStateComparer,
-  Store,
+  ReduxStoreLike,
   Typenames,
   UseQueryOptions,
+  UseSelector,
+  ZustandStoreLike,
 } from './types'
-import {useMutation} from './useMutation'
-import {useQuery} from './useQuery'
+import {CacheExtensions, CachePrivate, CacheToPrivate, InnerStore, StoreHooksPrivate} from './typesPrivate'
 import {
   applyEntityChanges,
   createStateComparer,
@@ -54,59 +56,59 @@ import {
 } from './utilsAndConstants'
 
 /**
- * Function to provide generic Typenames if normalization is needed - this is a Typescript limitation.
+ * Function to provide generic Typenames if normalization is needed.
  * Returns object with createCache function with provided typenames.
  * @example
- * `const cache = withTypenames<MyTypenames>().createCache({...})`
+ * const cache = withTypenames<MyTypenames>().createCache({...})
  */
-export const withTypenames = <T extends Typenames = Typenames>() => {
+export const withTypenames = <WT extends Typenames = Typenames>() => {
   return {
-    /** Creates reducer, actions and hooks for managing queries and mutations. */
-    createCache: <N extends string, QP, QR, MP, MR>(
-      partialCache: OptionalPartial<
-        Omit<Cache<N, T, QP, QR, MP, MR>, 'globals'>,
-        'options' | 'queries' | 'mutations' | 'cacheStateSelector' | 'storeHooks'
+    /** Creates cache with selectors, utils and full config with all default values set, that should be used for further initialization for specific stores and UI libs. */
+    createCache: <
+      N extends string = string,
+      SK extends string = string,
+      T extends Typenames = WT,
+      QP = unknown,
+      QR = unknown,
+      MP = unknown,
+      MR = unknown,
+    >(
+      partialConfig: OptionalPartial<
+        Omit<CacheConfig<N, SK, T, QP, QR, MP, MR>, 'globals'>,
+        'options' | 'queries' | 'mutations'
       > & {
-        globals?: OptionalPartial<Cache<N, T, QP, QR, MP, MR>['globals'], 'queries'>
+        globals?: OptionalPartial<CacheConfig<N, SK, T, QP, QR, MP, MR>['globals'], 'queries'>
       },
     ) => {
-      type TypedCache = Cache<N, T, QP, QR, MP, MR>
+      type TypedConfig = CacheConfig<N, SK, T, QP, QR, MP, MR>
+      type RootState = SK extends '.' | ''
+        ? CacheState<T, QP, QR, MP, MR>
+        : {[key in SK]: CacheState<T, QP, QR, MP, MR>}
 
-      const abortControllers = new WeakMap<Store, Record<Key, AbortController>>()
+      const abortControllers = new WeakMap<InnerStore, Record<Key, AbortController>>()
 
       // Provide all optional fields
 
-      partialCache.options ??= {} as CacheOptions
-      partialCache.options.mutableCollections ??= false
-      partialCache.options.logsEnabled ??= false
-      partialCache.options.additionalValidation ??= IS_DEV
-      partialCache.options.deepComparisonEnabled ??= true
-      partialCache.globals ??= {}
-      partialCache.globals.queries ??= {} as Globals<N, T, QP, QR, MP, MR>['queries']
-      partialCache.globals.queries.fetchPolicy ??= FetchPolicy.NoCacheOrExpired
-      partialCache.globals.queries.skipFetch ??= false
-      partialCache.cacheStateSelector ??= (state: Record<string, unknown>) => state[cache.name]
-      partialCache.mutations ??= {} as TypedCache['mutations']
-      partialCache.queries ??= {} as TypedCache['queries']
-      // @ts-expect-error private field for testing
-      partialCache.abortControllers = abortControllers
+      partialConfig.options ??= {} as CacheOptions
+      partialConfig.options.mutableCollections ??= false
+      partialConfig.options.logsEnabled ??= false
+      partialConfig.options.additionalValidation ??= IS_DEV
+      partialConfig.options.deepComparisonEnabled ??= true
+      partialConfig.globals ??= {}
+      partialConfig.globals.queries ??= {} as Globals<T>['queries']
+      partialConfig.globals.queries.fetchPolicy ??= FetchPolicy.NoCacheOrExpired
+      partialConfig.globals.queries.skipFetch ??= false
+      partialConfig.mutations ??= {} as TypedConfig['mutations']
+      partialConfig.queries ??= {} as TypedConfig['queries']
 
-      // Try/catch just for bunders like metro to consider this as optional dependency
-      // eslint-disable-next-line no-useless-catch
-      try {
-        partialCache.storeHooks ??= {
-          useStore: require('react-redux').useStore,
-          useSelector: require('react-redux').useSelector,
-        } as TypedCache['storeHooks']
-      } catch (e) {
-        throw e
-      }
+      const config = partialConfig as TypedConfig
+      const {globals, cacheStateKey, queries, options} = config
 
-      const cache = partialCache as TypedCache
+      const isRootState = cacheStateKey === '.' || cacheStateKey === ''
 
       // Validate options
 
-      if (cache.options.deepComparisonEnabled && !optionalUtils.deepEqual) {
+      if (options.deepComparisonEnabled && !optionalUtils.deepEqual) {
         logWarn(
           'createCache',
           'optional dependency for fast-deep-equal was not provided, while deepComparisonEnabled option is true',
@@ -115,29 +117,21 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
 
       // State comparers
 
-      // Transforms array of keys to comparer function.
-      const setDefaultComparer = (
-        target: Pick<TypedCache['globals']['queries'], 'selectorComparer'> | undefined,
-      ) => {
-        if (target?.selectorComparer != null && typeof target.selectorComparer === 'object') {
-          target.selectorComparer = createStateComparer(target.selectorComparer)
-        }
-      }
-
-      setDefaultComparer(cache.globals.queries)
-      for (const queryKey in partialCache.queries) {
+      setDefaultComparer(globals.queries)
+      for (const queryKey in queries) {
         // @ts-expect-error TODO fix types
-        setDefaultComparer(partialCache.queries[queryKey as keyof TypedCache['queries']])
+        setDefaultComparer(queries[queryKey as keyof TypedConfig['queries']])
       }
 
       // Selectors
 
-      const selectors = {
-        selectCacheState: cache.cacheStateSelector,
-        ...createSelectors<N, T, QP, QR, MP, MR>(cache),
-      }
+      // @ts-expect-error TODO fix types
+      const selectCacheState: (state: unknown) => CacheState<T, QP, QR, MP, MR> = isRootState
+        ? (state: CacheState<T, QP, QR, MP, MR>) => state
+        : (state: {[cacheStateKey]: CacheState<T, QP, QR, MP, MR>}) => state[cacheStateKey]
+
+      const selectors = createSelectors(selectCacheState)
       const {
-        selectCacheState,
         selectQueryState,
         selectQueryResult,
         selectQueryLoading,
@@ -156,115 +150,36 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
 
       // Actions
 
-      const actions = createActions<N, T, QP, QR, MP, MR>(cache.name)
-      const {
-        updateQueryStateAndEntities,
-        updateMutationStateAndEntities,
-        mergeEntityChanges,
-        invalidateQuery,
-        clearQueryState,
-        clearMutationState,
-        clearCache,
-      } = actions
+      const actions = createActions<N, T, QP, QR, MP, MR>(config.name)
 
       // Reducer
 
       const reducer = createReducer<N, T, QP, QR, MP, MR>(
         actions,
-        Object.keys(cache.queries) as (keyof (QP | QR))[],
-        cache.options,
+        Object.keys(queries) as (keyof (QP | QR))[],
+        options,
       )
 
-      // Client creator
+      // Utils
 
-      const createClient = (store: Store) => {
-        // doc-header
-        const client = {
-          /**
-           * Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.
-           * @param onlyIfExpired When true, cancels fetch if result is not yet expired.
-           * @param skipFetch Fetch is cancelled and current cached result is returned.
-           */
-          query: <QK extends keyof (QP & QR)>(options: QueryOptions<N, T, QP, QR, QK, MP, MR>) => {
-            type P = QK extends keyof (QP | QR) ? QP[QK] : never
-            type R = QK extends keyof (QP | QR) ? QR[QK] : never
+      // @ts-expect-error TODO fix types
+      const getRootState: (cacheState: CacheState<T, QP, QR, MP, MR>) => RootState = isRootState
+        ? (state) => state
+        : (state) => ({[cacheStateKey]: state})
 
-            const {query: queryKey, params} = options
-            const getCacheKey = cache.queries[queryKey].getCacheKey ?? defaultGetCacheKey<P>
-            // @ts-expect-error fix later
-            const cacheKey = getCacheKey(params)
-
-            return queryImpl(
-              'query',
-              store,
-              cache,
-              actions,
-              selectors,
-              queryKey,
-              cacheKey,
-              params,
-              options.secondsToLive,
-              options.onlyIfExpired,
-              options.skipFetch,
-              // @ts-expect-error fix later
-              options.mergeResults,
-              options.onCompleted,
-              options.onSuccess,
-              options.onError,
-            ) as Promise<QueryResult<R>>
-          },
-          /**
-           * Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully.
-           */
-          mutate: <MK extends keyof (MP & MR)>(options: MutateOptions<N, T, QP, QR, MP, MR, MK>) => {
-            type R = MK extends keyof (MP | MR) ? MR[MK] : never
-
-            return mutateImpl(
-              'mutate',
-              store,
-              cache,
-              actions,
-              selectors,
-              options.mutation,
-              options.params,
-              abortControllers,
-              // @ts-expect-error fix later
-              options.onCompleted,
-              options.onSuccess,
-              options.onError,
-            ) as Promise<MutationResult<R>>
-          },
-        }
-        return client
+      const getInitialState = () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const state = reducer(undefined, EMPTY_OBJECT as any)
+        return getRootState(state)
       }
 
-      // doc-header createCache result
-      return {
-        /** Keeps all options, passed while creating the cache. */
-        cache,
-        /** Reducer of the cache, should be added to redux/zustand store. */
-        reducer,
-        // doc-header
-        actions: {
-          /** Updates query state, and optionally merges entity changes in a single action. */
-          updateQueryStateAndEntities,
-          /** Updates mutation state, and optionally merges entity changes in a single action. */
-          updateMutationStateAndEntities,
-          /** Merges EntityChanges to the state. */
-          mergeEntityChanges,
-          /** Sets expiresAt to Date.now(). */
-          invalidateQuery,
-          /** Clears states for provided query keys and cache keys.
-           * If cache key for query key is not provided, the whole state for query key is cleared. */
-          clearQueryState,
-          /** Clears states for provided mutation keys. */
-          clearMutationState,
-          /** Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. */
-          clearCache,
-        },
+      const cache = {
+        // doc-ignore
+        /** Keeps config, passed while creating the cache, with all default values set. */
+        config,
         // doc-header
         selectors: {
-          /** This is a cacheStateSelector from createCache options, or default one if was not provided. */
+          /** Selects cache state from the root state. Depends on `cacheStateKey`. */
           selectCacheState,
           /** Selects query state. */
           selectQueryState,
@@ -296,47 +211,7 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
           selectEntitiesByTypename,
         },
         // doc-header
-        hooks: {
-          /** Returns memoized object with query and mutate functions. Memoization dependency is the store. */
-          useClient: () => {
-            const store = cache.storeHooks.useStore()
-            return useMemo(() => createClient(store), [store])
-          },
-          /** Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). */
-          useQuery: <QK extends keyof (QP & QR)>(
-            options: Parameters<typeof useQuery<N, T, QP, QR, MP, MR, QK>>[3],
-          ) => useQuery(cache, actions, selectors, options),
-          /** Subscribes to provided mutation state and provides mutate function. */
-          useMutation: <MK extends keyof (MP & MR)>(
-            options: Parameters<typeof useMutation<N, T, QP, QR, MP, MR, MK>>[3],
-          ) => useMutation(cache, actions, selectors, options, abortControllers),
-          /** useSelector + selectEntityById. */
-          useSelectEntityById: <TN extends keyof T>(
-            id: Key | null | undefined,
-            typename: TN,
-          ): T[TN] | undefined => {
-            return cache.storeHooks.useSelector((state) => selectEntityById(state, id, typename))
-          },
-          /**
-           * useSelector + selectEntitiesByTypename. Also subscribes to collection's change key if `mutableCollections` enabled.
-           * @warning Subscribing to collections should be avoided.
-           * */
-          useEntitiesByTypename: <TN extends keyof T>(typename: TN) => {
-            if (cache.options.mutableCollections) {
-              cache.storeHooks.useSelector((state) => selectEntitiesByTypename(state, typename)?._changeKey)
-            }
-            return cache.storeHooks.useSelector((state) => selectEntitiesByTypename(state, typename))
-          },
-        },
-        // doc-header
         utils: {
-          /** Creates client by providing the store. Can be used when the store is a singleton - to not use a useClient hook for getting the client, but import it directly. */
-          createClient,
-          /** Generates the initial state by calling a reducer. Not needed for redux — it already generates it the same way when creating the store. */
-          getInitialState: () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return reducer(undefined, EMPTY_OBJECT as any)
-          },
           /**
            * Apply changes to the entities map.
            * Returns `undefined` if nothing to change, otherwise new `EntitiesMap<T>` with applied changes.
@@ -347,14 +222,41 @@ export const withTypenames = <T extends Typenames = Typenames>() => {
             entities: Parameters<typeof applyEntityChanges<T>>[0],
             changes: Parameters<typeof applyEntityChanges<T>>[1],
           ) => {
-            return applyEntityChanges<T>(entities, changes, cache.options)
+            return applyEntityChanges<T>(entities, changes, options)
           },
+          /** Generates the initial root state using `cacheStateKey`. Not needed for Redux — it automatically generates it when creating the store by calling the root reducer. */
+          getInitialState,
         },
       }
+
+      // Set private fields
+
+      const privateCache = cache as CachePrivate<N, SK, T, QP, QR, MP, MR>
+      privateCache.reducer = reducer
+      privateCache.actions = actions
+      privateCache.abortControllers = abortControllers
+      privateCache.utils.getRootState = getRootState
+
+      return cache
     },
   }
 }
 
+const setDefaultComparer = <T extends Typenames, P, R>(
+  target:
+    | {
+        selectorComparer?: QueryStateComparer<T, P, R> | (keyof QueryState)[]
+      }
+    | undefined,
+) => {
+  if (target?.selectorComparer != null && typeof target.selectorComparer === 'object') {
+    target.selectorComparer = createStateComparer(target.selectorComparer)
+  }
+}
+
 // doc-ignore
-/** Creates reducer, actions and hooks for managing queries and mutations. */
+/**
+ * Creates cache that handles all logic for fetching and caching queiries and mutations for immutable stores.
+ * Returns selectors and utils. Should be additionally initialized for the store (Redux or Zustand) and optionally for the UI lib (React).
+ * */
 export const createCache = withTypenames().createCache
