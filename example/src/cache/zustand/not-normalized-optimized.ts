@@ -52,14 +52,14 @@ const cache = createCache({
       // Updating getUser and getUsers results after successfull mutation.
       // Refetch instead can be used, but this will cause additional requests.
       // Normalization approach does that automatically.
-      onSuccess: (response) => {
+      onSuccess: (response, _, store) => {
         const {result: updatedUser} = response
 
         // Update getUser result
         updateQueryStateAndEntities('getUser', defaultGetCacheKey(updatedUser.id), response)
 
         // Update getUsers result
-        const getUsersState = selectQueryState(useStore.getState(), 'getUsers', 'feed')
+        const getUsersState = selectQueryState(store.getState(), 'getUsers', 'feed')
         if (getUsersState) {
           const userIndex = getUsersState.result?.items.findIndex((x) => x.id === updatedUser.id)
           if (getUsersState.result && userIndex != null && userIndex != -1) {
@@ -79,18 +79,13 @@ const cache = createCache({
   },
 })
 
-export const {
-  selectors: {selectEntitiesByTypename},
-  utils: {getInitialState},
-} = cache
+const initialState = Object.freeze(cache.utils.getInitialState())
 
-const initialState = getInitialState()
-
-export const useStore = create(() => initialState)
+const useStore = create(() => initialState)
 
 const originalSetState = useStore.setState
 useStore.setState = (...args) => {
-  console.debug('@zustand-not-normalized-optimized/setState', args)
+  console.debug('@zustand-not-normalized-optimized/setState', ...args)
   // @ts-expect-error TODO fix types
   originalSetState(...args)
 }

@@ -1,13 +1,14 @@
 import {Link} from 'react-router-dom'
 
-import {User} from '../../backend/not-normalized/types'
-import {notNormalized} from './cache'
+import {NormalizedCache} from '../../cache/types'
 
-const {
-  hooks: {useQuery},
-} = notNormalized
+export const UsersScreenNormalized = ({cache}: {cache: NormalizedCache}) => {
+  const rootPath = window.location.pathname.split('/').slice(0, -1).join('/')
 
-export const UsersScreen = () => {
+  const {
+    hooks: {useQuery, useEntitiesByTypename},
+  } = cache
+
   const [{result: usersResult, loading, error, params}, fetchUsers] = useQuery({
     query: 'getUsers',
     params: {
@@ -18,7 +19,10 @@ export const UsersScreen = () => {
   const refreshing = loading && params?.page === 1
   const loadingNextPage = loading && !refreshing
 
-  console.debug('[NotNormalized/UsersScreen]', {
+  const usersMap = useEntitiesByTypename('users')
+
+  console.debug('[UsersScreenNormalized]', {
+    rootPath,
     usersResult,
     loading,
     error,
@@ -38,18 +42,17 @@ export const UsersScreen = () => {
         Home
       </Link>
       <p>
-        getUsers result: '<span id="result">{JSON.stringify(usersResult)}</span>
+        getUsers result: <span id="result">{JSON.stringify(usersResult)}</span>
+      </p>
+      <p>
+        denormalized:{' '}
+        <span id="denormalized">{JSON.stringify(usersResult?.items.map((id) => usersMap![id]))}</span>
       </p>
       {refreshing && <div className="spinner" />}
-      {usersResult?.items.map((user: User) => {
+      {usersResult?.items.map((userId: number) => {
         return (
-          <Link
-            id={'user-link-' + user.id}
-            key={user.id}
-            className={'link'}
-            to={'/not-normalized/user/' + user.id}
-          >
-            {user.name}
+          <Link id={'user-link-' + userId} key={userId} className={'link'} to={rootPath + '/user/' + userId}>
+            {usersMap![userId].name}
           </Link>
         )
       })}

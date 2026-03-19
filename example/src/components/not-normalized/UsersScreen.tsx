@@ -1,14 +1,15 @@
-import {useSelector} from 'react-redux'
 import {Link} from 'react-router-dom'
 
-import {normalized} from './cache'
+import {User} from '../../backend/not-normalized/types'
+import {NotNormalizedCache} from '../../cache/types'
 
-const {
-  selectors: {selectEntitiesByTypename},
-  hooks: {useQuery},
-} = normalized
+export const UsersScreenNotNormalized = ({cache}: {cache: NotNormalizedCache}) => {
+  const rootPath = window.location.pathname.split('/').slice(0, -1).join('/')
 
-export const UsersScreen = () => {
+  const {
+    hooks: {useQuery},
+  } = cache
+
   const [{result: usersResult, loading, error, params}, fetchUsers] = useQuery({
     query: 'getUsers',
     params: {
@@ -19,9 +20,8 @@ export const UsersScreen = () => {
   const refreshing = loading && params?.page === 1
   const loadingNextPage = loading && !refreshing
 
-  const usersMap = useSelector((state) => selectEntitiesByTypename(state, 'users'))
-
-  console.debug('[Normalized/UsersScreen]', {
+  console.debug('[UsersScreenNotNormalized]', {
+    rootPath,
     usersResult,
     loading,
     error,
@@ -41,17 +41,18 @@ export const UsersScreen = () => {
         Home
       </Link>
       <p>
-        getUsers result: '<span id="result">{JSON.stringify(usersResult)}</span>
-      </p>
-      <p>
-        denormalized:{' '}
-        <span id="denormalized">{JSON.stringify(usersResult?.items.map((id) => usersMap![id]))}</span>
+        getUsers result: <span id="result">{JSON.stringify(usersResult)}</span>
       </p>
       {refreshing && <div className="spinner" />}
-      {usersResult?.items.map((userId: number) => {
+      {usersResult?.items.map((user: User) => {
         return (
-          <Link id={'user-link-' + userId} key={userId} className={'link'} to={'/user/' + userId}>
-            {usersMap![userId].name}
+          <Link
+            id={'user-link-' + user.id}
+            key={user.id}
+            className={'link'}
+            to={rootPath + '/user/' + user.id}
+          >
+            {user.name}
           </Link>
         )
       })}

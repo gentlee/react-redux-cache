@@ -1,9 +1,9 @@
 import {EntitiesMap} from 'rrc'
 
-import {Typenames} from '../../redux/normalized/cache'
+import {Typenames} from '../../cache/redux/normalized'
 import {Bank, User} from './types'
 
-export const API_TIMEOUT = 1000
+export const API_TIMEOUT = 300
 
 const timeout = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 

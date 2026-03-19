@@ -45,18 +45,13 @@ const cache = withTypenames<Typenames>().createCache({
   },
 })
 
-export const {
-  selectors: {selectEntitiesByTypename},
-  utils: {getInitialState},
-} = cache
+const initialState = Object.freeze(cache.utils.getInitialState())
 
-const initialState = getInitialState()
-
-export const useStore = create(() => initialState)
+const useStore = create(() => initialState)
 
 const originalSetState = useStore.setState
 useStore.setState = (...args) => {
-  console.debug('@zustand-normalized/setState', args)
+  console.debug('@zustand-normalized/setState', ...args)
   // @ts-expect-error TODO fix types
   originalSetState(...args)
 }

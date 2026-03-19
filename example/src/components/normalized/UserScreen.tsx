@@ -1,14 +1,15 @@
 import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
 
-import {mutableNormalized} from './cache'
+import {NormalizedCache} from '../../cache/types'
 
-const {
-  hooks: {useMutation, useQuery, useSelectEntityById},
-} = mutableNormalized
-
-export const UserScreen = () => {
+export const UserScreenNormalized = ({cache}: {cache: NormalizedCache}) => {
   const {id: userIdParam} = useParams()
+  const rootPath = window.location.pathname.split('/').slice(0, -2).join('/')
+
+  const {
+    hooks: {useSelectEntityById, useQuery, useMutation},
+  } = cache
 
   const [skip, setSkip] = useState(false)
 
@@ -27,7 +28,8 @@ export const UserScreen = () => {
     mutation: 'updateUser',
   })
 
-  console.debug('[MutableNormalized/UserScreen]', {
+  console.debug('[UserScreenNormalized]', {
+    rootPath,
     loading,
     error,
     user,
@@ -47,7 +49,7 @@ export const UserScreen = () => {
 
   return (
     <div className="screen">
-      <Link id={'users-link'} className={'link'} to={'/mutable/users'}>
+      <Link id={'users-link'} className={'link'} to={rootPath + '/users'}>
         {'Users'}
       </Link>
       <button
@@ -60,11 +62,11 @@ export const UserScreen = () => {
             })
         }}
       >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
-      <Link id="next-user" className="link" to={'/mutable/user/' + String(userId + 1)}>
+      <Link id="next-user" className="link" to={rootPath + '/user/' + String(userId + 1)}>
         Next user
       </Link>
       {userId > 0 && (
-        <Link id="next-user" className="link" to={'/mutable/user/' + String(userId - 1)}>
+        <Link id="next-user" className="link" to={rootPath + '/user/' + String(userId - 1)}>
           Previous user
         </Link>
       )}

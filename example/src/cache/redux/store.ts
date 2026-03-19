@@ -4,10 +4,10 @@ import reduxLogger from 'redux-logger'
 import {persistReducer, persistStore} from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
-import {mutableNormalized} from './mutable-normalized/cache'
-import {normalized} from './normalized/cache'
-import {notNormalized} from './not-normalized/cache'
-import {notNormalizedOptimized} from './not-normalized-optimized/cache'
+import {mutableNormalized} from './mutable-normalized'
+import {normalized} from './normalized'
+import {notNormalized} from './not-normalized'
+import {notNormalizedOptimized} from './not-normalized-optimized'
 
 export const createReduxStore = (persistEnabled: boolean, loggerEnabled: boolean) => {
   const addPersistenceIfNeeded = <T>(key: string, reducer: T) => {

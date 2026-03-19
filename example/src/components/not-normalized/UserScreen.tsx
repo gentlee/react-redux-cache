@@ -1,14 +1,15 @@
 import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
 
-import {zustandNotNormalizedOptimized} from './cache'
+import {NotNormalizedCache} from '../../cache/types'
 
-const {
-  hooks: {useMutation, useQuery},
-} = zustandNotNormalizedOptimized
-
-export const UserScreenZustandNotNormalizedOptimized = () => {
+export const UserScreenNotNormalized = ({cache}: {cache: NotNormalizedCache}) => {
   const {id: userIdParam} = useParams()
+  const rootPath = window.location.pathname.split('/').slice(0, -2).join('/')
+
+  const {
+    hooks: {useQuery, useMutation},
+  } = cache
 
   const [skip, setSkip] = useState(false)
 
@@ -24,12 +25,13 @@ export const UserScreenZustandNotNormalizedOptimized = () => {
     mutation: 'updateUser',
   })
 
-  console.debug('[ZustandNotNormalizedOptimized/UserScreen]', {
+  console.debug('[UserScreenNotNormalized]', {
+    rootPath,
+    result: user,
     loading,
     error,
     user,
     userId,
-    userIdParam,
     skip,
   })
 
@@ -54,26 +56,19 @@ export const UserScreenZustandNotNormalizedOptimized = () => {
 
   return (
     <div className="screen">
-      <Link id={'users-link'} className={'link'} to={'/zustand-not-normalized-optimized/users'}>
+      <Link id={'users-link'} className={'link'} to={rootPath + '/users'}>
         {'Users'}
       </Link>
-      <button
-        id="update-user"
-        onClick={onUpdateUserNameClick}
-      >{`Updat${updatingUser ? 'ing' : 'e'} user name`}</button>
-      <Link
-        id="next-user"
-        className="link"
-        to={'/zustand-not-normalized-optimized/user/' + String(userId + 1)}
-      >
+      {!!user && (
+        <button id="update-user" onClick={onUpdateUserNameClick}>{`Updat${
+          updatingUser ? 'ing' : 'e'
+        } user name`}</button>
+      )}
+      <Link id="next-user" className="link" to={rootPath + '/user/' + String(userId + 1)}>
         Next user
       </Link>
       {userId > 0 && (
-        <Link
-          id="next-user"
-          className="link"
-          to={'/zustand-not-normalized-optimized/user/' + String(userId - 1)}
-        >
+        <Link id="next-user" className="link" to={rootPath + '/user/' + String(userId - 1)}>
           Previous user
         </Link>
       )}
