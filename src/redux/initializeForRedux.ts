@@ -45,7 +45,7 @@ import type {
 import {CacheExtensions, CachePrivate, CacheToPrivate, InnerStore, StoreHooksPrivate} from '../typesPrivate'
 import {defaultGetCacheKey} from '../utilsAndConstants'
 
-/** Initializes cache for Redux, returning reducer, actions and utils. */
+/** Initializes cache for Redux, returning reducer, actions, async actions and utils. */
 export const initializeForRedux = <N extends string, SK extends string, T extends Typenames, QP, QR, MP, MR>(
   cache: Cache<N, SK, T, QP, QR, MP, MR>,
 ) => {

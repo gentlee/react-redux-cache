@@ -13,7 +13,7 @@ import type {
   ZustandStoreLike,
 } from '../types'
 
-/** Initializes cache for Zustand, returning actions and utils. */
+/** Initializes cache for Zustand, returning actions. */
 export declare const initializeForZustand: <
   N extends string,
   SK extends string,

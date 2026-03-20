@@ -53,7 +53,7 @@ export type StoreHooks = {
 }
 
 /**
- * Initialized cache to be used with React, creates hooks. Use after initialization for the store.
+ * Initializes cache to be used with React, creates hooks. Use after initialization for the store.
  * @param reduxCustomStoreHooks Can be used to override defaut redux hooks, imported from "react-redux" package. Not needed for Zustand.
  */
 export const initializeForReact = <N extends string, SK extends string, T extends Typenames, QP, QR, MP, MR>(

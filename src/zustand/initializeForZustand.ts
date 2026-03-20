@@ -46,7 +46,7 @@ import type {
 import {CacheExtensions, CachePrivate, CacheToPrivate, InnerStore, StoreHooksPrivate} from '../typesPrivate'
 import {defaultGetCacheKey, logDebug, logWarn} from '../utilsAndConstants'
 
-/** Initializes cache for Zustand, returning actions and utils. */
+/** Initializes cache for Zustand, returning actions. */
 export const initializeForZustand = <
   N extends string,
   SK extends string,

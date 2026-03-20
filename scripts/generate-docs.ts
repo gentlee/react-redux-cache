@@ -143,10 +143,10 @@ function extractDocumentation(filePath: string): string {
 const basePath = path.join(process.cwd(), 'src')
 const markdown = [
   ['createCache.ts'],
-  ['utilsAndConstants.ts'],
-  ['react', 'initializeForReact.ts'],
-  ['redux', 'initializeForRedux.ts'],
   ['zustand', 'initializeForZustand.ts'],
+  ['redux', 'initializeForRedux.ts'],
+  ['react', 'initializeForReact.ts'],
+  ['utilsAndConstants.ts'],
 ]
   .map((pathArray) => {
     const header = formatHeader(

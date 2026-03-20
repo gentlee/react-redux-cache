@@ -13,7 +13,7 @@ import type {
   Typenames,
 } from '../types'
 
-/** Initializes cache for Redux, returning reducer, actions and utils. */
+/** Initializes cache for Redux, returning reducer, actions, async actions and utils. */
 export declare const initializeForRedux: <
   N extends string,
   SK extends string,

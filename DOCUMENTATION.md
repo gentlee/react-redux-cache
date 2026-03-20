@@ -33,45 +33,32 @@
 | getInitialState | Generates the initial root state using `cacheStateKey`. Not needed for Redux — it automatically generates it when creating the store by calling the root reducer. |
 
 
-### Utils and constants
+### Zustand
 
 | Symbol | Description |
 |--------|---------------|
-| noop | Empty function. |
-| defaultGetCacheKey | Default getCacheKey implementation. |
-| isEmptyObject | Returns true if object has no keys. |
-| createStateComparer | Returns query state comparer that compares only provided fields. Used in implementation of `selectorComparer` option. |
+| initializeForZustand | Initializes cache for Zustand, returning actions. |
 
-##### FetchPolicy
+##### Actions
 
 | Symbol | Description |
 |--------|---------------|
-| NoCacheOrExpired | Only if cache does not exist (result is undefined) or expired. Default.  @param expired `true` when `expiresAt` is defined and lower than `Date.now()` |
-| Always | Every fetch trigger. |
-
-
-### React
-
-| Symbol | Description |
-|--------|---------------|
-| initializeForReact | Initialized cache to be used with React, creates hooks. Use after initialization for the store.  @param reduxCustomStoreHooks Can be used to override defaut redux hooks, imported from "react-redux" package. Not needed for Zustand. |
-
-##### Hooks
-
-| Symbol | Description |
-|--------|---------------|
-| useClient | Returns memoized object with query and mutate functions, binded to the store. Memoization dependency is the store.  @warning Not needed for Zustand, its actions are already binded to the store. |
-| useQuery | Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). |
-| useMutation | Subscribes to provided mutation state and provides mutate function. |
-| useSelectEntityById | useSelector + selectEntityById. |
-| useEntitiesByTypename | useSelector + selectEntitiesByTypename. Also subscribes to collection's change key if `mutableCollections` enabled.  @warning Subscribing to collections should be avoided. |
+| query | Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.  @param onlyIfExpired When true, cancels fetch if result is not yet expired.  @param skipFetch Fetch is cancelled and current cached result is returned. |
+| mutate | Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully. |
+| updateQueryStateAndEntities | Updates query state, and optionally merges entity changes in a single action. |
+| updateMutationStateAndEntities | Updates mutation state, and optionally merges entity changes in a single action. |
+| mergeEntityChanges | Merges EntityChanges to the state. |
+| invalidateQuery | Sets expiresAt to Date.now(). |
+| clearQueryState | Clears states for provided query keys and cache keys.  If cache key for query key is not provided, the whole state for query key is cleared. |
+| clearMutationState | Clears states for provided mutation keys. |
+| clearCache | Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. |
 
 
 ### Redux
 
 | Symbol | Description |
 |--------|---------------|
-| initializeForRedux | Initializes cache for Redux, returning reducer, actions and utils. |
+| initializeForRedux | Initializes cache for Redux, returning reducer, actions, async actions and utils. |
 
 ##### Actions
 
@@ -99,23 +86,36 @@
 | bindAsyncActions | Binds async actions to the store. Can be used when the store is a singleton for direct import. |
 
 
-### Zustand
+### React
 
 | Symbol | Description |
 |--------|---------------|
-| initializeForZustand | Initializes cache for Zustand, returning actions and utils. |
+| initializeForReact | Initializes cache to be used with React, creates hooks. Use after initialization for the store.  @param reduxCustomStoreHooks Can be used to override defaut redux hooks, imported from "react-redux" package. Not needed for Zustand. |
 
-##### Actions
+##### Hooks
 
 | Symbol | Description |
 |--------|---------------|
-| query | Performs a query using provided options. Deduplicates calls with the same cache key. Always returns current cached result, even when query is cancelled or finished with error.  @param onlyIfExpired When true, cancels fetch if result is not yet expired.  @param skipFetch Fetch is cancelled and current cached result is returned. |
-| mutate | Performs a mutation, aborting previous one with the same mutation key. Returns result only if finished succesfully. |
-| updateQueryStateAndEntities | Updates query state, and optionally merges entity changes in a single action. |
-| updateMutationStateAndEntities | Updates mutation state, and optionally merges entity changes in a single action. |
-| mergeEntityChanges | Merges EntityChanges to the state. |
-| invalidateQuery | Sets expiresAt to Date.now(). |
-| clearQueryState | Clears states for provided query keys and cache keys.  If cache key for query key is not provided, the whole state for query key is cleared. |
-| clearMutationState | Clears states for provided mutation keys. |
-| clearCache | Replaces cache state with initial, optionally merging with provided state. Doesn't cancel running fetches and should be used with caution. |
+| useClient | Returns memoized object with query and mutate functions, binded to the store. Memoization dependency is the store.  @warning Not needed for Zustand, its actions are already binded to the store. |
+| useQuery | Fetches query when params change and subscribes to query state changes (subscription depends on `selectorComparer`). |
+| useMutation | Subscribes to provided mutation state and provides mutate function. |
+| useSelectEntityById | useSelector + selectEntityById. |
+| useEntitiesByTypename | useSelector + selectEntitiesByTypename. Also subscribes to collection's change key if `mutableCollections` enabled.  @warning Subscribing to collections should be avoided. |
+
+
+### Utils and constants
+
+| Symbol | Description |
+|--------|---------------|
+| noop | Empty function. |
+| defaultGetCacheKey | Default getCacheKey implementation. |
+| isEmptyObject | Returns true if object has no keys. |
+| createStateComparer | Returns query state comparer that compares only provided fields. Used in implementation of `selectorComparer` option. |
+
+##### FetchPolicy
+
+| Symbol | Description |
+|--------|---------------|
+| NoCacheOrExpired | Only if cache does not exist (result is undefined) or expired. Default.  @param expired `true` when `expiresAt` is defined and lower than `Date.now()` |
+| Always | Every fetch trigger. |
 
