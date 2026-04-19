@@ -12,27 +12,27 @@
 ### Supported stores: `Redux` and `Zustand` (check /example)
 ### Supported UI libs: `React`
 
-**Powerful**, **performant** yet **lightweight** data fetching and caching library for immutable stores that supports **normalization** unlike `TanStack Query` and `RTK-Query`, while having similar but not over-engineered, simple interface, with full control over underlying store. Covered with tests, fully typed and written on Typescript.
+**Powerful**, **performant** yet **lightweight** data fetching and caching library for immutable stores that supports **normalization** unlike `TanStack Query` and `RTK-Query`, while having similar but not over-engineered, simple interface, with full control over underlying store. Covered with tests, fully typed and written in Typescript.
 
 |Principle|Description|
 |--|--|
 |Full access to the store|You choose the store (Redux / Zustand) and embed the cache into it, having full access to its state, actions, hooks, selectors and utils.|
 |Supports all kinds of queries / mutations|REST, GraphQL, databases - any async operations can be cached.|
-|Fully typed|Written on TypeScript, everything is checked by compiler.|
-|Not overengineered|Simplicity is the main goal.|
+|Fully typed|Written in TypeScript, everything is checked by compiler.|
+|Not over-engineered|Simplicity is the main goal.|
 |Performance|Every function is heavily optimized. Immer is not used ([RTK performance issue](https://github.com/reduxjs/redux-toolkit/issues/4793)). Supports mutable collections (O(n) > O(1)).|
 |Reliability|High test coverage, zero issue policy.|
-|Lightweight|Supports tree shaking. `npx minified-size dist/esm/*.js`<br/>minified: 15.3 kB<br/>gzipped: 6.75 kB<br/>brotlied: 5.98 kB|
+|Lightweight|No required dependencies. Module architecture. Tree shaking. `npx minified-size dist/esm/*.js`<br/>minified: 15.3 kB<br/>gzipped: 6.75 kB<br/>brotlied: 5.98 kB|
 
 |Feature|Description|
 |--|--|
-|De-duplication of queries / mutations|Similar parallel queries are combined into one, mutations - aborted.|
+|De-duplication of queries / mutations|Identical parallel queries perform a single fetch; identical mutations abort the previous one.|
 |Time to live & Invalidation & Clear|Choose how long query result can be used before expired and refetched, or invalidate / clear it manually.|
 |Deep comparison|Rendering is much heavier than deep comparison of incoming data, so it is enabled by default to prevent excess renders.|
 |Infinite pagination|Easily implemented.|
 |Error handling|No need to use try / catch, errors are returned from functions, passed to callbacks and / or can be handled from single global callback.|
 |Fetch policies|Decide if data is full and fresh enough or need to be fetched.|
-|Normalization|Consistent state accross the app - better UX, minimum loading states and lower traffic consumption.|
+|Normalization|Consistent state across the app - better UX, minimum loading states and lower traffic consumption.|
 |Minimal state|Default values such as `undefined` or default query states are removed from the state tree.|
 |BETA: Mutable collections|Optimizes state merges from O(n) to O(1) by using mutable collections. Separate entities, query and mutation states are still immutable.|
 
@@ -155,7 +155,7 @@
  
 `react`, `react-redux` and `fast-deep-equal` are optional peer dependencies:
   - `react` required if `initializeForReact` is used.
-  - `react-redux` required if `reduxCustomStoreHooks` is not provided while initilizing Redux cache for React. Not needed for Zustand.
+  - `react-redux` required if `reduxCustomStoreHooks` is not provided while initializing Redux cache for React. Not needed for Zustand.
   - `fast-deep-equal` required if `deepComparisonEnabled` cache option is enabled (default is true). Option fallbacks to `false` if not installed.
 
 ```sh
@@ -177,7 +177,7 @@ Initialization is done in three steps:
 
 #### 1.1 Queries and mutations
 
-Functions that return `result` should be used for querues and mutations when creating cache if you don't need normalization:
+Functions that return `result` should be used for queries and mutations when creating cache if you don't need normalization:
 
 ```typescript
 // Example of query without normalization, with selecting access token from the store.
@@ -262,7 +262,7 @@ export const cache = withTypenames<CacheTypenames>().createCache({
 ```
 
 #### 2. Store
-Cache need to be initialized for `Redux` or `Zustand` with `initializeForRedux` or `initializeForZustand`, that also return reducer, actions and utils.
+Cache needs to be initialized for `Redux` or `Zustand` with `initializeForRedux` or `initializeForZustand`.
 
 Redux:
 ```typescript
@@ -289,7 +289,7 @@ const initialState = cache.utils.getInitialState()
 
 const useStore = create((set, get) => initialState)
 
-// `actions` are the same synchronous functions as used by RRC to manage the cache.
+// `actions` are the same functions as used by RRC to manage the cache.
 const {actions} = initializeForZustand(cache, useStore)
 ```
 
@@ -353,7 +353,7 @@ For huge collections (> 1000 items, see benchmark) immutable approach may be a b
 | immutable | 1.57 | 1.81 | 7.62 | 103.82 | 1457.89 |
 | mutable | 1.4 | 1.15 | 0.65 | 1.03 | 0.76 |
 
-Well written code should not subcribe to whole collections, so just enabling this options most of the times should not break anything. But if it is still needed, you should subscribe to both collection (it may still change e.g. when clearing state) and to its `_changeKey`.
+Well written code should not subscribe to whole collections, so just enabling this option most of the times should not break anything. But if it is still needed, you should subscribe to both collection (it may still change e.g. when clearing state) and to its `_changeKey`.
 
 ```tsx
 const Component = () => {
@@ -383,14 +383,14 @@ export const updateBank = (async (bank) => {
   const {httpError, response} = ...
   return {
     result: {
-      httpError,            // Error is a part of the result, containing e.g. map of not valid fields and threir error messages.
-      bank: response?.bank  // Bank still can be returned from the backend with error e.g. when only some of fields were udpated.
+      httpError,            // Error is a part of the result, containing e.g. map of invalid fields and their error messages.
+      bank: response?.bank  // Bank still can be returned from the backend with error e.g. when only some of fields were updated.
     }
   }
 }) satisfies Mutation<Partial<Bank>>
 ```
 
-If global error handling is needed for errors, not handled by query / mutation `onError` callback, global `onError` can be used:
+If global error handling is needed for errors, not handled by the query / mutation `onError` callback, the global `onError` can be used:
 
 ```typescript
 export const cache = createCache({
@@ -409,7 +409,7 @@ export const cache = createCache({
 
 #### Invalidation
 
-`FetchPolicy.NoCacheOrExpired` (default) skips fetching on fetch triggers if result is already cached, but we can invalidate cached query results using `invalidateQuery` action to make it run again on a next mount.
+`FetchPolicy.NoCacheOrExpired` (default) skips fetching on fetch triggers if result is already cached, but we can invalidate cached query results using `invalidateQuery` action to make it run again on the next mount.
 
 ```typescript
 
@@ -455,7 +455,7 @@ But if more control is needed, e.g. checking if entity is full, custom fetch pol
   ...
   getFullUser: {
     query: getUser,
-    fetchPolicy(expired, id, _, {getState}, {selectEntityById}) {
+    fetchPolicy(expired, id, _, {getState}) {
       if (expired) {
         return true // Fetch if expired.
       }
@@ -569,7 +569,7 @@ Here is a simple `redux-persist` configuration:
 
 ```typescript
 // Removes `loading` and `error` from persisted state.
-// '_changeKey' is needed only when `mutuableCollections` enabled.
+// '_changeKey' is needed only when `mutableCollections` enabled.
 function stringifyReplacer(key: string, value: unknown) {
   return key === 'loading' || key === 'error' || key === '_changeKey' ? undefined : value
 }
@@ -607,9 +607,9 @@ export const defaultGetCacheKey = <P = unknown>(params: P): Key => {
 }
 ```
 
-It is recommended to override it when default implementation is not optimal or when keys in params object can be sorted in random order. In second case you can also consider using array to pass params.
+It is recommended to override it when default implementation is not optimal or when keys in params object can be sorted in random order. In the second case you can also consider using array to pass params.
 
-As example, can be overridden when implementing pagination.
+As an example, it can be overridden when implementing pagination.
 
 #### How race conditions are handled?
 
