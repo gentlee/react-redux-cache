@@ -86,8 +86,14 @@ export const applyEntityChanges = <T extends Typenames>(
     const entitiesToMerge = merge?.[typename]
     const entitiesToReplace = replace?.[typename]
     const entitiesToRemove = remove?.[typename]
+    const entitiesToRemoveLength =
+      entitiesToRemove === undefined
+        ? 0
+        : Array.isArray(entitiesToRemove)
+          ? entitiesToRemove.length
+          : entitiesToRemove.size
 
-    if (!entitiesToMerge && !entitiesToReplace && !entitiesToRemove?.length) {
+    if (!entitiesToMerge && !entitiesToReplace && !entitiesToRemoveLength) {
       continue
     }
 
@@ -98,10 +104,9 @@ export const applyEntityChanges = <T extends Typenames>(
 
       const idsSet = new Set<string>(mergeIds)
       replaceIds?.forEach((id) => idsSet.add(id))
-      entitiesToRemove?.forEach((id) => idsSet.add(String(id))) // String() because Object.keys always returns strings
+      entitiesToRemove?.forEach((id) => idsSet.add(String(id)))
 
-      const totalKeysInResponse =
-        (mergeIds?.length ?? 0) + (replaceIds?.length ?? 0) + (entitiesToRemove?.length ?? 0)
+      const totalKeysInResponse = (mergeIds?.length ?? 0) + (replaceIds?.length ?? 0) + entitiesToRemoveLength
       if (totalKeysInResponse !== 0 && idsSet.size !== totalKeysInResponse) {
         logWarn('applyEntityChanges', 'merge, replace and remove changes have intersections for: ' + typename)
       }

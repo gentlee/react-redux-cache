@@ -141,7 +141,7 @@ export type PartialEntitiesMap<T extends Typenames> = {[K in keyof T]?: Dict<Par
 
 export type EntitiesMap<T extends Typenames> = {[K in keyof T]?: Dict<T[K]>}
 
-export type EntityIds<T extends Typenames> = {[K in keyof T]?: Key[]}
+export type EntityIds<T extends Typenames> = {[K in keyof T]?: Key[] | Set<Key>}
 
 export type CacheState<T extends Typenames, QP, QR, MP, MR> = {
   entities: EntitiesMap<T> & Mutable
